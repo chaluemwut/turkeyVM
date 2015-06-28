@@ -28,8 +28,7 @@ static int value_offset;
 static int offset_offset;
 static int inited;
 
-static void initString()
-{
+static void initString() {
     if (java_lang_String == NULL)
       java_lang_String = loadClass("java/lang/String");
     FieldBlock* count;
@@ -52,29 +51,28 @@ static void initString()
 }
 
 /*Object* createString0(char* utf8)
-{
-    int len = strlen(utf8);
-    Object* array;
-    Object* obj;
-    
-    if((array = (Object*)allocTypeArray(T_CHAR, len))==NULL
-                || (obj = allocObject(java_lang_String)) == NULL)
-      throwException("@ createString");
+  {
+  int len = strlen(utf8);
+  Object* array;
+  Object* obj;
 
-    int i;
-    for (i = 0; i < len; i++)
-    {
-        *((char*)(unsigned short*)array->data+i) = utf8[i];
-    }
+  if((array = (Object*)allocTypeArray(T_CHAR, len))==NULL
+  || (obj = allocObject(java_lang_String)) == NULL)
+  throwException("@ createString");
 
-}*/
+  int i;
+  for (i = 0; i < len; i++)
+  {
+ *((char*)(unsigned short*)array->data+i) = utf8[i];
+ }
+
+ }*/
 
 /**
  * 
  * @return new char
  */
-char* String2Char(Object* string)
-{
+char* String2Char(Object* string) {
     Object* array = (Object*)(INST_DATA(string)[value_offset-1]);
     int len = INST_DATA(string)[count_offset-1];
     int offset = INST_DATA(string)[offset_offset-1];
@@ -94,8 +92,7 @@ char* String2Char(Object* string)
  * @qcliu 2015/03/08
  * invoked by:creatString();
  */
-Object* char2Char(char* s)
-{
+Object* char2Char(char* s) {
     Class* class;
     int length;
     Object* obj;
@@ -105,8 +102,7 @@ Object* char2Char(char* s)
 
     obj = (Object*)allocTypeArray(T_CHAR, length, NULL);
 
-    for (i = 0; i < length; i++)
-    {
+    for (i = 0; i < length; i++) {
         *((char*)(unsigned short*)obj->data+i) = s[i];
     }
 
@@ -117,8 +113,7 @@ Object* char2Char(char* s)
 /*Create a new String
  *invoked by:OPC_LDC
  */
-Object* createString(char* s)
-{
+Object* createString(char* s) {
     if (java_lang_String == NULL)
       java_lang_String = loadClass("java/lang/String");
 
@@ -150,13 +145,12 @@ Object* createString(char* s)
     //printString0(string_obj);
 
     return string_obj;
-    
+
 
 }
 
 /* Given a String object, and print*/
-void printStringObject(Object* obj)
-{
+void printStringObject(Object* obj) {
 
     int offset;
     Object* char_obj;

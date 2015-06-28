@@ -7,13 +7,11 @@
 
 extern LinkedList* DLL;
 
-char* getDllPath()
-{
+char* getDllPath() {
     return getenv("LD_LIBRARY_PATH");
 }
 
-int resolveDll(char* dllname)
-{
+int resolveDll(char* dllname) {
     DllEntry* dll;
     dll = findDllInTable(DLL, dllname);
     if (dll != NULL)
@@ -33,8 +31,7 @@ int resolveDll(char* dllname)
 
 }
 
-char* getDllName(char* path, char* name)
-{
+char* getDllName(char* path, char* name) {
     char* buf = (char*)sysMalloc(strlen(path) + strlen(name) + 8);
     sprintf(buf, "%s/lib%s.so", path, name);
 

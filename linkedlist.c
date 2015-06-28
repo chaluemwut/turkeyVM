@@ -18,8 +18,7 @@
 #include <string.h>
 #include "vm.h"
 
-static void throwException(char* error_info)
-{
+static void throwException(char* error_info) {
     printf("Exception: %s\n", error_info);
     exit(0);
 }
@@ -33,8 +32,7 @@ static void throwException(char* error_info)
  *
  * @qcliu 2015/02/03
  */
-LinkedList* initLinkedList()
-{
+LinkedList* initLinkedList() {
     LinkedList* head = (LinkedList*)malloc(sizeof(LinkedList));
     LNode* node = (LNode*)malloc(sizeof(LNode));
 
@@ -54,8 +52,7 @@ LinkedList* initLinkedList()
  *
  * @qcliu 2015/02/03
  */
-int addLast(LinkedList* head, void* data)
-{
+int addLast(LinkedList* head, void* data) {
     if(data == NULL||head == NULL)
       throwException("head is NULL!!@addLast");
     LNode* node = (LNode*)malloc(sizeof(LNode));
@@ -73,8 +70,7 @@ int addLast(LinkedList* head, void* data)
  * Return the first node of the list
  * @qcliu 2015/02/03
  */
-void* getFirst(LinkedList* head)
-{
+void* getFirst(LinkedList* head) {
     if(head == NULL)
       throwException("head is NULL!!@getFirst");
     if(head->next == NULL)
@@ -86,8 +82,7 @@ void* getFirst(LinkedList* head)
  * Return the last node of the list
  * @qcliu 2015/02/03
  */
-void* getLast(LinkedList* head)
-{
+void* getLast(LinkedList* head) {
     if (head == NULL)
       throwException("head is NULL!! @getLast");
 
@@ -99,8 +94,7 @@ void* getLast(LinkedList* head)
  * Return the node that index refer
  * @qcliu 2015/02/03
  */
-void* getIndexOf(LinkedList* head, int index)
-{
+void* getIndexOf(LinkedList* head, int index) {
     if (head == NULL)
       throwException("head is NULL!!");
     if ((index >= head->length) || (index < 0))
@@ -108,10 +102,9 @@ void* getIndexOf(LinkedList* head, int index)
 
     LNode* ptr = GETLINK(head)->next;
 
-    while (index > 0)
-    {
-      ptr = ptr->next;
-      index--;
+    while (index > 0) {
+        ptr = ptr->next;
+        index--;
     }
 
     return ptr->data;
@@ -122,8 +115,7 @@ void* getIndexOf(LinkedList* head, int index)
  * Delet the first LNode.
  * @qcliu 2015/02/03
  */
-int removeFirst(LinkedList* head)
-{
+int removeFirst(LinkedList* head) {
     if (head == NULL)
       throwException("head is NULL!!@removeFirst");
     if (head->length <= 0)
@@ -143,8 +135,7 @@ int removeFirst(LinkedList* head)
  * NOTE: the last note is significate.
  * @qcliu 2015/02/03
  */
-int removeIndexOf(LinkedList* head, int index)
-{
+int removeIndexOf(LinkedList* head, int index) {
     if (head == NULL)
       throwException("head is NULL!!@removeIndexOf");
     if (head->length <= 0)
@@ -156,8 +147,7 @@ int removeIndexOf(LinkedList* head, int index)
     LNode* prev = GETLINK(head);
     int i;
 
-    for (; index > 0; index--)
-    {
+    for (; index > 0; index--) {
         ptr = ptr->next;
         prev = prev->next;
     }
@@ -175,31 +165,27 @@ int removeIndexOf(LinkedList* head, int index)
  * NOTE: The data in this method is refer to VNode.
  * @qcliu 2015/02/04
  */
-int removeFromList(LinkedList* head, void* data)
-{
+int removeFromList(LinkedList* head, void* data) {
     if (head == NULL || data == NULL)
       throwException("head or data is NULL! @removeFromList");
 
     LNode* ptr = GETLINK(head)->next;
     LNode* prev = GETLINK(head);
 
-    while (ptr != NULL)
-    {
+    while (ptr != NULL) {
         if (ptr->data == data)
           break;
         ptr = ptr->next;
         prev = prev->next;
     }
 
-    if (ptr)
-    {
+    if (ptr) {
         prev->next = ptr->next;
         free(ptr);
         head->length--;
         return 1;
     }
-    else
-    {
+    else {
         printf("data hasn't in the LinkedList!\n");
         return 0;
     }
@@ -209,8 +195,7 @@ int removeFromList(LinkedList* head, void* data)
  * Return 0 or 1.
  * @qcliu 2015/02/03
  */
-int isEmpty(LinkedList* head)
-{
+int isEmpty(LinkedList* head) {
     if (head == NULL)
       throwException("head == NULL! @isEmpty");
 
@@ -224,8 +209,7 @@ int isEmpty(LinkedList* head)
  * Return length of the linkedlist.
  * @qcliu 2015/02/03
  */
-int getLength(LinkedList* head)
-{
+int getLength(LinkedList* head) {
     if (head == NULL)
       throwException("head == NULL!! @ getLength");
 
@@ -239,16 +223,14 @@ int getLength(LinkedList* head)
  * @qcliu 2015/02/04
  */
 
-void* findLNodeinList(LinkedList* head, void* data)
-{
+void* findLNodeinList(LinkedList* head, void* data) {
     if (head == NULL || data == NULL)
       throwException("head is NULL! @lookupLNode");
 
 
     LNode* ptr = GETLINK(head);
 
-    while (ptr->next)
-    {
+    while (ptr->next) {
         LNode* node = ptr->next;
         if (node->data == data)
           return node->data;
@@ -259,15 +241,13 @@ void* findLNodeinList(LinkedList* head, void* data)
 
 }
 
-Class* findClassInTable(LinkedList* head, char* classname)
-{
+Class* findClassInTable(LinkedList* head, char* classname) {
     if (head == NULL || classname == NULL)
       throwException("head is NULL! @ findClassInTable");
 
     LNode* ptr = GETLINK(head);
 
-    while (ptr->next)
-    {
+    while (ptr->next) {
         LNode* node = ptr->next;
         Class* class = (Class*)node->data;
         ClassBlock* cb = CLASS_CB(class);
@@ -278,23 +258,20 @@ Class* findClassInTable(LinkedList* head, char* classname)
     return NULL;
 }
 
-int addClass2Table(LinkedList* head, void* data)
-{
+int addClass2Table(LinkedList* head, void* data) {
     if (findLNodeinList(head, data))
       return 0;
 
     return addLast(head, data);
 }
 
-DllEntry* findDllInTable(LinkedList* head, char* dllname)
-{
+DllEntry* findDllInTable(LinkedList* head, char* dllname) {
     if (head == NULL || dllname == NULL)
       throwException("head is NULL");
 
     LNode* ptr = GETLINK(head);
 
-    while (ptr->next)
-    {
+    while (ptr->next) {
         LNode* node = ptr->next;
         DllEntry* de = node->data;
         if (0 == strcmp(de->name, dllname))
@@ -304,7 +281,6 @@ DllEntry* findDllInTable(LinkedList* head, char* dllname)
     return NULL;
 }
 
-int addDll2Table(LinkedList* head, void* data)
-{
+int addDll2Table(LinkedList* head, void* data) {
     return addClass2Table(head, data);
 }

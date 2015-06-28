@@ -105,54 +105,54 @@ Object* allocTypeArray(int type, int size, char* element_name)
 
     switch (type)
     {
-        case T_BYTE:
-            //class = primClass[0];
-            class = loadClass("[B");
-            el_size = 1;
-            break;
-        case T_CHAR:
-            //class = primClass[4];
-            class = loadClass("[C");
-            el_size = 2;
-            break;
-        case T_SHORT:
-            //class = primClass[1];
-            class = loadClass("[S");
-            el_size = 2;
-            break;
-        case T_INT:
-            //class = primClass[2];
-            class = loadClass("[I");
-            el_size = 4;
-            break;
-        case T_BOOLEAN:
-            //class = primClass[7];
-            class = loadClass("[Z");
-            el_size = 4;
-            break;
-        case T_FLOAT:
-            //class = primClass[5];
-            class = loadClass("F");
-            el_size = 4;
-            break;
-        case T_DOUBLE:
-            //class = primClass[6];
-            class = loadClass("[D");
-            el_size = 8;
-            break;
-        case T_LONG:
-            //class = primClass[3];
-            class = loadClass("[J");
-            el_size = 8;
-            break;
-        case T_REFERENCE:
-            {
-                class = loadClass(element_name);
-                el_size = 4;
-                break;
-            }
-        default:
-            throwException("Invalid array type!");
+    case T_BYTE:
+        //class = primClass[0];
+        class = loadClass("[B");
+        el_size = 1;
+        break;
+    case T_CHAR:
+        //class = primClass[4];
+        class = loadClass("[C");
+        el_size = 2;
+        break;
+    case T_SHORT:
+        //class = primClass[1];
+        class = loadClass("[S");
+        el_size = 2;
+        break;
+    case T_INT:
+        //class = primClass[2];
+        class = loadClass("[I");
+        el_size = 4;
+        break;
+    case T_BOOLEAN:
+        //class = primClass[7];
+        class = loadClass("[Z");
+        el_size = 4;
+        break;
+    case T_FLOAT:
+        //class = primClass[5];
+        class = loadClass("F");
+        el_size = 4;
+        break;
+    case T_DOUBLE:
+        //class = primClass[6];
+        class = loadClass("[D");
+        el_size = 8;
+        break;
+    case T_LONG:
+        //class = primClass[3];
+        class = loadClass("[J");
+        el_size = 8;
+        break;
+    case T_REFERENCE:
+    {
+        class = loadClass(element_name);
+        el_size = 4;
+        break;
+    }
+    default:
+        throwException("Invalid array type!");
     }
 
     return allocArray(class, size, el_size, type);

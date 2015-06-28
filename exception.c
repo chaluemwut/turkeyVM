@@ -4,8 +4,7 @@
 
 extern Frame* current_frame;
 
-void throwException(char* exception)
-{
+void throwException(char* exception) {
     printf("\nException: %s\n", exception);
     ClassBlock* cb = CLASS_CB(current_frame->class);
     printf("current_class:%s, current_method:%s%s\n", cb->this_classname,

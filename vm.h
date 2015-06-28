@@ -4,6 +4,8 @@
 #define FALSE 0
 #define TRUE 1
 
+#define DEBUG(format, ...) printf("FILE: "__FILE__", LINE: %d: "format"\n",__LINE__, ##__VA_ARGS__);
+
 #define T_BOOLEAN 4
 #define T_CHAR 5
 #define T_FLOAT 6
@@ -460,6 +462,7 @@ extern void exitVM();
 extern void* sysMalloc(int n);
 extern Object* allocObject(Class* class);
 extern Object* allocTypeArray(int type, int size, char* element_name);
+extern Object* allocArray(Class* class, int size, int el_size, int atype);
 
 /*Class*/
 extern Class* loadClass0(char* classname);

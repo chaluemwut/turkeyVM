@@ -78,12 +78,10 @@ static int testnum;
 /*
  * invoke by: executeMethod(), executeStaticMethod() in execute.c
  */
-void executeJava()
-{
+void executeJava() {
 
     // When the stack frame is move to the top, exit.
-    if (current_frame->mb == NULL)
-    {
+    if (current_frame->mb == NULL) {
         printf("\nframe is NULL\n");
         exitVM();
     }
@@ -109,8 +107,7 @@ void executeJava()
     ClassBlock* cc = CLASS_CB(current_frame->class);
 
     //Native doesn't have a return
-    if (0 == code_length)
-    {
+    if (0 == code_length) {
         printf("code_length == 0    ");
         ClassBlock* cb = CLASS_CB(current_frame->class);
         printf("method name:%s,type:%s, class:%s\n", current_frame->mb->name,current_frame->mb->type, cb->this_classname);
@@ -131,8 +128,7 @@ void executeJava()
           printf("hash");
         if (0 == strcmp(current_mb->type, "(Ljava/lang/Object;)Ljava/lang/Object;")&&0 == strcmp(current_mb->name, "get"))
           printf("get");
-    if (dis_testinfo)
-    {
+    if (dis_testinfo) {
         printf("current Frame is :%s, %s  locals:%d, stack:%d\n",
                     current_mb->name, current_mb->type, max_locals, max_stack);
         printf("current class:%s\n", cc->this_classname);
@@ -148,8 +144,7 @@ void executeJava()
      * note: pc_offset must move along with the current_pc. So use
      *       the PCMOVE() as much as possible.
      */
-    while (pc_offset < code_length)
-    {
+    while (pc_offset < code_length) {
         u4 c = *current_frame->pc;
         ConstantPool* current_cp = current_frame->cp;
 
@@ -157,15 +152,13 @@ void executeJava()
         if (dis_bytecode)
             printf("%s, %d\n", op_code[c], ((max_stack_pointer - current_frame->ostack)));//for test
 
-        if (dis_testinfo)
-        {
+        if (dis_testinfo) {
             printf("\nopcode: ---------%s\n", op_code[c]);//for test
             printf("pc_offset:------------%d\n", pc_offset);
             printf("current_frame->pc:---------%d\n", (unsigned int)current_frame->pc);
             printStack();
         }
-        switch (c)
-        {
+        switch (c) {
             case OPC_NOP://0
                 break;
             case OPC_ACONST_NULL://1
@@ -192,28 +185,24 @@ void executeJava()
             case OPC_ICONST_5://8
                 PUSH(5, int);
                 break;
-            case OPC_LCONST_0://9
+            case OPC_LCONST_0://9 
                 {
                     PUSH2(0, long long);
                     break;
                 }
-            case OPC_LCONST_1://10
-                {
+            case OPC_LCONST_1: {//10
                     PUSH2(1, long long);
                     break;
                 }
-            case OPC_FCONST_0://11
-                {
+            case OPC_FCONST_0: {//11
                     PUSH(0, float);
                     break;
                 }
-            case OPC_FCONST_1://12
-                {
+            case OPC_FCONST_1: {//12
                     PUSH(1, float);
                     break;
                 }
-            case OPC_FCONST_2://13
-                {
+            case OPC_FCONST_2: {//13
                     PUSH(2, float);
                     break;
                 }
@@ -387,13 +376,11 @@ void executeJava()
                         case CONSTANT_Class:
                             {
                                 Class* class = (Class*)resolveClass(current_frame->class, index);
-                                if (class != NULL)
-                                {
+                                if (class != NULL) {
                                     Object* obj = class->class;
                                     PUSH(obj, Object*);
                                 }
-                                else
-                                {
+                                else {
                                     throwException("ldc CONSTANT_Class");
                                 }
                                 break;
@@ -413,22 +400,18 @@ void executeJava()
                     PCMOVE(1);
 
 
-                    switch (CP_TYPE(current_cp, index))
-                    {
-                        case RESOLVED:
-                            {
+                    switch (CP_TYPE(current_cp, index)) {
+                        case RESOLVED: {
                                 //TODO
                                 break;
                             }
-                        case CONSTANT_Long:
-                            {
+                        case CONSTANT_Long: {
                                 long long value;
                                 value = *(long long*)&current_cp->info[index];
                                 PUSH2(value, long long);
                                 break;
                             }
-                        case CONSTANT_Double:
-                            {
+                        case CONSTANT_Double: {
                                 double value;
                                 value = *(double*)&current_cp->info[index];
                                 PUSH2(value, double);

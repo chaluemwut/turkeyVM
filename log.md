@@ -1,5 +1,11 @@
 Reversion Log(GNU Version)
 =====================================
+####commit date: 2015/06/28
+- 完成了forName()
+- 完成了getDeclaredConstructors().
+
+[详细日志](http://note.youdao.com/share/?id=f29d2d0a9b3804e5de9fb64be1553cf4&type=note)
+
 ####commit date: 2015/06/13
 - Object类在加载之后并不紧接着初始化。
 - 每个Class类对象里面必须包含一个VMClass对象。

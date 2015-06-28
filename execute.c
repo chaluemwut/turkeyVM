@@ -53,8 +53,7 @@ static int method_num;
 /*
  * to generate an unique id for frame->id
  */
-static int getNewId()
-{
+static int getNewId() {
     method_num++;
     return frame_num++;
 }
@@ -66,8 +65,7 @@ static int getNewId()
  *      no need prev field.
  * @qcliu 2015/03/06
  */
-static void createNativeFrame(MethodBlock* mb)
-{
+static void createNativeFrame(MethodBlock* mb) {
     unsigned short n_locals = mb->args_count;
     int n_locals_idx;
     nframe->mb = mb;
@@ -82,8 +80,8 @@ static void createNativeFrame(MethodBlock* mb)
     else
        n_locals_idx = n_locals - 1;
 
-    for (; n_locals_idx >= 0; n_locals_idx--)//NOTE: equals 0 also need copy
-    {
+    for (; n_locals_idx >= 0; n_locals_idx--) {
+    //NOTE: equals 0 also need copy
         memcpy(nframe->locals + n_locals_idx, current_frame->ostack, sizeof(int));
         /*NOTE: pop the stack*/
         *current_frame->ostack = 0;
@@ -96,8 +94,7 @@ static void createNativeFrame(MethodBlock* mb)
  * through VM.
  * @qcliu 2015/03/06
  */
-static void popNativeFrame()
-{
+static void popNativeFrame() {
     memset(nframe, 0, sizeof(NativeFrame));
 }
 /*
@@ -108,8 +105,7 @@ static void popNativeFrame()
  *       locals[0] additionally
  * @qcliu 2015/01/28
  */
-static void createFrame(MethodBlock* mb, va_list jargs, void* ret)
-{
+static void createFrame(MethodBlock* mb, va_list jargs, void* ret) {
     unsigned short max_stack = mb->max_stack;/*{{{*/
     unsigned short max_locals = mb->max_locals;
     int args_count = mb->args_count;
@@ -146,24 +142,22 @@ static void createFrame(MethodBlock* mb, va_list jargs, void* ret)
      * @qcliu 2015/01/29
      */
 
-    if (jargs == NULL)
-    {
+    if (jargs == NULL) {
         //copyArgs(Frame* frame, MethodBlock* mb)
         if (!(mb->access_flags & ACC_STATIC))//non-static
           locals_idx = args_count;
         else
           locals_idx = args_count - 1;
 
-        for (; locals_idx >= 0; locals_idx--)//NOTE: equals 0 also need copy
-        {
+        for (; locals_idx >= 0; locals_idx--) {
+        //NOTE: equals 0 also need copy
             memcpy(frame->locals + locals_idx, current_frame->ostack, sizeof(int));
             /*NOTE: pop the stack*/
             *current_frame->ostack = 0;
             current_frame->ostack--;
         }
     }
-    else
-    {
+    else {
         printf("jarg not null\n");
         unsigned int* sp = frame->locals;
         *sp = va_arg(jargs, u4);
@@ -178,8 +172,7 @@ static void createFrame(MethodBlock* mb, va_list jargs, void* ret)
 
     frame->id = getNewId();
 
-    if (dis_testinfo)
-    {
+    if (dis_testinfo) {
         printf("\n%dnew Frame:---- %d, name:%s\n",method_num, frame->id, frame->mb->name);
     }
 
@@ -193,12 +186,10 @@ static void createFrame(MethodBlock* mb, va_list jargs, void* ret)
  * invoke by: executeJava() in interp.c
  * @qcliu 2015/01/28
  */
-void popFrame()
-{
+void popFrame() {
     Frame* temp = current_frame;
 
-    if (dis_testinfo)
-    {
+    if (dis_testinfo) {
         printf("pop Frame: %d  ", temp->id);
     }
 //test---------------------------------------------
@@ -216,17 +207,14 @@ void popFrame()
  * Create a new Frame, and copy args form old stack to new locals.
  * Then, execute the new method.
  */
-void executeMethod(MethodBlock* mb, va_list jargs)
-{
+void executeMethod(MethodBlock* mb, va_list jargs) {
     void* ret;
     //new Frame
     if (0 == strcmp(mb->name, "hashCode"))
       printf("hashCode");
 
-    if (mb->native_invoker)
-    {
-        if (dis_testinfo)
-        {
+    if (mb->native_invoker) {
+        if (dis_testinfo) {
             printf("This is a native method!!!");
             printf("name:%s, type:%s\n", mb->name, mb->type);
         }
@@ -237,8 +225,7 @@ void executeMethod(MethodBlock* mb, va_list jargs)
 
         popNativeFrame();
     }
-    else
-    {
+    else {
         createFrame(mb, jargs, ret);
         //executeJava
         executeJava();
@@ -255,8 +242,7 @@ void executeMethod(MethodBlock* mb, va_list jargs)
  *       can use executeMethod() instead of executeStaticMain().
  * @qcliu 2015/01/30
  */
-void executeStaticMain(MethodBlock* mb)
-{
+void executeStaticMain(MethodBlock* mb) {
     unsigned short max_stack = mb->max_stack;/*{{{*/
     unsigned short max_locals = mb->max_locals;
     int args_count = mb->args_count;
@@ -299,8 +285,7 @@ void executeStaticMain(MethodBlock* mb)
 //{
 //}
 
-void executeMethodArgs(Class* class, MethodBlock* mb, ...)
-{
+void executeMethodArgs(Class* class, MethodBlock* mb, ...) {
     va_list jargs;
 
     va_start(jargs, mb);
