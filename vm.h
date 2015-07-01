@@ -387,6 +387,7 @@ typedef struct methodblock
     u2 methods_table_idx;
     Class* class;
     int args_count;// this is the arg length in the stack
+    u2 slot;//the offset in the ClassBlock's MethodBlock**
 
     void* native_invoker;//it's need bingding to the nativemethod.
     //void* native_arg;//no need

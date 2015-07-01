@@ -137,6 +137,8 @@ void executeJava() {
           printf("\n<init>(I)V!!!!!!!!\n");
         if (0 == strcmp(current_mb->name, "getChars"))
           printf("\ngetChars\n");
+        if (0 == strcmp(current_mb->name, "getEncoder"))
+          printf("\ngetEncoder\n");
     }
 
 

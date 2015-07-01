@@ -112,15 +112,117 @@ Binding nativeMethods[] = {
 };
 
 
+static void invoke(MethodBlock* mb, Object* args, Object* this) {
+    printf("<invoke>\n");
+    unsigned short max_stack = mb->max_stack;
+    unsigned short max_locals = mb->max_locals;
+    int args_count = mb->args_count;
+    int locals_idx = 0;
+    Class* class = mb->class;
+    ClassBlock* cb = CLASS_CB(class);
+
+
+    Frame* frame = (Frame*)sysMalloc(sizeof(Frame));
+    frame->mb = mb;
+    frame->cp = &cb->constant_pool;
+    frame->pc = mb->code;
+    frame->class = class;
+    frame->locals = (unsigned int*)sysMalloc(
+                sizeof(int) * (max_stack + max_locals));
+    //set 0
+    memset(frame->locals, 0, sizeof(int)*(max_stack+max_locals));
+    //point to the previous slot of aviliable
+    frame->ostack = frame->locals + max_locals - 1;
+
+    //copy args
+    /*
+     * old_stack                 new_locals
+     * --------                   ---------
+     * |objref|                [0]|       |
+     * --------                   ---------
+     * |arg1  |                [1]|       |
+     * --------                   ---------<-locals_idx(static)
+     * |arg2  |                [2]|       |
+     * --------<-top              ---------<-locals_idx(non-static)
+     *
+     * @qcliu 2015/01/29
+     */
+
+    if (args->isArray != 1) {
+        throwException("args must be array");
+    }
+    //copyArgs(Frame* frame, MethodBlock* mb)
+    if (!(mb->access_flags & ACC_STATIC))//non-static
+      locals_idx = args_count;
+    else
+      throwException("construct method must be non-static");
+
+    if (args->length != locals_idx) {
+        throwException("args count error");
+    }
+
+    *((Object**)&frame->locals[0]) = this;
+    int i;
+    for (i = 0; i<args->length; i++) {
+        *((Object**)&frame->locals[i+1]) = ARRAY_DATA(args, i, Object*);
+
+        //NOTE: equals 0 also need copy
+        //memcpy(frame->locals + locals_idx, current_frame->ostack, sizeof(int));
+        /*NOTE: pop the stack*/
+        //*current_frame->ostack = 0;
+        //current_frame->ostack--;
+    }
+    //point to the prev
+    frame->prev = current_frame;
+    current_frame = frame;
+
+
+    executeJava();
+
+    Frame* temp = current_frame;
+    current_frame = current_frame->prev;
+    free(temp->locals);
+    free(temp);
+}
+
+
+
+/**
+ * @see java/lang/Constructor.class
+ *
+ */
 void constructNative() {
-    Object* this = *(Object**)&nframe->locals[0];
-    Object* args = *(Object**)&nframe->locals[1];
-    Object* declaringClass = *(Object**)&nframe->locals[2];
-    int slot = nframe->locals[3];
 
-
+    //2015/07/01
     DEBUG("TODO");
     exit(0);
+
+    Object* this = *(Object**)&nframe->locals[0];
+
+    //a array
+    Object* args = *(Object**)&nframe->locals[1];
+    // 
+    Object* declaringClass = *(Object**)&nframe->locals[2];
+    // 
+    int slot = nframe->locals[3];
+
+    Class* declclass = declaringClass->binding;
+    ClassBlock* cb = CLASS_CB(declclass);
+    MethodBlock* mb = &cb->methods[slot];
+    //char* method_name = mb->name;
+    //char* method_type = mb->type;
+    
+    Object* newobj = (Object*)allocObject(declclass);
+
+    //TODO automatically unwrapped and widened, if needed
+    
+    //@TEST
+    //printObjectWrapper(args);
+    //Object* inputstream = ARRAY_DATA(args, 0, Object*);
+
+    //executeMethodArgs(NULL, mb, newobj,inputstream);
+    
+    invoke(mb, args, newobj);
 
 }
 

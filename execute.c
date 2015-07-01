@@ -174,9 +174,7 @@ static void createFrame(MethodBlock* mb, va_list jargs, void* ret) {
 
     if (dis_testinfo) {
         printf("\n%dnew Frame:---- %d, name:%s\n",method_num, frame->id, frame->mb->name);
-    }
-
-        /*}}}*/
+    }/*}}}*/
 }
 
 /*

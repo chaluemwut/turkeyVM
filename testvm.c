@@ -332,11 +332,9 @@ void printChar0(Object* obj)
   * print String Object.
   * for test
   */
-void printString0(Object* obj)
-{
+void printString0(Object* obj) {
     int value_offset;
-    if (obj == NULL)
-    {
+    if (obj == NULL) {
         printf("obj is NULL!!!!");
         return;
     }
@@ -356,6 +354,29 @@ void printString0(Object* obj)
   
   printChar0(c);
     
+}
+
+
+void dumpClass(Class* class) {
+    ClassBlock* cb = CLASS_CB(class);
+    printf("\ndumpClass>%s\n", cb->this_classname);
+    printf("super class:%s\n", cb->super_classname);
+
+    printf("Fileds count:%d\n", cb->fields_count);
+    int i = 0;
+    for (; i<cb->fields_count; i++) {
+        FieldBlock* fb = &cb->fields[i];
+        printf("%s|<%s>\n",fb->name, fb->type);
+    }
+
+    printf("Methods count:%d\n", cb->methods_count);
+    i = 0;
+    for (; i<cb->methods_count; i++) {
+        MethodBlock* mb = &cb->methods[i];
+        printf("%s|%s\n", mb->name, mb->type);
+    }
+
+    printf("Object size:%d\n", cb->obj_size);
 }
 
 

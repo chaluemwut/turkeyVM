@@ -75,7 +75,7 @@ static int getArgsCount(char* mbtype) {
  * @see getClassConstructors()
  */
 static char** getArgsName(char* desc, int argcount) {
-    char** names = (char**)malloc(sizeof(int)*(argcount+1));
+    char** names = (char**)sysMalloc(sizeof(int)*(argcount+1));
     names[argcount] = 0;
     int index = 0;
     char* ptr = desc;
@@ -151,7 +151,7 @@ static char** getArgsName(char* desc, int argcount) {
                               } while (*ptr != ';');
                           }
 
-                          char* name = (char*)malloc(size);
+                          char* name = (char*)sysMalloc(size);
                           memcpy(name, p, size);
                           name[size] = '\0';
                           names[index++] = name;
@@ -170,7 +170,7 @@ static char** getArgsName(char* desc, int argcount) {
                               ptr++;
                           }  while (*ptr != ';');
 
-                          char* name = (char*)malloc(size+1);
+                          char* name = (char*)sysMalloc(size+1);
                           memcpy(name, p, size);
                           name[size] = '\0';
 
@@ -202,7 +202,9 @@ Object* getClassConstructors(Object* vmClass, int isPublic) {
     Class *array_class = findArrayClass("[Ljava/lang/reflect/Constructor;");
     Class *reflect_class = loadClass("java/lang/reflect/Constructor");
     /**/
-    ClassBlock *cb = CLASS_CB(vmClass->binding);
+    Object* c = (Object*)vmClass->binding;
+
+    ClassBlock *cb = CLASS_CB(c->binding);
 
     Object *array, **cons;
     MethodBlock *init_mb;
@@ -257,8 +259,13 @@ Object* getClassConstructors(Object* vmClass, int isPublic) {
                     ARRAY_DATA(classarray, i, Object*) = arg_x;
                 }
 
-                OBJECT_DATA(reflect_ob, clazz->offset-1, Class*) = vmClass->binding;
-                OBJECT_DATA(reflect_ob, slot->offset-1, int) = 0;
+                /*NOTE: vmClass->binding is a Class Object */
+                OBJECT_DATA(reflect_ob, clazz->offset-1, Object*) = vmClass->binding;
+                /**
+                 * @see class.c defineClass()
+                 * 2015/07/01
+                 */
+                OBJECT_DATA(reflect_ob, slot->offset-1, int) = mb->slot;
                 OBJECT_DATA(reflect_ob, paramType->offset-1, Object*) = classarray;
 
 

@@ -18,4 +18,6 @@ void printString0(Object* obj);
 
 void printChar0(Object* obj);
 
+void dumpClass(Class* class);
+
 #endif

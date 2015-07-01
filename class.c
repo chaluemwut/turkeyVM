@@ -243,6 +243,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
     }
     //printf("constant_pool\n");
 /*}}}*/
+
     /*---------------------------access_flag,this_class,super_class------------*/
     READ_U2(classblock->access_flags, ptr);/*{{{*/
     u2 this_classidx, super_classidx, super_name_idx;
@@ -256,7 +257,8 @@ static Class* defineClass(char* classname, char* data, int file_len) {
 
         classblock->super_classname = CP_UTF8(constant_pool, super_name_idx);
     //resovle/*}}}*/
-    /*----------------------------interface------------------------------------*/
+
+        /*----------------------------interface------------------------------------*/
     u2 idx;/*{{{*/
     READ_U2(interfaces_count, ptr);
     classblock->interface_count = interfaces_count;
@@ -276,7 +278,8 @@ static Class* defineClass(char* classname, char* data, int file_len) {
                  classblock->interfaces[i] = resolveClass(class,idx);
       }
 /*}}}*/
-    /*--------------------------fields------------------------------------------*/
+    
+      /*--------------------------fields------------------------------------------*/
     READ_U2(classblock->fields_count, ptr);/*{{{*/
     //printf("fields_count:%d\n", classblock->fields_count);
     fields = sysMalloc(classblock->fields_count * sizeof(FieldBlock));
@@ -325,6 +328,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
 
     }
 /*}}}*/
+    
     /*-------------------------------------Method----------------*/
     READ_U2(methods_count, ptr);/*{{{*/
     //printf("methods_count:%d\n", methods_count);
@@ -347,6 +351,12 @@ static Class* defineClass(char* classname, char* data, int file_len) {
         methods->native_invoker = 0;
         methods->max_locals = 0;
         methods->max_stack = 0;
+
+        /**
+         * @see native.c 
+         * 2015/07/01
+         */
+        methods->slot = i;
         /*
          * When get the description of the method, need to calculate the
          * count of the args of the method.
@@ -457,6 +467,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
         methods++;
     }
 /*}}}*/
+   
     /*----------------------------attr-----------------------*/
     READ_U2(attr_count, ptr);/*{{{*/
     //printf("attr_count:%d\n", attr_count);
@@ -753,7 +764,7 @@ static Class* linkClass(Class* class) {
 
         Object* vmobj = allocObject(java_lang_VMClass);
         //NOTE: vmClass obj can also known which class he belong to
-        vmobj->binding = class;
+        vmobj->binding = (Class*)obj;
 
         /* Every Class obj need a VMClass obj.*/
         FieldBlock* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
