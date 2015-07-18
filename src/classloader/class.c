@@ -22,34 +22,55 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../interp/execute.h"
+#include "../heapManager/alloc.h"
 #include "../main/vm.h"
 #include "resolve.h"
-#include "../lib/linkedlist.h"
+#include "../lib/list.h"
+#include "../lib/poly.h"
 #include "../util/exception.h"
 #include "class.h"
+#include "../native/native.h"
 #include "../util/control.h"
 
 #define MAX_PRIMITIVE 9
+#define C Class_t
 
 /* This ia an talbe for primitiveClass, like
  * int, long, double, float, boolean, short, char...
  * When load primitiveClass, search this table.
  * @qcliu 2015/03/22
  */
-Class* primClass[MAX_PRIMITIVE];
+C primClass[MAX_PRIMITIVE];
 
 //method
-static Class* loadArrayClass(char* classname);
-Class* findArrayClass(char* classname);
+static C loadArrayClass(char* classname);
+C findArrayClass(char* classname);
 
 //extern
-extern LinkedList* head;
-extern Binding nativeMethods[];
-extern Class* java_lang_Class;
-extern Class* java_lang_VMClass;
 extern int initable;
 
 static u2* for_test;
+
+static int equals(Poly_t x, Poly_t y)
+{
+    char* s = (char*)x;
+    C c = (C)y;
+    ClassBlock* cb = CLASS_CB(c);
+
+    if (0 == strcmp(s, cb->this_classname))
+      return 1;
+    else
+      return 0;
+
+}
+
+C findClass(char* classname)
+{
+    C c = (C)List_contains(CList, classname, equals);
+    return c;
+}
+
 
 /*
  * Calculate the count of the method. The args is the method->type.
@@ -113,18 +134,15 @@ int parseArgs(char* args) {
  * invoke by: loadSystemClass()
  * @qcliu 2015/01/27
  */
-static Class* defineClass(char* classname, char* data, int file_len) {
+static C defineClass(char* classname, char* data, int file_len) {
     /*{{{*/
-    if (dis_testinfo)
-        printf("defineClass file_len :%d\n", file_len);
-
     unsigned char* ptr = (unsigned char*)data;
     u4 magic;
     u2 major_version, minor_version, methods_count;
     u2 cp_count, interfaces_count, fields_count, attr_count;
     int i;
     ClassBlock* classblock;
-    Class* class;//this is the return class
+    C class;//this is the return class
     ConstantPool* constant_pool;
     u2* interfaces_idx;
     FieldBlock* fields;
@@ -137,7 +155,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
     READ_U2(major_version , ptr);
     //printf("minor_version:%d\n", minor_version);
     //printf("major_version:%d\n", major_version);
-    class = sysMalloc(sizeof(ClassBlock) + sizeof(Class));
+    class = sysMalloc(sizeof(ClassBlock) + sizeof(*class));
     classblock = CLASS_CB(class);
 
     //init
@@ -152,10 +170,6 @@ static Class* defineClass(char* classname, char* data, int file_len) {
     classblock->this_classname = classname;
     classblock->type_flags = 0;
     classblock->interface_count = 0;
-
-    if (0 == strcmp(classname, "java/util/Properties")) {
-      for_test = &classblock->flags;
-    }
 
     /*-----------------constant_pool---------------------*/
     READ_U2(cp_count, ptr);/*{{{*/
@@ -254,7 +268,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
     super_name_idx = CP_INFO(constant_pool, super_classidx);
     classblock->this_classname = CP_UTF8(constant_pool, this_classidx);
 
-        classblock->super_classname = CP_UTF8(constant_pool, super_name_idx);
+    classblock->super_classname = CP_UTF8(constant_pool, super_name_idx);
     //resovle/*}}}*/
 
         /*----------------------------interface------------------------------------*/
@@ -265,16 +279,15 @@ static Class* defineClass(char* classname, char* data, int file_len) {
     //interfaces_idx=classblock->interfaces_idx;
     //interfaces_idx=(u2*)sysMalloc(interfaces_count * sizeof(u2));
 
-    classblock->interfaces = (Class**)sysMalloc(sizeof(Class) * interfaces_count);
+    classblock->interfaces = (C*)sysMalloc(sizeof(struct Class_t) * interfaces_count);
 
-    
-      for (i=0; i<interfaces_count; i++) {
-          READ_U2(idx, ptr);
+    for (i=0; i<interfaces_count; i++) {
+        READ_U2(idx, ptr);
 
-                 classblock->interfaces[i] = resolveClass(class,idx);
-      }
+        classblock->interfaces[i] = resolveClass(class,idx);
+    }
 /*}}}*/
-    
+
       /*--------------------------fields------------------------------------------*/
     READ_U2(classblock->fields_count, ptr);/*{{{*/
     //printf("fields_count:%d\n", classblock->fields_count);
@@ -324,7 +337,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
 
     }
 /*}}}*/
-    
+
     /*-------------------------------------Method----------------*/
     READ_U2(methods_count, ptr);/*{{{*/
     //printf("methods_count:%d\n", methods_count);
@@ -358,7 +371,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
 
 
         /**
-         * @see native.c 
+         * @see native.c
          * 2015/07/01
          */
         methods->slot = i;
@@ -472,7 +485,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
         methods++;
     }
 /*}}}*/
-   
+
     /*----------------------------attr-----------------------*/
     READ_U2(attr_count, ptr);/*{{{*/
     //printf("attr_count:%d\n", attr_count);
@@ -491,7 +504,7 @@ static Class* defineClass(char* classname, char* data, int file_len) {
     /*resolve super*/
     if (super_classidx) {
         //printf("superidx:%d\n", super_classidx);
-      classblock->super = (Class*)resolveClass(class, super_classidx);
+      classblock->super = (C)resolveClass(class, super_classidx);
     }
     return class;
     /*}}}*/
@@ -504,9 +517,9 @@ static Class* defineClass(char* classname, char* data, int file_len) {
  * invoke by : loadClass()
  * @qcliu 2015/01/27
  **/
-static Class* loadSystemClass(char* classname) {
+static C loadSystemClass(char* classname) {
     /*{{{*/
-    Class* class = (Class*)findClassInTable(head, classname);
+    C class = findClass(classname);
     if (class != NULL) {
         ClassBlock* cb = CLASS_CB(class);
 
@@ -560,7 +573,7 @@ static Class* loadSystemClass(char* classname) {
  *
  * invoke by: loadClass()
  **/
-static void prepareClass(Class* class) {
+static void prepareClass(C class) {
     /*{{{*/
     ClassBlock* cb = CLASS_CB(class);
     u2 this_methodstable_size = 0;
@@ -701,7 +714,7 @@ static void prepareClass(Class* class) {
  * invoke by: loadClass()
  */
 
-static Class* linkClass(Class* class) {
+static C linkClass(C class) {
     /*{{{*/
     ClassBlock* cb = CLASS_CB(class);
 
@@ -764,7 +777,7 @@ static Class* linkClass(Class* class) {
 
         Object* vmobj = allocObject(java_lang_VMClass);
         //NOTE: vmClass obj can also known which class he belong to
-        vmobj->binding = (Class*)obj;
+        vmobj->binding = (C)obj;
 
         /* Every Class obj need a VMClass obj.*/
         FieldBlock* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
@@ -786,7 +799,7 @@ static Class* linkClass(Class* class) {
  * invoke by: loadClass()
  * @qcliu 2015/01/27
  */
-void initClass(Class* class) {
+void initClass(C class) {
     if (!initable)
       return;
 
@@ -821,9 +834,9 @@ void initClass(Class* class) {
 }
 
 
-Class* loadClass_not_init(char* classname) {
+C loadClass_not_init(char* classname) {
    /*{{{*/
-    Class* class = (Class*)findClassInTable(head, classname);
+    C class = findClass(classname);
     ClassBlock* cb;
 
     if (class != NULL) {
@@ -844,7 +857,7 @@ Class* loadClass_not_init(char* classname) {
      * be loop untill death.
      **/
     //add class to the list
-    addClass2Table(head, class);
+    List_addLast(CList, class);
 
 
     //prepareClass
@@ -874,9 +887,9 @@ Class* loadClass_not_init(char* classname) {
  * invoke by: vm.c, resolveClass()
  * @qcliu 2015/01/27
  */
-Class* loadClass(char* classname) {
+C loadClass(char* classname) {
     /*{{{*/
-    Class* class = (Class*)findClassInTable(head, classname);
+    C class = findClass(classname);
     ClassBlock* cb;
 
     if (class != NULL) {
@@ -897,7 +910,7 @@ Class* loadClass(char* classname) {
      * be loop untill death.
      **/
     //add class to the list
-    addClass2Table(head, class);
+    List_addLast(CList, class);
 
 
     //prepareClass
@@ -928,12 +941,12 @@ Class* loadClass(char* classname) {
   * type, both of them will end the recursive.
   */
 
-static Class* loadArrayClass(char* classname) {
+static C loadArrayClass(char* classname) {
     /*{{{*/
     int len = strlen(classname);
-    int size = sizeof(Class)+sizeof(ClassBlock);
-    //Class* class = (Class*)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
-    Class* class = (Class*)sysMalloc(size);
+    int size = sizeof(struct C)+sizeof(ClassBlock);
+    //C class = (C)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
+    C class = (C)sysMalloc(size);
     ClassBlock* cb = CLASS_CB(class);
 
     cb->flags = 0;
@@ -958,7 +971,7 @@ static Class* loadArrayClass(char* classname) {
     if (dis_testinfo)
         printf("this array is %s\n",cb->this_classname);
 
-    cb->interfaces = (Class**)sysMalloc(2 * sizeof(Class*));
+    cb->interfaces = (C*)sysMalloc(2 * sizeof(C));
     cb->interfaces[0] = loadClass("java/lang/Cloneable");
     cb->interfaces[1] = loadClass("java/io/Serializable");
 
@@ -1003,9 +1016,9 @@ static Class* loadArrayClass(char* classname) {
  * first findClass in LinedList, if not find, load the
  * arrayClass.
  */
-Class* findArrayClass(char* classname) {
+C findArrayClass(char* classname) {
     /*{{{*/
-    Class* class = (Class*)findClassInTable(head,classname);
+    C class = findClass(classname);
 
     if (class != NULL)
       return class;
@@ -1028,12 +1041,12 @@ Class* findArrayClass(char* classname) {
  * @qcliu 2015/03/28
  * invoked by: findPrimitiveClass()
  */
-static Class* loadPrimitiveClass(char* classname, int index) {
+static C loadPrimitiveClass(char* classname, int index) {
     /*{{{*/
     int len = strlen(classname);
-    int size = sizeof(Class)+sizeof(ClassBlock);
-    //Class* class = (Class*)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
-    Class* class = (Class*)sysMalloc(size);
+    int size = sizeof(struct C)+sizeof(ClassBlock);
+    //C class = (C)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
+    C class = (C)sysMalloc(size);
     ClassBlock* cb = CLASS_CB(class);
 
     cb->flags = 0;
@@ -1056,7 +1069,7 @@ static Class* loadPrimitiveClass(char* classname, int index) {
     cb->element = NULL;
     cb->dim = 0;
 
-    addClass2Table(head, class);
+    List_addLast(CList, class);
     //prepareClass
     prepareClass(class);
     //linkClass
@@ -1080,10 +1093,10 @@ static Class* loadPrimitiveClass(char* classname, int index) {
 /*Find Primitive Class
  *@qcliu 2015/03/20
  */
-Class* findPrimitiveClass(char primtype) {
+C findPrimitiveClass(char primtype) {
     /*{{{*/
     int index;
-    Class* primclass;
+    C primclass;
     char* classname;
     switch (primtype) {
         case 'B':
@@ -1130,3 +1143,4 @@ Class* findPrimitiveClass(char primtype) {
 /*}}}*/
 }
 
+#undef C

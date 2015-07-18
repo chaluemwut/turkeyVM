@@ -17,17 +17,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../main/vm.h"
-#include "../lib/linkedlist.h"
 #include "resolve.h"
+#include "class.h"
 #include "../util/control.h"
 #include "../util/exception.h"
+#include "../interp/stackmanager.h"
 
-extern Frame* current_frame;
+#define C Class_t
 
 /*
  * Find field in current class.
  */
-static FieldBlock* findFieldinCurrent(Class* class, char* name, char* type) {
+static FieldBlock* findFieldinCurrent(C class, char* name, char* type) {
     ClassBlock* cb = CLASS_CB(class);/*{{{*/
     int i;
 
@@ -44,7 +45,11 @@ static FieldBlock* findFieldinCurrent(Class* class, char* name, char* type) {
 /*
  * Find field in current, if not, find in super recursivly.
  */
-FieldBlock* findField(Class* class, char* name, char* type) {
+FieldBlock* findField(C class, char* name, char* type)
+{
+    if (class == NULL)
+      DEBUG("NULLPointer error");
+
     ClassBlock* cb = CLASS_CB(class);/*{{{*/
     FieldBlock* fb = NULL;
     fb = findFieldinCurrent(class, name, type);
@@ -67,25 +72,26 @@ FieldBlock* findField(Class* class, char* name, char* type) {
  *       before use the offset, remember offset-=1.
  * @qcliu 2015/01/30
  */
-FieldBlock* resolveField(Class* class, u2 index) {
+FieldBlock* resolveField(C class, u2 index) {
     /*{{{*/
     FieldBlock* fb = NULL;
     ConstantPool* current_cp;
 
-    current_cp = current_frame->cp;
+    Frame* current_frame = getCurrentFrame();
+    current_cp = getCurrentCP();
 
     switch (CP_TYPE(current_cp, index)) {
-        case CONSTANT_Fieldref: 
+        case CONSTANT_Fieldref:
             {
                 u4 cp_info;
                 u2 name_type_idx, symclass_idx, name_idx, type_idx;
                 char *name, *type;
-                Class* sym_class;
+                C sym_class;
 
                 symclass_idx = 0;
                 cp_info = CP_INFO(current_cp, index);
                 symclass_idx = cp_info;
-                sym_class = (Class*)resolveClass(current_frame->class, symclass_idx);
+                sym_class = (C)resolveClass(getCurrentClass(), symclass_idx);
                 name_type_idx = cp_info >> 16;
                 cp_info = CP_INFO(current_cp, name_type_idx);
                 name_idx = cp_info;
@@ -112,10 +118,11 @@ FieldBlock* resolveField(Class* class, u2 index) {
                 */
                 break;
             }
-        case RESOLVED: {
-                           fb = (FieldBlock*)CP_INFO(current_cp, index);
-                           break;
-                       }
+        case RESOLVED: 
+            {
+                fb = (FieldBlock*)CP_INFO(current_cp, index);
+                break;
+            }
         default: {
                      printf("resolveFiled error\n!");
                      exit(0);
@@ -128,7 +135,7 @@ FieldBlock* resolveField(Class* class, u2 index) {
  * Find method in current class.
  * If not found, return NULL.
  */
-MethodBlock* findMethodinCurrent(Class* class, char* name, char* type) {
+MethodBlock* findMethodinCurrent(C class, char* name, char* type) {
     ClassBlock* cb = CLASS_CB(class);/*{{{*/
     int i;
 
@@ -144,7 +151,7 @@ MethodBlock* findMethodinCurrent(Class* class, char* name, char* type) {
  * find the method in current class, if not ,find in super recursivly.
  * note: find the method in ClassBlock, not the vtable.
  */
-MethodBlock* findMethod(Class* class, char* name, char* type) {
+MethodBlock* findMethod(C class, char* name, char* type) {
     ClassBlock* cb = CLASS_CB(class); /*{{{*/
     MethodBlock* mb = findMethodinCurrent(class, name, type);
 
@@ -173,9 +180,9 @@ MethodBlock* findMethod(Class* class, char* name, char* type) {
  *
  *  @qcliu 2015/01/25
  **/
-Class* resolveClass(Class* class,  u2 index) {
+C resolveClass(C class,  u2 index) {
     /*{{{*/
-    Class* resolve_class = NULL;
+    C resolve_class = NULL;
     ClassBlock* cb = CLASS_CB(class);
     ConstantPool* cp = &cb->constant_pool;
 
@@ -188,7 +195,7 @@ Class* resolveClass(Class* class,  u2 index) {
             resolve_class = loadClass(classname);
 
             /*
-            *(Class**)&CP_INFO(cp, index) = resolve_class;
+            *(C*)&CP_INFO(cp, index) = resolve_class;
             CP_TYPE(cp, index) = RESOLVED;
             */
 
@@ -196,7 +203,7 @@ Class* resolveClass(Class* class,  u2 index) {
         }
         case RESOLVED:
         {
-            resolve_class = (Class*)CP_INFO(cp, index);
+            resolve_class = (C)CP_INFO(cp, index);
             break;
         }
         default:
@@ -214,14 +221,15 @@ Class* resolveClass(Class* class,  u2 index) {
  *
  *  @qcliu 2015/05/10
  */
-MethodBlock* resolveInterfaceMethod(Class* class, u2 index) {
+MethodBlock* resolveInterfaceMethod(C class, u2 index) {
 
     MethodBlock* resolve_method = NULL;
-    ConstantPool* current_cp = current_frame->cp;
+    Frame* current_frame = getCurrentFrame();
+    ConstantPool* current_cp = getCurrentCP();
 
 
     switch (CP_TYPE(current_cp, index)) {
-        case CONSTANT_InterfaceMethodref: 
+        case CONSTANT_InterfaceMethodref:
             {
                 u4 cp_info;
                 u2 name_type_idx, name_idx, type_idx;
@@ -278,9 +286,10 @@ MethodBlock* resolveInterfaceMethod(Class* class, u2 index) {
  *
  * @qcliu 2015/01/26
  */
-MethodBlock* resolveMethod(Class* class, u2 index) {
+MethodBlock* resolveMethod(C class, u2 index) {
     MethodBlock* resolve_method = NULL;/*{{{*/
-    ConstantPool* current_cp = current_frame->cp;
+    Frame* current_frame = getCurrentFrame();
+    ConstantPool* current_cp = getCurrentCP();
 
 
     switch (CP_TYPE(current_cp, index)) {
@@ -344,10 +353,10 @@ MethodBlock* resolveMethod(Class* class, u2 index) {
  *
  * @qcliu 2015/01/26
  */
-/*MethodBlock* resolveInterfaceMethod(Class* class, u2 index)
+/*MethodBlock* resolveInterfaceMethod(C class, u2 index)
   {
   MethodBlock* resolve_method = NULL;
-  ConstantPool* current_cp = current_frame->cp;
+  ConstantPool* current_cp = getCurrentCP();
 
   switch (CP_TYPE(current_cp, index))
   {
@@ -383,10 +392,12 @@ MethodBlock* resolveMethod(Class* class, u2 index) {
  * Resolve virtual method. Find method in the VTable of the class
  * that given by first arg.
  */
-MethodBlock* resolveVirtualMethod(Class* class, u2 index) {
+MethodBlock* resolveVirtualMethod(C class, u2 index) {
     /*
      * TODO
      */
     printf("TODO\n");
     return NULL;
 }
+
+#undef C

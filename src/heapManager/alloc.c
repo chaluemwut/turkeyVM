@@ -15,11 +15,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../classloader/class.h"
 #include "../util/exception.h"
 #include "../main/vm.h"
 
+#define C Class_t
+
 extern int vmsize;
-extern Class* primClass[];
+extern C primClass[];
 
 void* sysMalloc(int n)
 {
@@ -44,10 +47,10 @@ void* sysMalloc(int n)
  *      relevent java/lang/Class Object.
  * @qcliu 2015/03/23
  */
-Object* allocObject(Class* class)
+Object* allocObject(C class)
 {
-    ClassBlock* cb = CLASS_CB(class);
-    int obj_size = cb->obj_size;
+    ClassBlock* cblock = CLASS_CB(class);
+    int obj_size = cblock->obj_size;
     Object* obj = (Object*)sysMalloc(sizeof(Object) + sizeof(int)*obj_size);
     //---------------------------------
     obj->isArray = FALSE;
@@ -59,7 +62,7 @@ Object* allocObject(Class* class)
     obj->data = (unsigned int*)(obj+1);
     memset(obj+1, 0, sizeof(int) * obj_size);
 
-    obj->cb = cb;
+    obj->cb = cblock;
     obj->el_size = sizeof(int);
     obj->copy_size = sizeof(Object)+ sizeof(int)*obj_size;
 
@@ -71,7 +74,7 @@ Object* allocObject(Class* class)
  *The Array's isArray is TRUE, and the length is arraylength.
  * @qcliu 2015/03/24
  */
-Object* allocArray(Class* class, int size, int el_size, int atype)
+Object* allocArray(C class, int size, int el_size, int atype)
 {
     Object* obj;
     ClassBlock* cb = CLASS_CB(class);
@@ -101,7 +104,7 @@ Object* allocArray(Class* class, int size, int el_size, int atype)
 Object* allocTypeArray(int type, int size, char* element_name)
 {
     int el_size;
-    Class* class;
+    C class;
 
     switch (type)
     {
@@ -158,3 +161,4 @@ Object* allocTypeArray(int type, int size, char* element_name)
     return allocArray(class, size, el_size, type);
 }
 
+#undef C

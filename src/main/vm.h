@@ -1,6 +1,8 @@
 #ifndef VM_H
 #define VM_H
 #include <stdarg.h>
+#include "../lib/list.h"
+
 #define FALSE 0
 #define TRUE 1
 
@@ -290,6 +292,9 @@
 /*method*/
 
 
+#define C Class_t
+typedef struct C *C;
+
 
 typedef unsigned char u1;
 typedef unsigned short u2;
@@ -298,11 +303,7 @@ typedef unsigned long long  u8;
 typedef struct object Object;
 typedef struct classblock ClassBlock;
 
-typedef struct dllEntry
-{
-    char* name;
-    char* handle;
-}DllEntry;
+
 /* Every Class has a head, whitch is an java/lang/Class's 
  * Object.
  * The object's class point to the MethodsArea which happen in
@@ -310,14 +311,14 @@ typedef struct dllEntry
  *
  * @qcliu 2015/03/21
  */
-typedef struct class
+struct C
 {
     Object* class;
-}Class;
+};
 
 struct object
 {
-    Class* class;//refer to the methodArea.
+    C class;//refer to the methodArea.
     ClassBlock* cb;
     unsigned int* data;
     //-------------------------
@@ -333,7 +334,7 @@ struct object
      * NOTE: in class.c
      * @qcliu 2015/03/23
      */
-    Class* binding;
+    C binding;
 
     int el_size;//normal object's el_size is 4B
     int copy_size;//for turkeyCopy(), assign in alloc.c
@@ -385,7 +386,7 @@ typedef struct methodblock
     u2* exception_idx_table;
 
     u2 methods_table_idx;
-    Class* class;
+    C class;
     int args_count;// this is the arg length in the stack
     u2 slot;//the offset in the ClassBlock's MethodBlock**
 
@@ -405,12 +406,12 @@ struct classblock
     char* this_classname;
     char* super_classname;
     u2 interface_count;
-    Class** interfaces;//interface_table
+    C* interfaces;//interface_table
     u2 fields_count;
     FieldBlock* fields;
     u2 methods_count;
     MethodBlock* methods;
-    Class* super;//the superclass address
+    C super;//the superclass address
     MethodBlock** methods_table;
     int methods_table_size;
     u2 flags;//loaded, prepared, linked, inited...
@@ -418,75 +419,17 @@ struct classblock
 
     //---------for array----------------------
     int obj_size;
-    Class* element;
+    C element;
     int dim;//if it's a array, mark the division
 };
 
-typedef struct frame
-{
-    MethodBlock* mb;//current_method
-    unsigned char* pc;
-    ConstantPool* cp;//current_cp
-    Class* class;//current_class
-    //ostack, local
-    unsigned int* ostack;
-    unsigned int* locals;
-    struct frame* prev;//point to the previous Frame
-
-    u8 ret;
-    //for test
-    int id;
-}Frame;
-
-typedef struct native_frame
-{
-    MethodBlock* mb;
-    Class* class;
-    //local
-    unsigned int* locals;
-    struct native_frame* prev;
-}NativeFrame;
-
-typedef struct
-{
-    char* method_name;
-    char* desc;
-    void (*action)();
-}Binding;
-
-
+extern C java_lang_Class;
+extern C java_lang_VMClass;
+extern List_t CList;
+extern List_t DList;
 /*--------------------------Function prototypes---------------*/
 
 extern void exitVM();
 
-/*Alloc*/
-extern void* sysMalloc(int n);
-extern Object* allocObject(Class* class);
-extern Object* allocTypeArray(int type, int size, char* element_name);
-extern Object* allocArray(Class* class, int size, int el_size, int atype);
-
-/*Class*/
-extern Class* loadClass0(char* classname);
-extern Class* loadClass(char* classname);
-extern Class* findArrayClass(char* classname);
-extern int parseArgs(char* type);
-
-
-/*execute*/
-extern void executeMethod(MethodBlock* mb, va_list jargs);
-extern void executeStaticMain(MethodBlock* mb);
-extern void executeMethodArgs(Class* class, MethodBlock* mb,...);
-extern void popFrame();
-
-/*interp*/
-extern void executeJava();
-
-/*dll*/
-extern char* getDllName(char* path, char* name);
-extern int resolveDll(char* dllname);
-extern char* getDllPath();
-
-/*cast*/
-int isInstanceOf(Class* class, Class* test);
-
+#undef C
 #endif

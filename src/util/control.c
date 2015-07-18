@@ -24,6 +24,7 @@
 int dis_vtable = FALSE;
 int dis_list = FALSE;
 int dis_testinfo = FALSE;
+int assert_stack = TRUE;
 
 /*
  * To control weather print bytecode.

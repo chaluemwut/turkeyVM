@@ -16,13 +16,16 @@
 #include <string.h>
 #include <stdlib.h>
 #include "string.h"
+#include "../classloader/class.h"
+#include "../heapManager/alloc.h"
 #include "../main/vm.h"
 #include "../classloader/resolve.h"
 #include "exception.h"
 
 #include "testUTF8.h"
+#define C Class_t
 
-extern Class* java_lang_String;
+extern C java_lang_String;
 static int count_offset;
 static int value_offset;
 static int offset_offset;
@@ -93,7 +96,7 @@ char* String2Char(Object* string) {
  * invoked by:creatString();
  */
 Object* char2Char(char* s) {
-    Class* class;
+    C class;
     int length;
     Object* obj;
     int i;
@@ -160,3 +163,4 @@ void printStringObject(Object* obj) {
     printf("String:%s\n", (char*)char_obj->data);
 
 }
+#undef C

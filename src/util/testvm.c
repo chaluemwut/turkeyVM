@@ -20,6 +20,7 @@
 #include "exception.h"
 #include "../classloader/resolve.h"
 #include "../main/vm.h"
+#include "../interp/stackmanager.h"
 
 /*packing the print operation*/
 /*{{{*/
@@ -53,13 +54,13 @@
 #define UNINDENT indentLevel-=2
 /*}}}*/
 
+#define C Class_t
 
-extern Frame* current_frame;
-extern NativeFrame* nframe;
-extern Class* java_lang_String;
+extern C java_lang_String;
 static int distance, t, indentLevel;
 
 
+/*
 void printList(LinkedList* head)
 {
     void* temp = getFirst(head);
@@ -69,26 +70,31 @@ void printList(LinkedList* head)
     for (; ptr != NULL; ptr = ptr->next)
     {
         int i;
-        Class* class = (Class*)ptr->data;
+        C class = (C)ptr->data;
         ClassBlock* cb = CLASS_CB(class);
         printf("classname: %s\n",cb->this_classname);
     }
 
     printf("loadedTable size: %d\n", size);
 }
+*/
+
+
+
 /*
  * Print the Vtable of the class that alreay be loaded.
  * @qcliu 2015/01/30
  */
+/*
 void printVtable(LinkedList* head)
 {
     void* temp = getFirst(head);
-    LNode* ptr = GETLINK(head)->next;/*{{{*/
+    LNode* ptr = GETLINK(head)->next;
     
     for (; ptr != NULL; ptr = ptr->next)
     {
         int i;
-        Class* class = (Class*)ptr->data;
+        C class = (C)ptr->data;
         ClassBlock* cb = CLASS_CB(class);
         int vtable_size = cb->methods_table_size;
         MethodBlock** vtable  = cb->methods_table;
@@ -122,8 +128,9 @@ void printVtable(LinkedList* head)
             PRINTLN("");
         }
     }
-    /*}}}*/
+    
 }
+*/
 
 /*
  * Print the current stack and locals.
@@ -138,6 +145,7 @@ void printVtable(LinkedList* head)
  */
 void printNativeStack()
 {
+    NativeFrame* nframe = getNativeFrame();
     printf("Native locals\n");
     MethodBlock* nmb = nframe->mb;
     int count = nmb->max_locals;
@@ -149,6 +157,7 @@ void printNativeStack()
 }
 void printStack()
 {
+    Frame* current_frame = getCurrentFrame();
     unsigned int* postack;/*{{{*/
     int max_stack;
     int max_locals;
@@ -207,7 +216,7 @@ void printStack()
 
 void printArray(Object* arrayref)
 {
-    Class* class;
+    C class;
     ClassBlock* cb;
     int i;
     int el_size;
@@ -271,7 +280,7 @@ void printObjectWrapper(Object* objref)
  */
 void printObject(Object* objref)
 {
-    Class* class;/*{{{*/
+    C class;/*{{{*/
     ClassBlock* cb;
     int obj_size;
     char* classname;
@@ -357,7 +366,7 @@ void printString0(Object* obj) {
 }
 
 
-void dumpClass(Class* class) {
+void dumpClass(C class) {
     ClassBlock* cb = CLASS_CB(class);
     printf("\ndumpClass>%s\n", cb->this_classname);
     printf("super class:%s\n", cb->super_classname);
@@ -380,3 +389,4 @@ void dumpClass(Class* class) {
 }
 
 
+#undef C

@@ -1,11 +1,12 @@
 #ifndef TEST_H
 #define TEST_H
-#include "../lib/linkedlist.h"
 #include "../main/vm.h"
 
+#define C Class_t
 
-void printList(LinkedList* head);
-void printVtable(LinkedList* head);
+
+//void printList(LinkedList* head);
+//void printVtable(LinkedList* head);
 
 void printStack();
 
@@ -18,6 +19,7 @@ void printString0(Object* obj);
 
 void printChar0(Object* obj);
 
-void dumpClass(Class* class);
+void dumpClass(C class);
 
+#undef C
 #endif
