@@ -32,6 +32,7 @@
 #define TRUE 1
 #define FALSE 0
 #define C Class_t
+#define O Object_t
 
 // global linkedlist that record the class already loaded
 
@@ -92,7 +93,7 @@ static void initSystemClass()
 
     if (java_lang_VMClass)
     {
-        Object* obj = allocObject(java_lang_VMClass);
+        O obj = allocObject(java_lang_VMClass);
 
         obj->binding = object;
         object->class = obj;
@@ -168,3 +169,6 @@ int main(int argc, char** argv)
     printf("\nVM run %f seconds\n", (double)(end-start)/CLOCKS_PER_SEC);
     return 0; /*}}}*/
 }
+
+#undef C
+#undef O

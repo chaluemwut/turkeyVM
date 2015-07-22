@@ -84,7 +84,7 @@ void List_addLast(T l, P x)
 
 
 /**
- *
+ * need traivals the list
  */
 int List_size(T l) 
 {
@@ -99,19 +99,24 @@ int List_size(T l)
     return i;
 }
 
+int List_isEmpty(T l)
+{
+    return (0==l->next);
+}
+
 /**
- *
+ * @return if not found or index > size, return 0
  */
 P List_getIndexOf(T l, int index) 
 {
     T p = l->next;
-    if (index<0) {
-        BUG("invalid argument");
+    if (index < 0) {
+        ERROR("invalid argument");
         return 0;
     }
     while (p) {
         if (0 == index)
-            return p->data;
+            return p->data;//found!
         index--;
         p=p->next;
     }
@@ -119,7 +124,7 @@ P List_getIndexOf(T l, int index)
 }
 
 /**
- *
+ * return the first fit
  *
  */
 P List_contains(T l, P x, Poly_tyEquals f)
@@ -135,6 +140,25 @@ P List_contains(T l, P x, Poly_tyEquals f)
     }
 
     return 0;
+}
+
+/**
+ *
+ *
+ */
+P List_removeFirst(T l)
+{
+    T p;
+
+    if (0 == l->next)
+      ERROR("List size is 0\n"); 
+
+    p = l->next;
+    l->next = l->next->next;
+    //XXX omit the l->data. 
+
+    return p->data;
+
 }
 
 

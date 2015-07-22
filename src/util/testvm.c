@@ -55,6 +55,9 @@
 /*}}}*/
 
 #define C Class_t
+#define O Object_t
+#define JF JFrame_t
+#define NF NFrame_t
 
 extern C java_lang_String;
 static int distance, t, indentLevel;
@@ -145,7 +148,7 @@ void printVtable(LinkedList* head)
  */
 void printNativeStack()
 {
-    NativeFrame* nframe = getNativeFrame();
+    NF nframe = getNativeFrame();
     printf("Native locals\n");
     MethodBlock* nmb = nframe->mb;
     int count = nmb->max_locals;
@@ -157,7 +160,7 @@ void printNativeStack()
 }
 void printStack()
 {
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     unsigned int* postack;/*{{{*/
     int max_stack;
     int max_locals;
@@ -214,7 +217,7 @@ void printStack()
 /*}}}*/
 }
 
-void printArray(Object* arrayref)
+void printArray(O arrayref)
 {
     C class;
     ClassBlock* cb;
@@ -264,7 +267,7 @@ void printArray(Object* arrayref)
 
 }
 
-void printObjectWrapper(Object* objref)
+void printObjectWrapper(O objref)
 {
     if (objref == NULL)
         throwException("printObjectWrapper: arg is NULL");
@@ -278,7 +281,7 @@ void printObjectWrapper(Object* objref)
  * Print the Object 
  * @qcliu 2015/01/30
  */
-void printObject(Object* objref)
+void printObject(O objref)
 {
     C class;/*{{{*/
     ClassBlock* cb;
@@ -319,7 +322,7 @@ void printObject(Object* objref)
     PRINTLN("");/*}}}*/
 }
 
-void printChar0(Object* obj)
+void printChar0(O obj)
 {
 
   if (!obj->isArray)
@@ -341,7 +344,7 @@ void printChar0(Object* obj)
   * print String Object.
   * for test
   */
-void printString0(Object* obj) {
+void printString0(O obj) {
     int value_offset;
     if (obj == NULL) {
         printf("obj is NULL!!!!");
@@ -359,7 +362,7 @@ void printString0(Object* obj) {
 
    value_offset = fb->offset;
 
-  Object* c = OBJECT_DATA(obj, value_offset-1, Object*); 
+  O c = OBJECT_DATA(obj, value_offset-1, O); 
   
   printChar0(c);
     
@@ -390,3 +393,6 @@ void dumpClass(C class) {
 
 
 #undef C
+#undef O
+#undef JF
+#undef NF

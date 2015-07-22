@@ -1,13 +1,16 @@
 #ifndef REF_H
 #define REF_H
 #include "../main/vm.h"
+#include "../heapManager/alloc.h"
 
 #define C Class_t
+#define O Object_t
 
 
-int instanceOf(Object* obj, C class);
+int instanceOf(O obj, C class);
 
-Object* getClassConstructors(Object* vmClass, int isPublic);
+O getClassConstructors(O vmClass, int isPublic);
 
 #undef C
+#undef O
 #endif

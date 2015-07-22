@@ -2,6 +2,7 @@
 #define VM_H
 #include <stdarg.h>
 #include "../lib/list.h"
+#include "../heapManager/alloc.h"
 
 #define FALSE 0
 #define TRUE 1
@@ -293,6 +294,8 @@
 
 
 #define C Class_t
+#define O Object_t
+
 typedef struct C *C;
 
 
@@ -300,7 +303,6 @@ typedef unsigned char u1;
 typedef unsigned short u2;
 typedef unsigned int u4;
 typedef unsigned long long  u8;
-typedef struct object Object;
 typedef struct classblock ClassBlock;
 
 
@@ -313,32 +315,9 @@ typedef struct classblock ClassBlock;
  */
 struct C
 {
-    Object* class;
+    struct Object_t* class;
 };
 
-struct object
-{
-    C class;//refer to the methodArea.
-    ClassBlock* cb;
-    unsigned int* data;
-    //-------------------------
-    int isArray;
-    int length;//If it's array, it the arraylength, otherwise, it's 0.
-    int atype;
-    //----------------------------------------------
-    /*
-     * The bingding is for the head of every Class. When reflected, 
-     * find the responding Class throgh the bingding.Normal Object's
-     * bingding is NULL, but for java/lang/Class Object, it's bingding 
-     * point to the MethodArea.
-     * NOTE: in class.c
-     * @qcliu 2015/03/23
-     */
-    C binding;
-
-    int el_size;//normal object's el_size is 4B
-    int copy_size;//for turkeyCopy(), assign in alloc.c
-};
 
 
 typedef u4 ConstantPoolEntry;
@@ -432,4 +411,5 @@ extern List_t DList;
 extern void exitVM();
 
 #undef C
+#undef O
 #endif

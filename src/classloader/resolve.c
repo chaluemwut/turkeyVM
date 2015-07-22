@@ -24,6 +24,7 @@
 #include "../interp/stackmanager.h"
 
 #define C Class_t
+#define JF JFrame_t
 
 /*
  * Find field in current class.
@@ -77,7 +78,7 @@ FieldBlock* resolveField(C class, u2 index) {
     FieldBlock* fb = NULL;
     ConstantPool* current_cp;
 
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     current_cp = getCurrentCP();
 
     switch (CP_TYPE(current_cp, index)) {
@@ -224,7 +225,7 @@ C resolveClass(C class,  u2 index) {
 MethodBlock* resolveInterfaceMethod(C class, u2 index) {
 
     MethodBlock* resolve_method = NULL;
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     ConstantPool* current_cp = getCurrentCP();
 
 
@@ -288,7 +289,7 @@ MethodBlock* resolveInterfaceMethod(C class, u2 index) {
  */
 MethodBlock* resolveMethod(C class, u2 index) {
     MethodBlock* resolve_method = NULL;/*{{{*/
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     ConstantPool* current_cp = getCurrentCP();
 
 
@@ -401,3 +402,4 @@ MethodBlock* resolveVirtualMethod(C class, u2 index) {
 }
 
 #undef C
+#undef JF

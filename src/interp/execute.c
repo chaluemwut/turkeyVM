@@ -28,6 +28,8 @@
 #include "../util/exception.h"
 
 #define C Class_t
+#define O Object_t
+#define JF JFrame_t
 
 
 extern List_t CList;
@@ -39,12 +41,9 @@ extern List_t CList;
  * Create a new Frame, and copy args form old stack to new locals.
  * Then, execute the new method.
  */
-void executeMethod(MethodBlock* mb, va_list jargs) {
-    void* ret;
-    //new Frame
-    //if (0 == strcmp(mb->name, "hashCode"))
-    // printf("hashCode");
-
+void executeMethod(MethodBlock* mb, va_list jargs)
+{
+    void* ret;/*{{{*/
     if (mb->native_invoker) {
         if (dis_testinfo) {
             printf("This is a native method!!!");
@@ -56,14 +55,18 @@ void executeMethod(MethodBlock* mb, va_list jargs) {
         ((void (*)())mb->native_invoker)();
 
         popNativeFrame();
+        //printf("pop Native method:%s\n", mb->name);
     }
     else {
+        JF retFrame = getCurrentFrame();
+
         createFrame(mb, jargs, ret);
         //executeJava
-        executeJava();
+        executeJava(retFrame);
 
         popFrame();
     }
+    /*}}}*/
 }
 
 /*
@@ -74,38 +77,42 @@ void executeMethod(MethodBlock* mb, va_list jargs) {
  *       can use executeMethod() instead of executeStaticMain().
  * @qcliu 2015/01/30
  */
-void executeStaticMain(MethodBlock* mb) {
+void executeStaticMain(MethodBlock* mb)
+{
     unsigned short max_stack = mb->max_stack;/*{{{*/
     unsigned short max_locals = mb->max_locals;
     int args_count = mb->args_count;
-    Frame* frame = createFrame0(mb);
+    JF frame = createFrame0(mb);
     
     if (dis_testinfo)
-      printf("\nnew Frame: %d\n", getCurrentFrameId());/*}}}*/
+      printf("\nnew Frame: %d\n", getCurrentFrameId());
     //
-    executeJava();
+    executeJava(NULL);
     popFrame();
+    /*}}}*/
 }
 
 
-void executeMethodArgs(C class, MethodBlock* mb, ...) {
+
+void executeMethodArgs(C class, MethodBlock* mb, ...)
+{
     va_list jargs;
 
     va_start(jargs, mb);
     executeMethod(mb, jargs);
     va_end(jargs);
-
 }
 
 /**
  * @see native.c 
  */
-void invoke(MethodBlock* mb, Object* args, Object* this) {
-
+void invoke(MethodBlock* mb, O args, O this)
+{
+    /*{{{*/
     int args_count = mb->args_count;
     int locals_idx = 0;
-    Frame* prev = getCurrentFrame();
-    Frame* frame = createFrame0(mb);
+    JF retFrame = getCurrentFrame();
+    JF frame = createFrame0(mb);
     //copy args
     /*
      * old_stack                 new_locals
@@ -138,7 +145,7 @@ void invoke(MethodBlock* mb, Object* args, Object* this) {
     int i;
     for (i = 0; i<args->length; i++) {
         //*((Object**)&frame->locals[i+1]) = ARRAY_DATA(args, i, Object*);
-        store(&(ARRAY_DATA(args, i, Object*)), TYPE_REFERENCE, i+1);
+        store(&(ARRAY_DATA(args, i, O)), TYPE_REFERENCE, i+1);
 
         //NOTE: equals 0 also need copy
         //memcpy(frame->locals + locals_idx, current_frame->ostack, sizeof(int));
@@ -147,9 +154,12 @@ void invoke(MethodBlock* mb, Object* args, Object* this) {
         //current_frame->ostack--;
     }
 
-    executeJava();
+    executeJava(retFrame);
 
     popFrame();
+    /*}}}*/
 }
 
 #undef C
+#undef O
+#undef JF

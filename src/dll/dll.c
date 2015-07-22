@@ -9,20 +9,21 @@
 #include "../lib/poly.h"
 
 #define P Poly_t
+#define D Dll_t
 
 static int equals(P x, P y)
 {
     char* s = (char*)x;
-    DllEntry* d = (DllEntry*)y;
+    D d = (D)y;
     if (0 == strcmp(s, d->name))
       return 1;
     else
       return 0;
 }
 
-DllEntry* findDllInTable(char* dllname)
+D findDllInTable(char* dllname)
 {
-    DllEntry* dll = (DllEntry*)List_contains(DList, dllname, equals);
+    D dll = (D)List_contains(DList, dllname, equals);
 
     return dll;
 }
@@ -32,7 +33,7 @@ char* getDllPath() {
 }
 
 int resolveDll(char* dllname) {
-    DllEntry* dll;
+    D dll;
     dll = findDllInTable(dllname);
     if (dll != NULL)
       return 1;
@@ -41,7 +42,7 @@ int resolveDll(char* dllname) {
     if (!handle)
       return 0;
 
-    dll = (DllEntry*)sysMalloc(sizeof(DllEntry));
+    dll = (D)sysMalloc(sizeof(struct D));
     dll->name = dllname;
     dll->handle = handle;
 
@@ -59,3 +60,4 @@ char* getDllName(char* path, char* name) {
 }
 
 #undef P
+#undef D

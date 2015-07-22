@@ -34,6 +34,10 @@
 
 
 #define C Class_t
+#define O Object_t
+#define JF JFrame_t
+#define NF NFrame_t
+
 #define THROW throwException("native")
 // just for test============
 void testObject();
@@ -45,15 +49,6 @@ void constructNative();
 void getDeclaredConstructors();
 void forName();
 void getClass();
-void printInt();
-void printChar();
-void printLong();
-void printString();
-void printDouble();
-void printFloat();
-void printBoolean();
-void printObject0();
-void newline();
 void getPrimitiveClass();
 void getClassLoader0();
 void desiredAssertionStatus0();
@@ -94,36 +89,18 @@ Binding nativeMethods[] = {
     {"currentClassLoader", "()Ljava/lang/ClassLoader;", currentClassLoader},
     {"arraycopy", "(Ljava/lang/Object;ILjava/lang/Object;II)V", arrayCopy},
     {"insertSystemProperties", "(Ljava/util/Properties;)V", insertSystemProperties},
-    //{"longBitsToDouble", "(J)D", longBitsToDouble},
-    //{"doubleToRawLongBits", "(D)J", doubleToRawLongBits},
-    //{"floatToRawIntBits", "(F)I", floatToRawIntBits},
-    //{"getName0", "()Ljava/lang/String;", getName0},
-    //{"getClass", "()Ljava/lang/Class;", getClass},
-    //{"fillInStackTrace", "(I)Ljava/lang/Throwable;", fillInStackTrace},
-    //{"desiredAssertionStatus0", "(Ljava/lang/Class;)Z", desiredAssertionStatus0},
-    //{"getClassLoader0", "()Ljava/lang/ClassLoader;", getClassLoader0},
     {"registerNatives", "()V", registerNatives},
-    //{"getPrimitiveClass", "(Ljava/lang/String;)Ljava/lang/Class;", getPrimitiveClass},
-    {"printf", "(I)V", printInt},
-    {"printf", "(C)V", printChar},
-    {"printf", "(J)V", printLong},
-    {"printf", "(D)V", printDouble},
-    {"printf", "(F)V", printFloat},
-    {"printf", "(Z)V", printBoolean},
-    {"printf", "(Ljava/lang/Object;)V", printObject0},
-    {"printf", "(Ljava/lang/String;)V", printString},
-    {"newline", "()V", newline},
     {NULL, NULL, NULL},
 };
 
 
 /*FileDescriptor*/
 void nativeWriteBuf() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
     long long fd = *(long long*)&nframe->locals[1];
-    Object* buf = *(Object**)&nframe->locals[3];
+    O buf = *(O*)&nframe->locals[3];
     int _offset = nframe->locals[4];
     int len = nframe->locals[5];
 
@@ -143,10 +120,10 @@ void nativeWriteBuf() {
 /*VMClass.Class */
 void identityHashCode(){
 
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
-    Object* this = *(Object**)&nframe->locals[0];
+    O this = *(O*)&nframe->locals[0];
 
     current_frame->ostack++;
     *(int*)current_frame->ostack = (int)this;
@@ -163,15 +140,15 @@ void identityHashCode(){
  */
 void constructNative() {
 
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
-    Object* this = *(Object**)&nframe->locals[0];
+    O this = *(O*)&nframe->locals[0];
 
     //a array
-    Object* args = *(Object**)&nframe->locals[1];
+    O args = *(O*)&nframe->locals[1];
     //
-    Object* declaringClass = *(Object**)&nframe->locals[2];
+    O declaringClass = *(O*)&nframe->locals[2];
     //
     int slot = nframe->locals[3];
 
@@ -181,13 +158,7 @@ void constructNative() {
     //char* method_name = mb->name;
     //char* method_type = mb->type;
 
-    Object* newobj = (Object*)allocObject(declclass);
-    Object* newobj1 = (Object*)allocObject(declclass);
-    Object* newobj2 = (Object*)allocObject(declclass);
-    Object* newobj3 = (Object*)allocObject(declclass);
-    Object* newobj4 = (Object*)allocObject(declclass);
-    Object* newobj5 = (Object*)allocObject(declclass);
-    Object* newobj6 = (Object*)allocObject(declclass);
+    O newobj = (O)allocObject(declclass);
 
     //2015/07/01
     //DEBUG("TODO");
@@ -203,7 +174,7 @@ void constructNative() {
 
     invoke(mb, args, newobj);
     current_frame->ostack++;
-    *(Object**)current_frame->ostack = newobj;
+    *(O*)current_frame->ostack = newobj;
 
 
 
@@ -211,26 +182,26 @@ void constructNative() {
 
 void getDeclaredConstructors() {
 
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
-    Object* vmClass = *(Object**)&nframe->locals[0];
+    O vmClass = *(O*)&nframe->locals[0];
     int isPublic = nframe->locals[1];
 
-    Object* cons = getClassConstructors(vmClass, isPublic);
+    O cons = getClassConstructors(vmClass, isPublic);
 
     current_frame->ostack++;
-    *(Object**)current_frame->ostack = cons;
+    *(O*)current_frame->ostack = cons;
 
 
 }
 
 //lang/lang/VMClass.class
 void forName() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
-    Object* name = *(Object**)&nframe->locals[0];
+    O name = *(O*)&nframe->locals[0];
 
     //printString0(name);
 
@@ -250,12 +221,12 @@ void forName() {
     if (class == NULL)
       throwException("NoSuchClass");
 
-    Object* cobj = class->class;
+    O cobj = class->class;
     //C c = cobj->class;
     //cb = CLASS_CB(c);
 
     current_frame->ostack++;
-    *(Object**)current_frame->ostack = cobj;
+    *(O*)current_frame->ostack = cobj;
 
 }
 
@@ -265,7 +236,7 @@ void forName() {
  *
  * @return a class object for this classname
  */
-Object* getClass_name(char* classname) {
+O getClass_name(char* classname) {
     int len = strlen(classname);
     int i = 0;
     for (; i<len; i++) {
@@ -279,7 +250,7 @@ Object* getClass_name(char* classname) {
       throwException("NoSuchClass");
 
 
-    Object* cobj = class->class;
+    O cobj = class->class;
 
     return cobj;
 }
@@ -289,9 +260,9 @@ Object* getClass_name(char* classname) {
  * this is an extra method, only for test.
  */
 void testObject() {
-    NativeFrame* nframe = getNativeFrame();
+    NF nframe = getNativeFrame();
 
-    Object* obj = *(Object**)&nframe->locals[0];
+    O obj = *(O*)&nframe->locals[0];
     if (obj == NULL) {
         printf("obj == null, in testObject");
         throwException("hash false");
@@ -319,8 +290,8 @@ void testObject() {
 //java/io/FileDescriptor
 
 void nativeValid() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
     int ret = TRUE;
     long long nativeFd = *(long long*)&nframe->locals[1];//not static
@@ -341,8 +312,8 @@ void nativeInit() {
     C c = findClass("java/io/FileDescriptor");
     FieldBlock* fb = (FieldBlock*)findField(c, "out", "Ljava/io/FileDescriptor;");
     FieldBlock* fb_err = (FieldBlock*)findField(c, "err", "Ljava/io/FileDescriptor;");
-    Object* err = (Object*)fb_err->static_value;
-    Object* out = (Object*)fb->static_value;
+    O err = (O)fb_err->static_value;
+    O out = (O)fb->static_value;
 
     //C class = out->class;
     //ClassBlock* cb = CLASS_CB(class);
@@ -361,12 +332,12 @@ void nativeInit() {
 
 //(Ljava/lang/Cloneable;)Ljava/lang/Object;   VMObject
 void turkeyCopy() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
-    Object* cloneable = *(Object**)&nframe->locals[0];
+    O cloneable = *(O*)&nframe->locals[0];
     int copy_size = cloneable->copy_size;
-    Object* obj = (Object*)sysMalloc(copy_size);
+    O obj = (O)sysMalloc(copy_size);
     memset(obj, 0, copy_size);
     memcpy(obj, cloneable, copy_size);
 
@@ -374,20 +345,20 @@ void turkeyCopy() {
     obj->data = (unsigned int*)(obj+1);
 
     current_frame->ostack++;
-    *(Object**)current_frame->ostack = obj;
+    *(O*)current_frame->ostack = obj;
 
 }
 
 void isWordsBidEndian() {
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     current_frame->ostack++;
     *(int*)current_frame->ostack = 0;
 }
 void nativeLoad(){
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
-    Object* string = *(Object**)&nframe->locals[1];
+    O string = *(O*)&nframe->locals[1];
     char* s = String2Char(string);
     int i = resolveDll(s);
     current_frame->ostack++;
@@ -395,11 +366,11 @@ void nativeLoad(){
 }
 
 void nativeGetLibname() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
-    Object* pathname = *(Object**)&nframe->locals[0];
-    Object* libname = *(Object**)&nframe->locals[1];
+    O pathname = *(O*)&nframe->locals[0];
+    O libname = *(O*)&nframe->locals[1];
     char* path = String2Char(pathname);
     char* name = String2Char(libname);
 
@@ -408,15 +379,15 @@ void nativeGetLibname() {
     free(path);
     free(name);
 
-    Object* s = createString(lib);
+    O s = createString(lib);
 
     current_frame->ostack++;
-    *(Object**)current_frame->ostack = s;
+    *(O*)current_frame->ostack = s;
     free(lib);
 }
 
 void currentClassLoader() {
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     current_frame->ostack++;
     *current_frame->ostack = 0;
 }
@@ -427,10 +398,10 @@ void currentClassLoader() {
  *
  *
  */
-void setProperty(Object* this, char* key, char* value) {
-    Frame* current_frame = getCurrentFrame();
-    Object* k = createString(key);
-    Object* v = createString(value);
+void setProperty(O this, char* key, char* value) {
+    JF current_frame = getCurrentFrame();
+    O k = createString(key);
+    O v = createString(value);
     // char* s = String2Char(k);
     // char* t = String2Char(v);
 
@@ -449,12 +420,12 @@ void setProperty(Object* this, char* key, char* value) {
 
 void arrayCopy() {
     //printf("native arrayCopy----------------------------------------\n");
-    NativeFrame* nframe = getNativeFrame();
+    NF nframe = getNativeFrame();
 
     int size;
-    Object* src = *(Object**)&nframe->locals[0];
+    O src = *(O*)&nframe->locals[0];
     int srcStart = nframe->locals[1];
-    Object* dest = *(Object**)&nframe->locals[2];
+    O dest = *(O*)&nframe->locals[2];
     int destStart = nframe->locals[3];
     int length = nframe->locals[4];
 
@@ -516,9 +487,9 @@ storeExcep:
 }
 
 void insertSystemProperties() {
-    NativeFrame* nframe = getNativeFrame();
+    NF nframe = getNativeFrame();
 
-    Object*  this = *(Object**)&nframe->locals[0];
+    O  this = *(O*)&nframe->locals[0];
 
     struct utsname info;
     uname(&info);
@@ -558,8 +529,8 @@ void insertSystemProperties() {
 }
 
 void longBitsToDouble() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
     long long value = *(long long*)&nframe->locals[0];
     double result;
@@ -570,8 +541,8 @@ void longBitsToDouble() {
 }
 
 void doubleToRawLongBits() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
     double value = *(double*)&nframe->locals[0];
     current_frame->ostack++;
@@ -581,8 +552,8 @@ void doubleToRawLongBits() {
 
 /* java/lang/Float */
 void floatToRawIntBits() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
     //static
     float value = *(float*)&nframe->locals[0];
@@ -593,49 +564,49 @@ void floatToRawIntBits() {
 
 /* java/lang/Class */
 void getName0() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
     //This must be a java/lang/Class Object
-    Object* obj = (Object*)nframe->locals[0];
+    O obj = (O)nframe->locals[0];
     if (obj->binding == NULL)
       throwException("getName0 error; binding NULL");
 
     C class = obj->binding;
     ClassBlock* cb = CLASS_CB(class);
-    Object* string = createString(cb->this_classname);
+    O string = createString(cb->this_classname);
     if (string == NULL)
       throwException("getName0 error. string is NULL");
 
     current_frame->ostack++;
-    *(Object**)current_frame->ostack = string;
+    *(O*)current_frame->ostack = string;
 }
 
 /*java/lang/Object*/
 void getClass() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
-    Object* obj = (Object*)nframe->locals[0];
+    O obj = (O)nframe->locals[0];
     C class = obj->class;
     //ClassBlock* cb = CLASS_CB(class);
-    Object* class_obj = class->class;
+    O class_obj = class->class;
 
     current_frame->ostack++;
-    *(Object**)current_frame->ostack = class_obj;
+    *(O*)current_frame->ostack = class_obj;
 }
 
 void fillInStackTrace() {
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     C class = loadClass("java/lang/Throwable");
 
     if (class == NULL)
       throwException("no find java/lang/Throwable, in native.c");
 
-    Object* obj = allocObject(class);
+    O obj = allocObject(class);
 
     current_frame->ostack++;
-    *(Object**)current_frame->ostack = obj;
+    *(O*)current_frame->ostack = obj;
 }
 /*(Ljava/lang?Class;)Z
  * This method is belong to java/lang/Class
@@ -644,7 +615,7 @@ void fillInStackTrace() {
  */
 //TODO
 void desiredAssertionStatus0() {
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     current_frame->ostack++;
     *current_frame->ostack = 1;
 }
@@ -655,20 +626,24 @@ void desiredAssertionStatus0() {
  *
  * @qcliu 2015/03/21
  */
-void getClassLoader0() {
-    Frame* current_frame = getCurrentFrame();
+void getClassLoader0()
+{
+    JF current_frame = getCurrentFrame();
     //TODO
     current_frame->ostack++;
     *current_frame->ostack = 0;
 }
-void registerNatives() {
-    Frame* current_frame = getCurrentFrame();
+
+void registerNatives()
+{
+    JF current_frame = getCurrentFrame();
     ClassBlock* cb = CLASS_CB(current_frame->class);
     //printf("registerNatives, class:%s\n", cb->this_classname);
 }
 
 
-static char getPrimType(char* s) {
+static char getPrimType(char* s)
+{
     char primtype;
     if (strcmp(s, "byte")==0)
       primtype = 'B';
@@ -691,13 +666,15 @@ static char getPrimType(char* s) {
 
     return primtype;
 }
-void getPrimitiveClass() {
-    Frame* current_frame = getCurrentFrame();
-    NativeFrame* nframe = getNativeFrame();
+
+void getPrimitiveClass()
+{
+    JF current_frame = getCurrentFrame();
+    NF nframe = getNativeFrame();
 
     /*In the frame is a String*/
-    Object* obj = (Object*)nframe->locals[0];
-    Object* array = (Object*)obj->data[0];
+    O obj = (O)nframe->locals[0];
+    O array = (O)obj->data[0];
 
     //printf("getPrimitiveClass:%s\n", (char*)array->data);
     char primtype = getPrimType((char*)array->data);
@@ -705,89 +682,13 @@ void getPrimitiveClass() {
     C class = (C)findPrimitiveClass(primtype);
     if (class != NULL) {
         current_frame->ostack++;
-        *(Object**)current_frame->ostack = class->class;
+        *(O*)current_frame->ostack = class->class;
     }
     else
       throwException("getPrimitiveClass");
 }
-void newline() {
-    printf("\n");
-}
-
-/*
- * String is a CharArray, in it data[0] is a reference to
- * the CharArray.
- * NOTE: printf("%s", (char*)array->data)) instead of
- *       printf("%s", (char*)array->data[0]);
- */
-void printString() {
-    NativeFrame* nframe = getNativeFrame();
-
-    Object* obj =(Object*)nframe->locals[1];
-    Object* array = (Object*)obj->data[0];
-    printf("%s", (char*)array->data);
-}
-
-void printObject0() {
-    NativeFrame* nframe = getNativeFrame();
-
-    Object* obj = (Object*)nframe->locals[1];
-    C class = obj->class;
-    ClassBlock* cb = CLASS_CB(class);
-    printf("%s", cb->this_classname);
-}
-void printBoolean() {
-    NativeFrame* nframe = getNativeFrame();
-
-    int value = *(int*)&nframe->locals[1];
-    if(value)
-      printf("true");
-    else
-      printf("false");
-}
-void printFloat() {
-    NativeFrame* nframe = getNativeFrame();
-
-    float value = *(float*)&nframe->locals[1];
-    printf("%f", value);
-}
-void printDouble() {
-    NativeFrame* nframe = getNativeFrame();
-
-    double value = *(double*)&nframe->locals[1];
-    printf("%f", value);
-}
-
-void printLong() {
-    NativeFrame* nframe = getNativeFrame();
-
-    long long value =*(long long*)&nframe->locals[1];
-    printf("%lld", value);
-}
-
-void printChar() {
-    NativeFrame* nframe = getNativeFrame();
-
-    char value = (char)nframe->locals[1];
-    printf("%c", value);
-}
-
-void printInt() {
-    NativeFrame* nframe = getNativeFrame();
-
-    MethodBlock* mb = nframe->mb;
-    C class = mb->class;
-    ClassBlock* cc = CLASS_CB(class);
-
-    if (dis_testinfo) {
-        printf("current nFrame is :%s, %s  locals:%d, stack:%d\n",
-                    mb->name, mb->type, mb->max_locals, mb->max_stack);
-        printf("current class:%s\n", cc->this_classname);
-        printf("printInt!!!!\n");
-    }
-    int value = nframe->locals[1];
-    printf("%d", value);
-}
 
 #undef C
-
+#undef O
+#undef JF
+#undef NF

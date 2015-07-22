@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define BUG(s)                      \
+#define ERROR(s)                    \
     do {                            \
         fprintf(stderr,             \
-                    "%s> %d, %s\n", \
+                    "%s >line: %d at %s\n",       \
                     s,              \
                     __LINE__,       \
                     __FILE__        \

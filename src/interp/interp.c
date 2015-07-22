@@ -33,6 +33,9 @@
 #include "stackmanager.h"
 
 #define C Class_t
+#define O Object_t
+#define JF JFrame_t
+
 // to contral the pc move
 #define PCMOVE(x) PCIncrease(x);
 #define PCBACK(x) PCDecrease(x);
@@ -45,85 +48,87 @@
 
 static int testnum;
 
-static void exe_OPC_NOP() {
+static void exe_OPC_NOP()
+{
 }
 
-static void exe_OPC_ACONST_NULL() {
+static void exe_OPC_ACONST_NULL()
+{
     int value = 0;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_ICONST_M1() {
     int value = -1;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_ICONST_0() {
     int value = 0;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 static void exe_OPC_ICONST_1() {
     int value = 1;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 static void exe_OPC_ICONST_2() {
     int value = 2;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 static void exe_OPC_ICONST_3() {
     int value = 3;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_ICONST_4() {
     int value = 4;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_ICONST_5() {
     int value = 5;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_LCONST_0() {
     long long value = 0;
-    push(&value, TYPE_LONG);
+    push(getCurrentFrame(),&value, TYPE_LONG);
 }
 
 static void exe_OPC_LCONST_1() {
     long long value = 1;
-    push(&value, TYPE_LONG);
+    push(getCurrentFrame(),&value, TYPE_LONG);
 }
 
 static void exe_OPC_FCONST_0(){
     float value = 0;
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_FCONST_1() {
     float value = 1;
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_FCONST_2() {
     float value = 2;
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 }
 static void exe_OPC_DCONST_0() {
     double value = 0;
-    push(&value, TYPE_DOUBLE);
+    push(getCurrentFrame(),&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_DCONST_1() {
     double value = 1;
-    push(&value, TYPE_DOUBLE);
+    push(getCurrentFrame(),&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_BIPUSH() {
     int value = 0;
     PCMOVE(1);
     READ_BYTE(value, getCurrentPC());
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_SIPUSH() {
@@ -134,7 +139,7 @@ static void exe_OPC_SIPUSH() {
     READ_SHORT(value0, getCurrentPC());
     PCMOVE(1);
     value = (int)value0;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 
 }
 
@@ -150,14 +155,14 @@ static void exe_OPC_LDC() {
         /*NOTE: possible???*/
         case RESOLVED:
             {
-                push(&cp_info, TYPE_INT);
+                push(getCurrentFrame(),&cp_info, TYPE_INT);
                 break;
             }
         case CONSTANT_Integer:
             {
                 int value;
                 value = (int)cp_info;
-                push(&value, TYPE_INT);
+                push(getCurrentFrame(),&value, TYPE_INT);
                 break;
             }
         case CONSTANT_Float:
@@ -168,7 +173,7 @@ static void exe_OPC_LDC() {
                  * @qcliu 2015/03/16
                  */
                 value = *(float*)&getCurrentCP()->info[index];
-                push(&value, TYPE_FLOAT);
+                push(getCurrentFrame(),&value, TYPE_FLOAT);
                 break;
             }
         case CONSTANT_String:
@@ -182,15 +187,15 @@ static void exe_OPC_LDC() {
                  * alread in the constans-pool.
                  * @qcliu 2015/03/08
                  */
-                Object* obj;
+                O obj;
                 int offset;
                 char* s = CP_UTF8(getCurrentCP(), cp_info);
 
                 /**/
-                obj = (Object*)createString(s);
+                obj = (O)createString(s);
                 if (obj == NULL)
                   throwException("LDC error");
-                push(&obj, TYPE_REFERENCE);
+                push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 
                 break;
             }
@@ -199,8 +204,8 @@ static void exe_OPC_LDC() {
                 C class = (C)resolveClass(getCurrentClass(), index);
                 if (class != NULL)
                 {
-                    Object* obj = class->class;
-                    push(&obj, TYPE_REFERENCE);
+                    O obj = class->class;
+                    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
                 }
                 else
                 {
@@ -227,14 +232,14 @@ static void exe_OPC_LDC_W() {
         /*NOTE: possible???*/
         case RESOLVED:
             {
-                push(&cp_info, TYPE_INT);
+                push(getCurrentFrame(),&cp_info, TYPE_INT);
                 break;
             }
         case CONSTANT_Integer:
             {
                 int value;
                 value = (int)cp_info;
-                push(&value, TYPE_INT);
+                push(getCurrentFrame(),&value, TYPE_INT);
                 break;
             }
         case CONSTANT_Float:
@@ -245,7 +250,7 @@ static void exe_OPC_LDC_W() {
                  * @qcliu 2015/03/16
                  */
                 value = *(float*)&getCurrentCP()->info[index];
-                push(&value, TYPE_FLOAT);
+                push(getCurrentFrame(),&value, TYPE_FLOAT);
                 break;
             }
         case CONSTANT_String:
@@ -259,16 +264,16 @@ static void exe_OPC_LDC_W() {
                  * alread in the constans-pool.
                  * @qcliu 2015/03/08
                  */
-                Object* obj;
+                O obj;
                 int offset;
                 char* s = CP_UTF8(getCurrentCP(), cp_info);
 
                 /**/
-                obj = (Object*)createString(s);
+                obj = (O)createString(s);
                 if (obj == NULL)
                   throwException("LDC error");
                 //printStringObject(obj);
-                push(&obj, TYPE_REFERENCE);
+                push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 
                 break;
             }
@@ -276,8 +281,8 @@ static void exe_OPC_LDC_W() {
             {
                 C class = (C)resolveClass(getCurrentClass(), index);
                 if (class != NULL) {
-                    Object* obj = class->class;
-                    push(&obj, TYPE_REFERENCE);
+                    O obj = class->class;
+                    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
                 }
                 else {
                     throwException("ldc CONSTANT_Class");
@@ -298,24 +303,27 @@ static void exe_OPC_LDC2_W() {
 
 
     switch (CP_TYPE(getCurrentCP(), index)) {
-        case RESOLVED: {
-                           //TODO
-                           break;
-                       }
-        case CONSTANT_Long: {
-                                long long value;
-                                value = *(long long*)&getCurrentCP()->info[index];
-                                push(&value, TYPE_LONG);
-                                break;
-                            }
-        case CONSTANT_Double: {
-                                  double value;
-                                  value = *(double*)&getCurrentCP()->info[index];
-                                  push(&value, TYPE_DOUBLE);
-                                  break;
-                              }
+        case RESOLVED: 
+            {
+                //TODO
+                break;
+            }
+        case CONSTANT_Long: 
+            {
+                long long value;
+                value = *(long long*)&getCurrentCP()->info[index];
+                push(getCurrentFrame(),&value, TYPE_LONG);
+                break;
+            }
+        case CONSTANT_Double:
+            {
+                double value;
+                value = *(double*)&getCurrentCP()->info[index];
+                push(getCurrentFrame(),&value, TYPE_DOUBLE);
+                break;
+            }
         default:
-                              throwException("LDC2_W error");
+            throwException("LDC2_W error");
     }
 }
 static void exe_OPC_ILOAD() {
@@ -325,7 +333,7 @@ static void exe_OPC_ILOAD() {
     PCMOVE(1);
     READ_BYTE(locals_idx, getCurrentPC());
     load(&value, TYPE_INT, locals_idx);
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 
 }
 static void exe_OPC_LLOAD() {
@@ -336,7 +344,7 @@ static void exe_OPC_LLOAD() {
     READ_BYTE(locals_idx, getCurrentPC());
     load(&value, TYPE_LONG, locals_idx);
     /*NOTE: long use PUSH2*/
-    push(&value, TYPE_LONG);
+    push(getCurrentFrame(),&value, TYPE_LONG);
 
 }
 static void exe_OPC_FLOAD() {
@@ -346,7 +354,7 @@ static void exe_OPC_FLOAD() {
     PCMOVE(1);
     READ_BYTE(locals_idx, getCurrentPC());
     load(&value, TYPE_FLOAT, locals_idx);
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 
 }
 static void exe_OPC_DLOAD() {
@@ -357,159 +365,159 @@ static void exe_OPC_DLOAD() {
     READ_BYTE(locals_idx, getCurrentPC());
     load(&value, TYPE_DOUBLE, locals_idx);
 
-    push(&value, TYPE_DOUBLE);
+    push(getCurrentFrame(),&value, TYPE_DOUBLE);
 }
 static void exe_OPC_ALOAD() {
 
-    Object* objref;
+    O objref;
     int locals_idx = 0;
 
     PCMOVE(1);
     READ_BYTE(locals_idx, getCurrentPC());
     load(&objref, TYPE_REFERENCE, locals_idx);
-    push(&objref, TYPE_REFERENCE);
+    push(getCurrentFrame(),&objref, TYPE_REFERENCE);
 }
 
 static void exe_OPC_ILOAD_0() {
 
     int value;
     load(&value, TYPE_INT, 0);
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_ILOAD_1() {
 
     int value;
     load(&value, TYPE_INT, 1);
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_ILOAD_2() {
 
     int value;
     load(&value, TYPE_INT, 2);
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_ILOAD_3() {
 
     int value;
     load(&value, TYPE_INT, 3);
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 }
 
 static void exe_OPC_LLOAD_0() {
 
     long long value;
     load(&value, TYPE_LONG, 0);
-    push(&value, TYPE_LONG);
+    push(getCurrentFrame(),&value, TYPE_LONG);
 }
 static void exe_OPC_LLOAD_1() {
 
     long long value;
     load(&value, TYPE_LONG, 1);
-    push(&value, TYPE_LONG);
+    push(getCurrentFrame(),&value, TYPE_LONG);
 }
 
 static void exe_OPC_LLOAD_2() {
 
     long long value;
     load(&value, TYPE_LONG, 2);
-    push(&value, TYPE_LONG);
+    push(getCurrentFrame(),&value, TYPE_LONG);
 }
 
 static void exe_OPC_LLOAD_3() {
 
     long long value;
     load(&value, TYPE_LONG, 3);
-    push(&value, TYPE_LONG);
+    push(getCurrentFrame(),&value, TYPE_LONG);
 }
 
 static void exe_OPC_FLOAD_0() {
     float value;
     load(&value, TYPE_FLOAT, 0);
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_FLOAD_1() {
     float value;
     load(&value, TYPE_FLOAT, 1);
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_FLOAD_2() {
 
     float value;
     load(&value, TYPE_FLOAT, 2);
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_FLOAD_3() {
 
     float value;
     load(&value, TYPE_FLOAT, 3);
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_DLOAD_0() {
 
     double value;
     load(&value, TYPE_DOUBLE, 0);
-    push(&value, TYPE_DOUBLE);
+    push(getCurrentFrame(),&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_DLOAD_1() {
 
     double value;
     load(&value, TYPE_DOUBLE, 1);
-    push(&value, TYPE_DOUBLE);
+    push(getCurrentFrame(),&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_DLOAD_2() {
 
     double value;
     load(&value, TYPE_DOUBLE, 2);
-    push(&value, TYPE_DOUBLE);
+    push(getCurrentFrame(),&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_DLOAD_3() {
 
     double value;
     load(&value, TYPE_DOUBLE, 3);
-    push(&value, TYPE_DOUBLE);
+    push(getCurrentFrame(),&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_ALOAD_0() {
 
-    Object* obj;
+    O obj;
     load(&obj, TYPE_REFERENCE, 0);
-    push(&obj, TYPE_REFERENCE);
+    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 }
 
 static void exe_OPC_ALOAD_1() {
 
-    Object* obj;
+    O obj;
     load(&obj, TYPE_REFERENCE, 1);
-    push(&obj, TYPE_REFERENCE);
+    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 }
 
 static void exe_OPC_ALOAD_2() {
 
-    Object* obj;
+    O obj;
     load(&obj, TYPE_REFERENCE, 2);
-    push(&obj, TYPE_REFERENCE);
+    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 }
 
 static void exe_OPC_ALOAD_3() {
 
-    Object* obj;
+    O obj;
     load(&obj, TYPE_REFERENCE, 3);
-    push(&obj, TYPE_REFERENCE);
+    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 }
 
 static void exe_OPC_IALOAD() {
     int value, index;
-    Object* obj;
+    O obj;
     pop(&index, TYPE_INT);
     pop(&obj, TYPE_REFERENCE);
 
@@ -523,13 +531,13 @@ static void exe_OPC_IALOAD() {
     //value = obj->data[index];
     value = ARRAY_DATA(obj, index, int);
 
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 
 }
 
 static void exe_OPC_LALOAD() {
     int index;
-    Object* obj;
+    O obj;
     long long value;
 
     pop(&index, TYPE_INT);
@@ -537,14 +545,14 @@ static void exe_OPC_LALOAD() {
 
 
     value = ARRAY_DATA(obj, index, long long);
-    push(&value, TYPE_LONG);
+    push(getCurrentFrame(),&value, TYPE_LONG);
 
 }
 
 static void exe_OPC_FALOAD() {
     float value;
     int index;
-    Object* obj;
+    O obj;
 
     pop(&index, TYPE_INT);
     pop(&obj, TYPE_REFERENCE);
@@ -557,14 +565,14 @@ static void exe_OPC_FALOAD() {
       throwException("OutofArrayBound");
 
     value = ARRAY_DATA(obj, index, float);
-    push(&value, TYPE_FLOAT);
+    push(getCurrentFrame(),&value, TYPE_FLOAT);
 
 }
 
 static void exe_OPC_DALOAD() {
     double value;
     int index;
-    Object* obj;
+    O obj;
 
     pop(&index, TYPE_INT);
     pop(&obj, TYPE_REFERENCE);
@@ -577,13 +585,13 @@ static void exe_OPC_DALOAD() {
       throwException("OutofArrayBound");
 
     value = ARRAY_DATA(obj, index, double);
-    push(&value, TYPE_DOUBLE);
+    push(getCurrentFrame(),&value, TYPE_DOUBLE);
 
 }
 static void exe_OPC_AALOAD() {
     int index;
-    Object* arrayref;
-    Object* value;
+    O arrayref;
+    O value;
 
     pop(&index, TYPE_INT);
     pop(&arrayref, TYPE_REFERENCE);
@@ -600,15 +608,15 @@ static void exe_OPC_AALOAD() {
 
     //printObjectWrapper(arrayref);
 
-    value = ARRAY_DATA(arrayref, index, Object*);
-    push(&value, TYPE_REFERENCE);
+    value = ARRAY_DATA(arrayref, index, O);
+    push(getCurrentFrame(),&value, TYPE_REFERENCE);
 
 }
 
 static void exe_OPC_BALOAD() {
     char value;
     int index;
-    Object* obj;
+    O obj;
 
     pop(&index, TYPE_INT);
     pop(&obj, TYPE_REFERENCE);
@@ -622,13 +630,13 @@ static void exe_OPC_BALOAD() {
 
     value = ARRAY_DATA(obj, index, char);
     int _value = (int)value;
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 
 }
 
 static void exe_OPC_CALOAD() {
     int index;
-    Object* obj;
+    O obj;
     char value;
 
     pop(&index, TYPE_INT);
@@ -643,13 +651,13 @@ static void exe_OPC_CALOAD() {
 
     /*NOTE: The element_size is 2*/
     value = ARRAY_DATA(obj, index, u2);
-    push(&value, TYPE_CHAR);
+    push(getCurrentFrame(),&value, TYPE_CHAR);
 
 }
 
 static void exe_OPC_SALOAD() {
     int index;
-    Object* obj;
+    O obj;
     short value;
 
     pop(&index, TYPE_INT);
@@ -665,7 +673,7 @@ static void exe_OPC_SALOAD() {
 
     value = ARRAY_DATA(obj, index, short);
     int _value = (int)value;
-    push(&_value, TYPE_INT);
+    push(getCurrentFrame(),&_value, TYPE_INT);
 
 }
 
@@ -718,7 +726,7 @@ static void exe_OPC_DSTORE() {
 
 static void exe_OPC_ASTORE() {
     int value = 0;
-    Object* obj;
+    O obj;
     PCMOVE(1);
     READ_BYTE(value, getCurrentPC());
     //obj = popObject();
@@ -841,34 +849,34 @@ static void exe_OPC_DSTORE_3() {
 
 static void exe_OPC_ASTORE_0() {
 
-    Object* obj;
+    O obj;
     pop(&obj, TYPE_REFERENCE);
     store(&obj, TYPE_REFERENCE, 0);
 }
 
 static void exe_OPC_ASTORE_1() {
 
-    Object* obj;
+    O obj;
     pop(&obj, TYPE_REFERENCE);
     store(&obj, TYPE_REFERENCE, 1);
 }
 
 static void exe_OPC_ASTORE_2() {
 
-    Object* obj;
+    O obj;
     pop(&obj, TYPE_REFERENCE);
     store(&obj, TYPE_REFERENCE, 2);
 }
 
 static void exe_OPC_ASTORE_3() {
 
-    Object* obj;
+    O obj;
     pop(&obj, TYPE_REFERENCE);
     store(&obj, TYPE_REFERENCE, 3);
 }
 
 static void exe_OPC_IASTORE() {
-    Object* obj;
+    O obj;
     int value, index;
     pop(&value, TYPE_INT);
     pop(&index, TYPE_INT);
@@ -890,7 +898,7 @@ static void exe_OPC_IASTORE() {
 }
 
 static void exe_OPC_LASTORE() {
-    Object* obj;
+    O obj;
     long long value;
     int index;
 
@@ -904,7 +912,7 @@ static void exe_OPC_LASTORE() {
 }
 
 static void exe_OPC_FASTORE() {
-    Object* obj;
+    O obj;
     int index;
     float value;
 
@@ -926,7 +934,7 @@ static void exe_OPC_FASTORE() {
 
 }
 static void exe_OPC_DASTORE() {
-    Object* obj;
+    O obj;
     int index;
     double value;
 
@@ -946,8 +954,8 @@ static void exe_OPC_DASTORE() {
 }
 
 static void exe_OPC_AASTORE() {
-    Object* arrayref;
-    Object* value;
+    O arrayref;
+    O value;
     int index;
 
     pop(&value, TYPE_REFERENCE);
@@ -961,14 +969,14 @@ static void exe_OPC_AASTORE() {
     if (index < 0 || index >= arrayref->length )
       throwException("OutofArrayBount");
 
-    ARRAY_DATA(arrayref, index, Object*) = value;
+    ARRAY_DATA(arrayref, index, O) = value;
 
 }
 
 static void exe_OPC_BASTORE() {
     int index, value;
     char _value;
-    Object* obj;
+    O obj;
 
     pop(&value, TYPE_INT);
     pop(&index, TYPE_INT);
@@ -987,7 +995,7 @@ static void exe_OPC_BASTORE() {
 }
 
 static void exe_OPC_CASTORE() {
-    Object* objref;
+    O objref;
     int index, value;
     char _value;
 
@@ -1001,7 +1009,7 @@ static void exe_OPC_CASTORE() {
 }
 
 static void exe_OPC_SASTORE() {
-    Object* obj;
+    O obj;
     int index, value;
 
     pop(&value, TYPE_INT);
@@ -1029,8 +1037,8 @@ static void exe_OPC_DUP() {
     int value;
 
     pop(&value, TYPE_INT);
-    push(&value, TYPE_INT);
-    push(&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
+    push(getCurrentFrame(),&value, TYPE_INT);
 
     //memcpy(current_frame->ostack+1,current_frame->ostack, sizeof(int));
     //current_frame->ostack++;
@@ -1042,9 +1050,9 @@ static void exe_OPC_DUP_X1() {
     pop(&value1, TYPE_INT);
     pop(&value2, TYPE_INT);
 
-    push(&value1, TYPE_INT);
-    push(&value2, TYPE_INT);
-    push(&value1, TYPE_INT);
+    push(getCurrentFrame(),&value1, TYPE_INT);
+    push(getCurrentFrame(),&value2, TYPE_INT);
+    push(getCurrentFrame(),&value1, TYPE_INT);
 
 }
 
@@ -1066,7 +1074,7 @@ static void exe_OPC_IADD() {
     pop(&value1, TYPE_INT);
     pop(&value2, TYPE_INT);
     result = value1 + value2;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1075,7 +1083,7 @@ static void exe_OPC_LADD() {
     pop(&value2, TYPE_LONG);
     pop(&value1, TYPE_LONG);
     result = value1 + value2;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1085,7 +1093,7 @@ static void exe_OPC_FADD() {
     pop(&value2, TYPE_FLOAT);
     pop(&value1, TYPE_FLOAT);
     result = value1 + value2;
-    push(&result, TYPE_FLOAT);
+    push(getCurrentFrame(),&result, TYPE_FLOAT);
 
 }
 
@@ -1094,7 +1102,7 @@ static void exe_OPC_DADD() {
     pop(&value2, TYPE_DOUBLE);
     pop(&value1, TYPE_DOUBLE);
     result = value1 + value2;
-    push(&result, TYPE_DOUBLE);
+    push(getCurrentFrame(),&result, TYPE_DOUBLE);
 
 }
 
@@ -1103,7 +1111,7 @@ static void exe_OPC_ISUB() {
     pop(&value2, TYPE_INT);
     pop(&value1, TYPE_INT);
     result = value1 - value2;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1112,7 +1120,7 @@ static void exe_OPC_LSUB() {
     pop(&value2, TYPE_LONG);
     pop(&value1, TYPE_LONG);
     result = value1 - value2;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1121,7 +1129,7 @@ static void exe_OPC_FSUB() {
     pop(&value2, TYPE_FLOAT);
     pop(&value1, TYPE_FLOAT);
     result = value1 - value2;
-    push(&result, TYPE_FLOAT);
+    push(getCurrentFrame(),&result, TYPE_FLOAT);
 
 }
 
@@ -1130,7 +1138,7 @@ static void exe_OPC_DSUB() {
     pop(&value2, TYPE_DOUBLE);
     pop(&value1, TYPE_DOUBLE);
     result = value1 - value2;
-    push(&result, TYPE_DOUBLE);
+    push(getCurrentFrame(),&result, TYPE_DOUBLE);
 
 }
 
@@ -1139,7 +1147,7 @@ static void exe_OPC_IMUL() {
     pop(&value2, TYPE_INT);
     pop(&value1, TYPE_INT);
     result = value1 * value2;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1148,7 +1156,7 @@ static void exe_OPC_LMUL() {
     pop(&value2, TYPE_LONG);
     pop(&value1, TYPE_LONG);
     result = value1 * value2;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1157,7 +1165,7 @@ static void exe_OPC_FMUL() {
     pop(&value2, TYPE_FLOAT);
     pop(&value1, TYPE_FLOAT);
     result = value1 * value2;
-    push(&result, TYPE_FLOAT);
+    push(getCurrentFrame(),&result, TYPE_FLOAT);
 
 }
 
@@ -1169,7 +1177,7 @@ static void exe_OPC_DMUL() {
 
     result = value1 * value2;
 
-    push(&result, TYPE_DOUBLE);
+    push(getCurrentFrame(),&result, TYPE_DOUBLE);
 
 }
 
@@ -1182,7 +1190,7 @@ static void exe_OPC_IDIV() {
 
     pop(&value1, TYPE_INT);
     result = value1/value2;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1195,7 +1203,7 @@ static void exe_OPC_LDIV() {
 
     pop(&value1,TYPE_LONG);
     result = value1 / value2;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1207,7 +1215,7 @@ static void exe_OPC_FDIV() {
 
     pop(&value1, TYPE_FLOAT);
     result = value1/value2;
-    push(&result, TYPE_FLOAT);
+    push(getCurrentFrame(),&result, TYPE_FLOAT);
 
 }
 
@@ -1219,7 +1227,7 @@ static void exe_OPC_DDIV() {
       throwException("ArithmeticException");
     pop(&value1, TYPE_DOUBLE);
     result = value1/value2;
-    push(&result, TYPE_DOUBLE);
+    push(getCurrentFrame(),&result, TYPE_DOUBLE);
 
 }
 
@@ -1236,7 +1244,7 @@ static void exe_OPC_IREM() {
 
     pop(&value1, TYPE_INT);
     result = value1 - (value1/value2)*value2;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1249,7 +1257,7 @@ static void exe_OPC_LREM() {
 
     pop(&value1, TYPE_LONG);
     result = value1 % value2;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1288,7 +1296,7 @@ static void exe_OPC_INEG() {
     int value, result;
     pop(&value, TYPE_INT);
     result = 0 - value;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1297,7 +1305,7 @@ static void exe_OPC_LNEG() {
     long long value, result;
     pop(&value, TYPE_LONG);
     result = 0 - value;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 }
 
 static void exe_OPC_FNEG() {
@@ -1306,7 +1314,7 @@ static void exe_OPC_FNEG() {
 
     pop(&value, TYPE_FLOAT);
     result =-value;
-    push(&result, TYPE_FLOAT);
+    push(getCurrentFrame(),&result, TYPE_FLOAT);
 }
 
 static void exe_OPC_DNEG() {
@@ -1314,7 +1322,7 @@ static void exe_OPC_DNEG() {
 
     pop(&value, TYPE_DOUBLE);
     result = -value;
-    push(&result, TYPE_DOUBLE);
+    push(getCurrentFrame(),&result, TYPE_DOUBLE);
 
 }
 
@@ -1325,7 +1333,7 @@ static void exe_OPC_ISHL() {
     pop(&value1, TYPE_INT);
     value2 = value2 & 0x0000001f;
     result = value1 << value2;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1338,7 +1346,7 @@ static void exe_OPC_LSHL() {
     value2 = value2 & 0x0000003f;
     result = value1 << value2;
 
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1349,7 +1357,7 @@ static void exe_OPC_ISHR() {
     pop(&value1, TYPE_INT);
     value2 = value2 & 0x0000001f;
     result = value1 >> value2;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1362,7 +1370,7 @@ static void exe_OPC_LSHR() {
     value2 = value2 & 0x0000003f;
     result = value1 >> value2;
 
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1375,7 +1383,7 @@ static void exe_OPC_IUSHR() {
 
     value2 = value2 & 0x0000001f;
     result = value1 >> value2;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1387,7 +1395,7 @@ static void exe_OPC_LUSHR() {
     pop(&value1, TYPE_ULONG);
     value2 = value2 & 0x0000003f;
     result = value1 >> value2;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1397,7 +1405,7 @@ static void exe_OPC_IAND() {
     pop(&value2, TYPE_INT);
     pop(&value1, TYPE_INT);
     value1 = value1 & value2;
-    push(&value1, TYPE_INT);
+    push(getCurrentFrame(),&value1, TYPE_INT);
 
 }
 
@@ -1406,7 +1414,7 @@ static void exe_OPC_LAND() {
     pop(&value2, TYPE_LONG);
     pop(&value1, TYPE_LONG);
     value1 = value1 & value2;
-    push(&value1, TYPE_LONG);
+    push(getCurrentFrame(),&value1, TYPE_LONG);
 
 }
 
@@ -1416,7 +1424,7 @@ static void exe_OPC_IOR() {
     pop(&value2, TYPE_INT);
     pop(&value1, TYPE_INT);
     value1 = value1|value2;
-    push(&value1, TYPE_INT);
+    push(getCurrentFrame(),&value1, TYPE_INT);
 
 }
 
@@ -1426,7 +1434,7 @@ static void exe_OPC_LOR() {
     pop(&value2, TYPE_LONG);
     pop(&value1, TYPE_LONG);
     value1 = value1 | value2;
-    push(&value1, TYPE_LONG);
+    push(getCurrentFrame(),&value1, TYPE_LONG);
 
 }
 static void exe_OPC_IXOR() {
@@ -1435,7 +1443,7 @@ static void exe_OPC_IXOR() {
     pop(&value2, TYPE_INT);
     pop(&value1, TYPE_INT);
     value1 = value1 ^ value2;
-    push(&value1, TYPE_INT);
+    push(getCurrentFrame(),&value1, TYPE_INT);
 
 }
 
@@ -1445,7 +1453,7 @@ static void exe_OPC_LXOR() {
     pop(&value2, TYPE_LONG);
     pop(&value1, TYPE_LONG);
     value1 = value1 ^ value2;
-    push(&value1, TYPE_LONG);
+    push(getCurrentFrame(),&value1, TYPE_LONG);
 
 }
 
@@ -1475,7 +1483,7 @@ static void exe_OPC_I2L() {
 
     pop(&value, TYPE_INT);
     result = (long long)value;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1485,7 +1493,7 @@ static void exe_OPC_I2F() {
 
     pop(&value, TYPE_INT);
     result = (float)value;
-    push(&result, TYPE_FLOAT);
+    push(getCurrentFrame(),&result, TYPE_FLOAT);
 
 }
 
@@ -1495,7 +1503,7 @@ static void exe_OPC_I2D() {
 
     pop(&value, TYPE_INT);
     result = (double)value;
-    push(&result, TYPE_DOUBLE);
+    push(getCurrentFrame(),&result, TYPE_DOUBLE);
 
 }
 
@@ -1505,7 +1513,7 @@ static void exe_OPC_L2I() {
 
     pop(&value, TYPE_LONG);
     result = (int)value;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1515,7 +1523,7 @@ static void exe_OPC_L2F() {
 
     pop(&value, TYPE_LONG);
     result = (float)value;
-    push(&result, TYPE_FLOAT);
+    push(getCurrentFrame(),&result, TYPE_FLOAT);
 
 }
 
@@ -1525,7 +1533,7 @@ static void exe_OPC_L2D() {
 
     pop(&value, TYPE_LONG);
     result = (double)value;
-    push(&result, TYPE_DOUBLE);
+    push(getCurrentFrame(),&result, TYPE_DOUBLE);
 
 }
 
@@ -1535,7 +1543,7 @@ static void exe_OPC_F2I() {
 
     pop(&value, TYPE_FLOAT);
     result = (int)value;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1545,7 +1553,7 @@ static void exe_OPC_F2L() {
 
     pop(&value, TYPE_FLOAT);
     result = (long long)value;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1555,7 +1563,7 @@ static void exe_OPC_F2D() {
 
     pop(&value, TYPE_FLOAT);
     result = (double)value;
-    push(&result, TYPE_DOUBLE);
+    push(getCurrentFrame(),&result, TYPE_DOUBLE);
 
 }
 
@@ -1565,7 +1573,7 @@ static void exe_OPC_D2I() {
 
     pop(&value ,TYPE_DOUBLE);
     result = (int)value;
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1575,7 +1583,7 @@ static void exe_OPC_D2L() {
 
     pop(&value ,TYPE_DOUBLE);
     result = (long long)value;
-    push(&result, TYPE_LONG);
+    push(getCurrentFrame(),&result, TYPE_LONG);
 
 }
 
@@ -1585,7 +1593,7 @@ static void exe_OPC_D2F() {
 
     pop(&value, TYPE_DOUBLE);
     result = (float)value;
-    push(&result, TYPE_FLOAT);
+    push(getCurrentFrame(),&result, TYPE_FLOAT);
 
 }
 
@@ -1615,7 +1623,7 @@ static void exe_OPC_LCMP() {
     {
         result = -1;
     }
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
@@ -1637,7 +1645,7 @@ static void exe_OPC_FCMPL() {
     {
         result = -1;
     }
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 static void exe_OPC_FCMPG() {
@@ -1866,7 +1874,7 @@ static void exe_OPC_IF_ICMPLE() {
 }
 
 static void exe_OPC_IF_ACMPEQ() {
-    Object *value1, *value2;
+    O value1, value2;
     pop(&value2, TYPE_REFERENCE);
     pop(&value1, TYPE_REFERENCE);
 
@@ -1885,7 +1893,7 @@ static void exe_OPC_IF_ACMPEQ() {
 }
 
 static void exe_OPC_IF_ACMPNE() {
-    Object *value1, *value2;
+    O value1, value2;
     pop(&value2, TYPE_REFERENCE);
     pop(&value1, TYPE_REFERENCE);
 
@@ -1925,7 +1933,7 @@ static void exe_OPC_JSR() {
     PCMOVE(1);
 
     address = offset;
-    push(&address, TYPE_INT);
+    push(getCurrentFrame(),&address, TYPE_INT);
 
 }
 
@@ -1983,14 +1991,13 @@ static void exe_OPC_LOOKUPSWITCH() {
     //TODO
 }
 
-static void exe_OPC_IRETURN() {
+static void exe_OPC_IRETURN(JF retFrame)
+{
     //unsigned int* old_ostack = current_frame->prev->ostack;
     int value;
     pop(&value, TYPE_INT);
-    //*((int*)&current_frame->ret) = value;
-    returnValue(&value, TYPE_INT);
-    //current_frame->prev->ostack++;
-    //*(int*)current_frame->prev->ostack = value;
+    push(retFrame, &value, TYPE_INT);
+    //returnValue(&value, TYPE_INT);
 
 }
 static void exe_OPC_LRETURN() {
@@ -1998,23 +2005,22 @@ static void exe_OPC_LRETURN() {
 static void exe_OPC_FRETURN() {
 }
 
-static void exe_OPC_DRETURN() {
+static void exe_OPC_DRETURN(JF retFrame)
+{
     double value;
     pop(&value, TYPE_DOUBLE);
 
-    returnValue(&value, TYPE_DOUBLE);
-    //current_frame->prev->ostack++;
-    //*(double*)current_frame->prev->ostack = value;
-    //current_frame->prev->ostack++;
+    push(retFrame, &value, TYPE_DOUBLE);
+    //returnValue(&value, TYPE_DOUBLE);
 
 }
 
-static void exe_OPC_ARETURN() {
-    Object* array_ref;
+static void exe_OPC_ARETURN(JF retFrame)
+{
+    O array_ref;
     pop(&array_ref, TYPE_REFERENCE);
-    //current_frame->prev->ostack++;
-    //*(Object**)current_frame->prev->ostack = array_ref;
-    returnValue(&array_ref, TYPE_REFERENCE);
+    //returnValue(&array_ref, TYPE_REFERENCE);
+    push(retFrame, &array_ref, TYPE_REFERENCE);
 
 }
 static void exe_OPC_RETURN() {
@@ -2035,25 +2041,25 @@ static void exe_OPC_GETSTATIC() {
     {
         double value;
         value = *(double*)&(fb->static_value);
-        push(&value, TYPE_DOUBLE);
+        push(getCurrentFrame(),&value, TYPE_DOUBLE);
     }
     else if (0 == strcmp(fb->type, "J"))
     {
         long long value;
         value = *(long long*)&(fb->static_value);
-        push(&value, TYPE_LONG);
+        push(getCurrentFrame(),&value, TYPE_LONG);
     }
     else if (0 == strcmp(fb->type, "F"))
     {
         float value;
         value = *(float*)&(fb->static_value);
-        push(&value, TYPE_FLOAT);
+        push(getCurrentFrame(),&value, TYPE_FLOAT);
     }
     else
     {
         int value;
         value = fb->static_value;
-        push(&value, TYPE_INT);
+        push(getCurrentFrame(),&value, TYPE_INT);
     }
 
 }
@@ -2094,9 +2100,9 @@ static void exe_OPC_PUTSTATIC() {
 }
 
 static void exe_OPC_GETFIELD() {
-    Object* objref;
+    O objref;
     int value, offset;
-    Object* value2;
+    O value2;
     u2 fieldref_idx;
 
     PCMOVE(1);
@@ -2119,31 +2125,31 @@ static void exe_OPC_GETFIELD() {
     {
         long long value;
         value = OBJECT_DATA(objref, offset-1, long long);
-        push(&value, TYPE_LONG);
+        push(getCurrentFrame(),&value, TYPE_LONG);
     }
     else if (0 == strcmp(fb->type, "D"))
     {
         double value;
         value = OBJECT_DATA(objref, offset-1, double);
-        push(&value, TYPE_DOUBLE);
+        push(getCurrentFrame(),&value, TYPE_DOUBLE);
     }
     else if (0 == strcmp(fb->type, "F"))
     {
         float value;
         value = OBJECT_DATA(objref, offset-1, float);
-        push(&value, TYPE_FLOAT);
+        push(getCurrentFrame(),&value, TYPE_FLOAT);
     }
     else
     {
         int value;
         value = OBJECT_DATA(objref, offset-1, int);
-        push(&value, TYPE_INT);
+        push(getCurrentFrame(),&value, TYPE_INT);
     }
 
 }
 
 static void exe_OPC_PUTFIELD() {
-    Object* objref;
+    O objref;
     int value, offset;
     C class;
     u2 fieldref_idx;
@@ -2206,7 +2212,7 @@ static void exe_OPC_PUTFIELD() {
 static void exe_OPC_INVOKEVIRTUAL() {
     u2 methodref_idx, name_type_idx, type_idx;
     MethodBlock* method;
-    Object* objref;
+    O objref;
     C class;
     u4 cp_info;
     char* type;
@@ -2244,7 +2250,7 @@ static void exe_OPC_INVOKEVIRTUAL() {
                  * @qcliu 2015/01/30
                  */
                 args_count = parseArgs(type);
-                objref = *(Object**)(getCurrentFrame()->ostack - args_count);
+                objref = *(O*)(getCurrentFrame()->ostack - args_count);
                 class = objref->class;
                 ClassBlock* cb = CLASS_CB(class);
 
@@ -2384,7 +2390,7 @@ static void exe_OPC_INVOKESTATIC() {
 static void exe_OPC_INVOKEINTERFACE() {
     u2 methodref_idx, name_type_idx, type_idx;
     MethodBlock* method;
-    Object* objref;
+    O objref;
     C class;
     u4 cp_info;
     char* type;
@@ -2425,7 +2431,7 @@ static void exe_OPC_INVOKEINTERFACE() {
                 type = CP_UTF8(getCurrentCP(), type_idx);
 
                 args_count = parseArgs(type);
-                objref = *(Object**)(getCurrentFrame()->ostack - args_count);
+                objref = *(O*)(getCurrentFrame()->ostack - args_count);
                 class = objref->class;
                 ClassBlock* cb = CLASS_CB(class);
 
@@ -2448,36 +2454,36 @@ static void exe_OPC_INVOKEINTERFACE() {
 static void exe_OPC_NEW() {
     u2 class_idx;
     C class;
-    Object* obj;
+    O obj;
 
     PCMOVE(1);
     READ_IDX(class_idx, getCurrentPC());
     PCMOVE(1);
     class = resolveClass(getCurrentClass(), class_idx);
     obj = allocObject(class);
-    push(&obj, TYPE_REFERENCE);
+    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 
 }
 
 static void exe_OPC_NEWARRAY() {
     int count, atype;
-    Object* obj;
+    O obj;
     PCMOVE(1);
     READ_BYTE(atype, getCurrentPC());
     pop(&count, TYPE_INT);
 
-    obj = (Object*)allocTypeArray(atype, count, NULL);
+    obj = (O)allocTypeArray(atype, count, NULL);
     if (obj == NULL)
       throwException("newarray obj == NULL!");
 
-    push(&obj, TYPE_REFERENCE);
+    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 
 }
 
 static void exe_OPC_ANEWARRAY() {
     int count;
     u2 index;
-    Object* obj;
+    O obj;
     C class;
 
     index = 0;
@@ -2520,16 +2526,16 @@ static void exe_OPC_ANEWARRAY() {
 
 
     pop(&count, TYPE_INT);
-    obj = (Object*)allocTypeArray(T_REFERENCE, count, ac_name);
+    obj = (O)allocTypeArray(T_REFERENCE, count, ac_name);
     if (obj == NULL)
       throwException("anewarray obj == NULL!");
 
-    push(&obj, TYPE_REFERENCE);
+    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 
 }
 
 static void exe_OPC_ARRAYLENGTH() {
-    Object* arrayref;
+    O arrayref;
     int len;
 
     pop(&arrayref, TYPE_REFERENCE);
@@ -2544,7 +2550,7 @@ static void exe_OPC_ARRAYLENGTH() {
       throwException("this obj is not a array.");
 
     len = arrayref->length;
-    push(&len, TYPE_INT);
+    push(getCurrentFrame(),&len, TYPE_INT);
 
 }
 
@@ -2556,12 +2562,12 @@ static void exe_OPC_ATHROW() {
     //for test
     //printList(head);
     throwException("athrow test");
-    Object* obj;
+    O obj;
 
     pop(&obj, TYPE_REFERENCE);
     //TODO
     /*do some work*/
-    push(&obj, TYPE_REFERENCE);
+    push(getCurrentFrame(),&obj, TYPE_REFERENCE);
 
 }
 
@@ -2573,7 +2579,7 @@ static void exe_OPC_CHECKCAST() {
 
 static void exe_OPC_INSTANCEOF() {
     //TODO
-    Object* obj;
+    O obj;
     u2 index;
     int result;
 
@@ -2598,14 +2604,14 @@ static void exe_OPC_INSTANCEOF() {
     }
 
 
-    push(&result, TYPE_INT);
+    push(getCurrentFrame(),&result, TYPE_INT);
 
 }
 
 static void exe_OPC_MONITORENTER() {
     //TODO
     /*only for test*/
-    Object* obj;
+    O obj;
     pop(&obj, TYPE_REFERENCE);
 
 }
@@ -2613,7 +2619,7 @@ static void exe_OPC_MONITORENTER() {
 static void exe_OPC_MONITOREXIT() {
 
     //TODO
-    Object* obj;
+    O obj;
     pop(&obj, TYPE_REFERENCE);
 }
 static void exe_OPC_WIDE() {
@@ -2624,7 +2630,7 @@ static void exe_OPC_MULTIANEWARRAY() {
 static void exe_OPC_IFNULL() {
     /*the same as OPC_IF_ICMPGE
     */
-    Object* obj;
+    O obj;
     short offset;
 
     pop(&obj, TYPE_REFERENCE);
@@ -2645,7 +2651,7 @@ static void exe_OPC_IFNULL() {
 static void exe_OPC_IFNONNULL() {
     /*the same as OPC_IF_ICMPGE
     */
-    Object* obj;
+    O obj;
     short offset;
 
     pop(&obj, TYPE_REFERENCE);
@@ -2670,10 +2676,10 @@ static void exe_OPC_JSR_W() {
 /*
  * invoke by: executeMethod(), executeStaticMethod() in execute.c
  */
-void executeJava() {
+void executeJava(JF retFrame) {
 
 
-    Frame* current_frame = getCurrentFrame();
+    JF current_frame = getCurrentFrame();
     // When the stack frame is move to the top, exit.
     if (getCurrentFrame()->mb == NULL) {
         printf("\nframe is NULL\n");
@@ -3234,18 +3240,18 @@ void executeJava() {
                 exit(0);
                 break;
             case OPC_IRETURN://172
-                exe_OPC_IRETURN();
+                exe_OPC_IRETURN(retFrame);
                 return;
                 break;
             case OPC_FRETURN://174
                 throwException("todo");
                 break;
             case OPC_DRETURN://175
-                exe_OPC_DRETURN();
+                exe_OPC_DRETURN(retFrame);
                 return;
                 break;
             case OPC_ARETURN://176
-                exe_OPC_ARETURN();
+                exe_OPC_ARETURN(retFrame);
                 return;
                 break;
             case OPC_RETURN://177
@@ -3326,3 +3332,5 @@ void executeJava() {
 }
 
 #undef C
+#undef O
+#undef JF

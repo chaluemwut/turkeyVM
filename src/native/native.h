@@ -1,5 +1,8 @@
 #ifndef H_NATIVE
 #define H_NATIVE
+#include "../heapManager/alloc.h"
+
+#define O Object_t
 
 
 typedef struct
@@ -17,11 +20,12 @@ extern Binding nativeMethods[];
 
 extern void getName0();
 extern void getClass();
-extern Object* getClass_name(char* classname);
+extern O getClass_name(char* classname);
 
 
 
 
 
+#undef O
 
 #endif

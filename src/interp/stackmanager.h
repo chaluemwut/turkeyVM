@@ -1,26 +1,32 @@
-#ifndef STACK_H
-#define STACK_H
+#ifndef STACKMANAGER_H
+#define STACKMANAGER_H
 
 #include "../main/vm.h"
 #include <stdarg.h>
+
 #define C Class_t
-#define SCAN_SIG(p, D, S)			\
-   p++;               /* skip start ( */	\
-   while(*p != ')') {				\
-       if((*p == 'J') || (*p == 'D')) {		\
-          D;					\
-          p++;					\
-      } else {					\
-          S;					\
-          if(*p == '[')				\
-              for(p++; *p == '['; p++);		\
-          if(*p == 'L')				\
-              while(*p++ != ';');		\
-          else					\
-              p++;				\
-      }						\
-   }						\
-   p++;               /* skip end ) */
+#define JF JFrame_t
+#define NF NFrame_t
+
+#define SCAN_SIG(p, D, S)			            \
+    do {                                        \
+        p++;               /* skip start ( */	\
+        while(*p != ')') {				        \
+            if((*p == 'J') || (*p == 'D')) {    \
+                D;					            \
+                p++;					        \
+            } else {					        \
+                S;					            \
+                if(*p == '[')				    \
+                for(p++; *p == '['; p++);		\
+                if(*p == 'L')				    \
+                while(*p++ != ';');	            \
+                else                            \
+                p++;                            \
+            }                                   \
+        }                                       \
+        p++; /* skip end ) */                   \
+    }while(0)
 
 #define VA_DOUBLE(args, sp) *(u8*)sp = va_arg(args, u8);sp+=2
 #define VA_SINGLE(args, sp) *sp = va_arg(args, u4);sp+=1
@@ -36,16 +42,19 @@ typedef enum type {
     TYPE_FLOAT
 }Type;
 
-typedef struct native_frame
+typedef struct NF *NF;
+typedef struct JF *JF;
+
+struct NF
 {
     MethodBlock* mb;
     C class;
     unsigned int* locals;
-    struct native_frame* prev;
-}NativeFrame;
+    //NF prev;
+};
 
-typedef struct frame
-{
+
+struct JF{
     MethodBlock* mb;//current_method
     unsigned char* pc;
     ConstantPool* cp;//current_cp
@@ -55,13 +64,13 @@ typedef struct frame
     unsigned int* locals;
     unsigned int* bottom;
     unsigned int* top;
-    struct frame* prev;//point to the previous Frame
+    //JF prev;//point to the previous Frame
     int pc_offset;
 
     u8 ret;
     //for test
     int id;
-}Frame;
+};
 
 
 
@@ -70,13 +79,13 @@ typedef struct frame
 
 extern int getNewId();
 
-extern Frame* initFrame();
+extern JF initFrame();
 
 extern void initNativeFrame();
 
 extern int getCurrentFrameId();
 
-extern Frame* getCurrentFrame();
+extern JF getCurrentFrame();
 
 extern ConstantPool* getCurrentCP();
 
@@ -97,11 +106,11 @@ extern unsigned int getCurrentCodeLen();
 
 extern C getCurrentClass();
 
-extern void setCurrentFrame(Frame* f);
+extern void setCurrentFrame(JF f);
 
 extern void popFrame();
 
-extern Frame* createFrame0(MethodBlock* mb);
+extern JF createFrame0(MethodBlock* mb);
 
 extern void createFrame(MethodBlock* mb, va_list jargs, void* ret);
 
@@ -109,19 +118,18 @@ extern void popNativeFrame();
 
 extern void createNativeFrame(MethodBlock* mb);
 
-extern NativeFrame* getNativeFrame();
-
-
+extern NF getNativeFrame();
 
 extern void pop(void* result, Type t);
 
-extern void push(void* value, Type t);
+extern void push(JF frame, void* value, Type t);
 
 extern void load(void* result, Type t, int index);
 
 extern void store(void* value, Type t, int index);
 
-extern void returnValue(void* ret, Type t);
 
 #undef C
+#undef JF
+#undef NF
 #endif

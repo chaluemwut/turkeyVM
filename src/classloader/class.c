@@ -35,6 +35,7 @@
 
 #define MAX_PRIMITIVE 9
 #define C Class_t
+#define O Object_t
 
 /* This ia an talbe for primitiveClass, like
  * int, long, double, float, boolean, short, char...
@@ -267,7 +268,6 @@ static C defineClass(char* classname, char* data, int file_len) {
     this_classidx = CP_INFO(constant_pool, this_classidx);
     super_name_idx = CP_INFO(constant_pool, super_classidx);
     classblock->this_classname = CP_UTF8(constant_pool, this_classidx);
-
     classblock->super_classname = CP_UTF8(constant_pool, super_name_idx);
     //resovle/*}}}*/
 
@@ -770,18 +770,18 @@ static C linkClass(C class) {
 
 
     if (java_lang_Class) {
-        Object* obj = allocObject(java_lang_Class);
+        O obj = allocObject(java_lang_Class);
 
         if (java_lang_VMClass == NULL)
           java_lang_VMClass = loadClass("java/lang/VMClass");
 
-        Object* vmobj = allocObject(java_lang_VMClass);
+        O vmobj = allocObject(java_lang_VMClass);
         //NOTE: vmClass obj can also known which class he belong to
         vmobj->binding = (C)obj;
 
         /* Every Class obj need a VMClass obj.*/
         FieldBlock* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
-        OBJECT_DATA(obj, fb->offset-1, Object*) = vmobj;
+        OBJECT_DATA(obj, fb->offset-1, O) = vmobj;
 
         obj->binding = class;//Class obj's binding refer to the method area.
         class->class = obj;
@@ -1003,7 +1003,7 @@ static C loadArrayClass(char* classname) {
     }
 
     if (java_lang_Class) {
-        Object* obj = allocObject(java_lang_Class);
+        O obj = allocObject(java_lang_Class);
         obj->binding = class;
         class->class = obj;
     }
@@ -1144,3 +1144,4 @@ C findPrimitiveClass(char primtype) {
 }
 
 #undef C
+#undef O

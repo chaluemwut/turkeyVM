@@ -8,7 +8,8 @@
 
 typedef struct T *T;
 
-struct List_t {
+struct T 
+{
     P data;
     T next;
 };
@@ -22,10 +23,13 @@ void List_addLast(T, P);
 
 int List_size(T);
 
+int List_isEmpty(T);
+
 P List_getIndexOf(T, int);
 
 P List_contains(T, P, Poly_tyEquals f);
 
+P List_removeFirst(T);
 
 
 #undef T

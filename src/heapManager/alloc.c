@@ -20,6 +20,7 @@
 #include "../main/vm.h"
 
 #define C Class_t
+#define O Object_t
 
 extern int vmsize;
 extern C primClass[];
@@ -47,11 +48,11 @@ void* sysMalloc(int n)
  *      relevent java/lang/Class Object.
  * @qcliu 2015/03/23
  */
-Object* allocObject(C class)
+O allocObject(C class)
 {
     ClassBlock* cblock = CLASS_CB(class);
     int obj_size = cblock->obj_size;
-    Object* obj = (Object*)sysMalloc(sizeof(Object) + sizeof(int)*obj_size);
+    O obj = (O)sysMalloc(sizeof(struct O) + sizeof(int)*obj_size);
     //---------------------------------
     obj->isArray = FALSE;
     obj->length = 0;
@@ -64,7 +65,7 @@ Object* allocObject(C class)
 
     obj->cb = cblock;
     obj->el_size = sizeof(int);
-    obj->copy_size = sizeof(Object)+ sizeof(int)*obj_size;
+    obj->copy_size = sizeof(struct O)+ sizeof(int)*obj_size;
 
     return obj;
 
@@ -74,11 +75,11 @@ Object* allocObject(C class)
  *The Array's isArray is TRUE, and the length is arraylength.
  * @qcliu 2015/03/24
  */
-Object* allocArray(C class, int size, int el_size, int atype)
+O allocArray(C class, int size, int el_size, int atype)
 {
-    Object* obj;
+    O obj;
     ClassBlock* cb = CLASS_CB(class);
-    obj = (Object*)sysMalloc(sizeof(Object)+ size*el_size);
+    obj = (O)sysMalloc(sizeof(struct O)+ size*el_size);
     //------------------------
     obj->isArray = TRUE;
     obj->length = size;
@@ -92,7 +93,7 @@ Object* allocArray(C class, int size, int el_size, int atype)
 
     /*NOTE: this is used when visited the array*/
     obj->el_size = el_size;
-    obj->copy_size = sizeof(Object)+size*el_size;
+    obj->copy_size = sizeof(struct O)+size*el_size;
     return obj;
 }
 
@@ -101,7 +102,7 @@ Object* allocArray(C class, int size, int el_size, int atype)
  * determining the el_size.
  * invoke by:OPC_NEWARRAY, OPC_ANEWARRAY
  */
-Object* allocTypeArray(int type, int size, char* element_name)
+O allocTypeArray(int type, int size, char* element_name)
 {
     int el_size;
     C class;
