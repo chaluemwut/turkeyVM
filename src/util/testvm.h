@@ -1,23 +1,28 @@
 #ifndef TEST_H
 #define TEST_H
-#include "../lib/linkedlist.h"
 #include "../main/vm.h"
+#include "../heapManager/alloc.h"
+
+#define C Class_t
+#define O Object_t
 
 
-void printList(LinkedList* head);
-void printVtable(LinkedList* head);
+//void printList(LinkedList* head);
+//void printVtable(LinkedList* head);
 
 void printStack();
 
 void printNativeStack();
 
-void printObjectWrapper(Object* objref);
-void printObject(Object* objref);
+void printObjectWrapper(O objref);
+void printObject(O objref);
 
-void printString0(Object* obj);
+void printString0(O obj);
 
-void printChar0(Object* obj);
+void printChar0(O obj);
 
-void dumpClass(Class* class);
+void dumpClass(C class);
 
+#undef C
+#undef O
 #endif

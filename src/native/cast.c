@@ -20,8 +20,11 @@
 
 #include <stdio.h>
 #include "../main/vm.h"
+#include "cast.h"
 
-int implements(Class *class, Class *test) {
+#define C Class_t
+
+int implements(C class, C test) {
     ClassBlock *test_cb = CLASS_CB(test);
     int i;
 
@@ -36,7 +39,7 @@ int implements(Class *class, Class *test) {
     return FALSE;
 }
 
-int isSubClassOf(Class *class, Class *test) {
+int isSubClassOf(C class, C test) {
     //for(; test != NULL && test != class; test = ((CLASS_CB(test))->super));
 
       while ((test != NULL)&&(test != class))
@@ -47,7 +50,7 @@ int isSubClassOf(Class *class, Class *test) {
     return test != NULL;
 }
 
-int isInstOfArray(Class *class, Class *test) {
+int isInstOfArray(C class, C test) {
     if(isSubClassOf(class, test))
         return TRUE;
     else {
@@ -63,7 +66,7 @@ int isInstOfArray(Class *class, Class *test) {
 }
 
 /*two args, class is the constants_pool, test is the obj->class*/
-int isInstanceOf(Class *class, Class *test) {
+int isInstanceOf(C class, C test) {
     if(class == test)
         return TRUE;
 

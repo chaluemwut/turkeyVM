@@ -2,18 +2,39 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
+#include "../heapManager/alloc.h"
 #include "../main/vm.h"
-#include "../lib/linkedlist.h"
+#include "../lib/list.h"
+#include "dll.h"
+#include "../lib/poly.h"
 
-extern LinkedList* DLL;
+#define P Poly_t
+#define D Dll_t
+
+static int equals(P x, P y)
+{
+    char* s = (char*)x;
+    D d = (D)y;
+    if (0 == strcmp(s, d->name))
+      return 1;
+    else
+      return 0;
+}
+
+D findDllInTable(char* dllname)
+{
+    D dll = (D)List_contains(DList, dllname, equals);
+
+    return dll;
+}
 
 char* getDllPath() {
     return getenv("LD_LIBRARY_PATH");
 }
 
 int resolveDll(char* dllname) {
-    DllEntry* dll;
-    dll = findDllInTable(DLL, dllname);
+    D dll;
+    dll = findDllInTable(dllname);
     if (dll != NULL)
       return 1;
 
@@ -21,11 +42,11 @@ int resolveDll(char* dllname) {
     if (!handle)
       return 0;
 
-    dll = (DllEntry*)sysMalloc(sizeof(DllEntry));
+    dll = (D)sysMalloc(sizeof(struct D));
     dll->name = dllname;
     dll->handle = handle;
 
-    addLast(DLL, dll);
+    List_addLast(DList, dll);
 
     return 1;
 
@@ -37,3 +58,6 @@ char* getDllName(char* path, char* name) {
 
     return buf;
 }
+
+#undef P
+#undef D

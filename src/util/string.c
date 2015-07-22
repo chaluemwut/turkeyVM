@@ -16,13 +16,17 @@
 #include <string.h>
 #include <stdlib.h>
 #include "string.h"
+#include "../classloader/class.h"
+#include "../heapManager/alloc.h"
 #include "../main/vm.h"
 #include "../classloader/resolve.h"
 #include "exception.h"
 
 #include "testUTF8.h"
+#define C Class_t
+#define O Object_t
 
-extern Class* java_lang_String;
+extern C java_lang_String;
 static int count_offset;
 static int value_offset;
 static int offset_offset;
@@ -72,8 +76,8 @@ static void initString() {
  * 
  * @return new char
  */
-char* String2Char(Object* string) {
-    Object* array = (Object*)(INST_DATA(string)[value_offset-1]);
+char* String2Char(O string) {
+    O array = (O)(INST_DATA(string)[value_offset-1]);
     int len = INST_DATA(string)[count_offset-1];
     int offset = INST_DATA(string)[offset_offset-1];
     char* cstr = (char*)sysMalloc(len+1), *spntr;
@@ -92,15 +96,15 @@ char* String2Char(Object* string) {
  * @qcliu 2015/03/08
  * invoked by:creatString();
  */
-Object* char2Char(char* s) {
-    Class* class;
+O char2Char(char* s) {
+    C class;
     int length;
-    Object* obj;
+    O obj;
     int i;
 
     length = strlen(s);
 
-    obj = (Object*)allocTypeArray(T_CHAR, length, NULL);
+    obj = (O)allocTypeArray(T_CHAR, length, NULL);
 
     for (i = 0; i < length; i++) {
         *((char*)(unsigned short*)obj->data+i) = s[i];
@@ -113,7 +117,7 @@ Object* char2Char(char* s) {
 /*Create a new String
  *invoked by:OPC_LDC
  */
-Object* createString(char* s) {
+O createString(char* s) {
     if (java_lang_String == NULL)
       java_lang_String = loadClass("java/lang/String");
 
@@ -122,7 +126,7 @@ Object* createString(char* s) {
     if (!inited)
       initString();
 
-    Object *char_obj, *string_obj;
+    O char_obj, string_obj;
     FieldBlock* fb;
     int length, offset;
 
@@ -135,7 +139,7 @@ Object* createString(char* s) {
 
     string_obj = allocObject(java_lang_String);
     string_obj->isArray = 2;
-    OBJECT_DATA(string_obj, value_offset-1, Object*) = char_obj;
+    OBJECT_DATA(string_obj, value_offset-1, O) = char_obj;
     OBJECT_DATA(string_obj, count_offset-1, int) = length;
     //*(((Object**)string_obj->data)+offset-1) = char_obj;
 
@@ -150,13 +154,15 @@ Object* createString(char* s) {
 }
 
 /* Given a String object, and print*/
-void printStringObject(Object* obj) {
+void printStringObject(O obj) {
 
     int offset;
-    Object* char_obj;
+    O char_obj;
     FieldBlock* fb = (FieldBlock*)findField(java_lang_String, "value", "[C");
     offset = fb->offset;
-    char_obj = *(((Object**)obj->data)+offset-1);
+    char_obj = *(((O*)obj->data)+offset-1);
     printf("String:%s\n", (char*)char_obj->data);
 
 }
+#undef C
+#undef O

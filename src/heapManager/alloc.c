@@ -15,11 +15,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../classloader/class.h"
 #include "../util/exception.h"
 #include "../main/vm.h"
 
+#define C Class_t
+#define O Object_t
+
 extern int vmsize;
-extern Class* primClass[];
+extern C primClass[];
 
 void* sysMalloc(int n)
 {
@@ -44,11 +48,11 @@ void* sysMalloc(int n)
  *      relevent java/lang/Class Object.
  * @qcliu 2015/03/23
  */
-Object* allocObject(Class* class)
+O allocObject(C class)
 {
-    ClassBlock* cb = CLASS_CB(class);
-    int obj_size = cb->obj_size;
-    Object* obj = (Object*)sysMalloc(sizeof(Object) + sizeof(int)*obj_size);
+    ClassBlock* cblock = CLASS_CB(class);
+    int obj_size = cblock->obj_size;
+    O obj = (O)sysMalloc(sizeof(struct O) + sizeof(int)*obj_size);
     //---------------------------------
     obj->isArray = FALSE;
     obj->length = 0;
@@ -59,9 +63,9 @@ Object* allocObject(Class* class)
     obj->data = (unsigned int*)(obj+1);
     memset(obj+1, 0, sizeof(int) * obj_size);
 
-    obj->cb = cb;
+    obj->cb = cblock;
     obj->el_size = sizeof(int);
-    obj->copy_size = sizeof(Object)+ sizeof(int)*obj_size;
+    obj->copy_size = sizeof(struct O)+ sizeof(int)*obj_size;
 
     return obj;
 
@@ -71,11 +75,11 @@ Object* allocObject(Class* class)
  *The Array's isArray is TRUE, and the length is arraylength.
  * @qcliu 2015/03/24
  */
-Object* allocArray(Class* class, int size, int el_size, int atype)
+O allocArray(C class, int size, int el_size, int atype)
 {
-    Object* obj;
+    O obj;
     ClassBlock* cb = CLASS_CB(class);
-    obj = (Object*)sysMalloc(sizeof(Object)+ size*el_size);
+    obj = (O)sysMalloc(sizeof(struct O)+ size*el_size);
     //------------------------
     obj->isArray = TRUE;
     obj->length = size;
@@ -89,7 +93,7 @@ Object* allocArray(Class* class, int size, int el_size, int atype)
 
     /*NOTE: this is used when visited the array*/
     obj->el_size = el_size;
-    obj->copy_size = sizeof(Object)+size*el_size;
+    obj->copy_size = sizeof(struct O)+size*el_size;
     return obj;
 }
 
@@ -98,10 +102,10 @@ Object* allocArray(Class* class, int size, int el_size, int atype)
  * determining the el_size.
  * invoke by:OPC_NEWARRAY, OPC_ANEWARRAY
  */
-Object* allocTypeArray(int type, int size, char* element_name)
+O allocTypeArray(int type, int size, char* element_name)
 {
     int el_size;
-    Class* class;
+    C class;
 
     switch (type)
     {
@@ -158,3 +162,4 @@ Object* allocTypeArray(int type, int size, char* element_name)
     return allocArray(class, size, el_size, type);
 }
 
+#undef C

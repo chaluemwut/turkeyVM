@@ -15,16 +15,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../classloader/class.h"
+#include "../heapManager/alloc.h"
 #include "../main/vm.h"
 #include "../util/exception.h"
 #include "native.h"
 #include "../classloader/resolve.h"
 
+#define C Class_t
+#define O Object_t
+
 /**
- * @parm 
+ * @parm
  *      mbtype the method's description.
  *
- * @return args count. 
+ * @return args count.
  * @see getClassConstructors
  */
 static int getArgsCount(char* mbtype) {
@@ -68,7 +73,7 @@ static int getArgsCount(char* mbtype) {
 }
 
 /**
- *  @parm 
+ *  @parm
  *      desc the mb->type
  *      argcount the arg's number
  * @return a array of char*, contains arg's name.
@@ -191,22 +196,22 @@ static char** getArgsName(char* desc, int argcount) {
 
 /**
  * @parm
- *      vmClass the header of Class which in the method area. 
+ *      vmClass the header of Class which in the method area.
  *      vmClass->binding is the obj which we make Constructors to.
  *
  * @return an Constructor[].
  * @see native.c getDeclaredConstructors()
  *
  */
-Object* getClassConstructors(Object* vmClass, int isPublic) {
-    Class *array_class = findArrayClass("[Ljava/lang/reflect/Constructor;");
-    Class *reflect_class = loadClass("java/lang/reflect/Constructor");
+O getClassConstructors(O vmClass, int isPublic) {
+    C array_class = findArrayClass("[Ljava/lang/reflect/Constructor;");
+    C reflect_class = loadClass("java/lang/reflect/Constructor");
     /**/
-    Object* c = (Object*)vmClass->binding;
+    O c = (O)vmClass->binding;
 
     ClassBlock *cb = CLASS_CB(c->binding);
 
-    Object *array, **cons;
+    O array, *cons;
     MethodBlock *init_mb;
     int count = 0;
     int i, j;
@@ -229,16 +234,16 @@ Object* getClassConstructors(Object* vmClass, int isPublic) {
     }
 
     //create a new array of java/lang/reflect/Constructor
-    if((array = (Object*)allocArray(array_class, count, 4, T_REFERENCE)) == NULL)
+    if((array = (O)allocArray(array_class, count, 4, T_REFERENCE)) == NULL)
       return NULL;
 
-    cons = (Object**)INST_DATA(array);
+    cons = (O*)INST_DATA(array);
 
     for(i = 0, j = 0; j < count; i++) {
         MethodBlock *mb = &cb->methods[i];
 
         if((strcmp(mb->name, "<init>") == 0)) {
-            Object *reflect_ob;
+            O reflect_ob;
 
             if((reflect_ob = allocObject(reflect_class))) {
                 /**
@@ -249,28 +254,28 @@ Object* getClassConstructors(Object* vmClass, int isPublic) {
                 FieldBlock* slot = findField(reflect_class, "slot", "I");
 
                 int argcount = getArgsCount(mb->type);
-                Class* class = loadClass("[Ljava/lang/Class;");
-                Object* classarray = (Object*)allocArray(class, argcount, sizeof(int), T_REFERENCE);
+                C class = loadClass("[Ljava/lang/Class;");
+                O classarray = (O)allocArray(class, argcount, sizeof(int), T_REFERENCE);
                 char** argname = getArgsName(mb->type, argcount);
 
                 int i = 0;
                 for (; i < argcount; i++) {
-                    Object* arg_x = getClass_name(argname[i]);
-                    ARRAY_DATA(classarray, i, Object*) = arg_x;
+                    O arg_x = getClass_name(argname[i]);
+                    ARRAY_DATA(classarray, i, O) = arg_x;
                 }
 
                 /*NOTE: vmClass->binding is a Class Object */
-                OBJECT_DATA(reflect_ob, clazz->offset-1, Object*) = vmClass->binding;
+                OBJECT_DATA(reflect_ob, clazz->offset-1, O) = (O)vmClass->binding;
                 /**
                  * @see class.c defineClass()
                  * 2015/07/01
                  */
                 OBJECT_DATA(reflect_ob, slot->offset-1, int) = mb->slot;
-                OBJECT_DATA(reflect_ob, paramType->offset-1, Object*) = classarray;
+                OBJECT_DATA(reflect_ob, paramType->offset-1, O) = classarray;
 
 
                 cons[j++] = reflect_ob;
-            } 
+            }
             else
               return NULL;
         }
@@ -280,15 +285,15 @@ Object* getClassConstructors(Object* vmClass, int isPublic) {
 
 
 /* return an object's class name*/
-char* getObjectClassName(Object* obj) {
-    Class* class = obj->class;
+char* getObjectClassName(O obj) {
+    C class = obj->class;
     ClassBlock* cb = CLASS_CB(class);
     return cb->this_classname;
 }
 
 
 /* invoke by: OPC_INSTANCEOF */
-int instanceOf(Object* obj, Class* class) {
+int instanceOf(O obj, C class) {
 
     return 1;//TODO
     //obj must non-null.
@@ -340,3 +345,5 @@ int instanceOf(Object* obj, Class* class) {
 
 
 
+#undef C
+#undef O

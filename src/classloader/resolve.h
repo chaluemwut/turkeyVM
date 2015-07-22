@@ -10,22 +10,33 @@
 
 /*
  * Revision log:
- * 
+ *
  */
+
+#ifndef RESOLVE_H
+#define RESOLVE_H
+
 #include "../main/vm.h"
-Class* resolveClass(Class* class, u2 index);
+#include "class.h"
 
-MethodBlock* findMethod(Class* class, char* name, char* type);
+#define C Class_t
 
-MethodBlock* findMethodinCurrent(Class* class, char* name, char* type);
+C resolveClass(C class, u2 index);
 
-//int findField(Class* class, char* name, char* type);
+MethodBlock* findMethod(C class, char* name, char* type);
 
-//int findFieldinCurrent(Class* class, char* name, char* type);
-FieldBlock* resolveField(Class* class, u2 index);
+MethodBlock* findMethodinCurrent(C class, char* name, char* type);
 
-FieldBlock* findField(Class* class, char* name, char* type);
+//int findField(C class, char* name, char* type);
 
-MethodBlock* resolveMethod(Class* class, u2 index);
+//int findFieldinCurrent(C class, char* name, char* type);
+FieldBlock* resolveField(C class, u2 index);
 
-MethodBlock* resolveInterfaceMethod(Class* class, u2 index);
+FieldBlock* findField(C class, char* name, char* type);
+
+MethodBlock* resolveMethod(C class, u2 index);
+
+MethodBlock* resolveInterfaceMethod(C class, u2 index);
+
+#undef C
+#endif
