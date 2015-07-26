@@ -44,8 +44,10 @@ extern List_t CList;
 void executeMethod(MethodBlock* mb, va_list jargs)
 {
     void* ret;/*{{{*/
-    if (mb->native_invoker) {
-        if (dis_testinfo) {
+    if (mb->native_invoker)
+    {
+        if (dis_testinfo)
+        {
             printf("This is a native method!!!");
             printf("name:%s, type:%s\n", mb->name, mb->type);
         }
@@ -57,7 +59,8 @@ void executeMethod(MethodBlock* mb, va_list jargs)
         popNativeFrame();
         //printf("pop Native method:%s\n", mb->name);
     }
-    else {
+    else
+    {
         JF retFrame = getCurrentFrame();
 
         createFrame(mb, jargs, ret);
@@ -83,9 +86,9 @@ void executeStaticMain(MethodBlock* mb)
     unsigned short max_locals = mb->max_locals;
     int args_count = mb->args_count;
     JF frame = createFrame0(mb);
-    
+
     if (dis_testinfo)
-      printf("\nnew Frame: %d\n", getCurrentFrameId());
+        printf("\nnew Frame: %d\n", getCurrentFrameId());
     //
     executeJava(NULL);
     popFrame();
@@ -104,7 +107,7 @@ void executeMethodArgs(C class, MethodBlock* mb, ...)
 }
 
 /**
- * @see native.c 
+ * @see native.c
  */
 void invoke(MethodBlock* mb, O args, O this)
 {
@@ -127,23 +130,26 @@ void invoke(MethodBlock* mb, O args, O this)
      * @qcliu 2015/01/29
      */
 
-    if (args->isArray != 1) {
+    if (args->isArray != 1)
+    {
         throwException("args must be array");
     }
     //copyArgs(Frame* frame, MethodBlock* mb)
     if (!(mb->access_flags & ACC_STATIC))//non-static
-      locals_idx = args_count;
+        locals_idx = args_count;
     else
-      throwException("construct method must be non-static");
+        throwException("construct method must be non-static");
 
-    if (args->length != locals_idx) {
+    if (args->length != locals_idx)
+    {
         throwException("args count error");
     }
 
     //*((Object**)&frame->locals[0]) = this;
     store(&this, TYPE_REFERENCE, 0);
     int i;
-    for (i = 0; i<args->length; i++) {
+    for (i = 0; i<args->length; i++)
+    {
         //*((Object**)&frame->locals[i+1]) = ARRAY_DATA(args, i, Object*);
         store(&(ARRAY_DATA(args, i, O)), TYPE_REFERENCE, i+1);
 

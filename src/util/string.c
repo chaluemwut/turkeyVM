@@ -9,7 +9,7 @@
 /*------------------------------------------------------------------*/
 
 /*
- * 
+ *
  *
  *//*}}}*/
 #include <stdio.h>
@@ -32,9 +32,10 @@ static int value_offset;
 static int offset_offset;
 static int inited;
 
-static void initString() {
+static void initString()
+{
     if (java_lang_String == NULL)
-      java_lang_String = loadClass("java/lang/String");
+        java_lang_String = loadClass("java/lang/String");
     FieldBlock* count;
     FieldBlock* value;
     FieldBlock* offset;
@@ -44,7 +45,7 @@ static void initString() {
     offset =(FieldBlock*)findField(java_lang_String, "offset", "I");
 
     if ((count == NULL)||(value == NULL)||(offset == NULL))
-      throwException("initString error");
+        throwException("initString error");
 
     count_offset = count->offset;
     value_offset = value->offset;
@@ -73,10 +74,11 @@ static void initString() {
  }*/
 
 /**
- * 
+ *
  * @return new char
  */
-char* String2Char(O string) {
+char* String2Char(O string)
+{
     O array = (O)(INST_DATA(string)[value_offset-1]);
     int len = INST_DATA(string)[count_offset-1];
     int offset = INST_DATA(string)[offset_offset-1];
@@ -84,7 +86,7 @@ char* String2Char(O string) {
     short* str = ((short*)INST_DATA(array))+offset;
 
     for (spntr = cstr; len > 0; len--)
-      *spntr++ = *str++;
+        *spntr++ = *str++;
 
     *spntr = '\0';
 
@@ -96,7 +98,8 @@ char* String2Char(O string) {
  * @qcliu 2015/03/08
  * invoked by:creatString();
  */
-O char2Char(char* s) {
+O char2Char(char* s)
+{
     C class;
     int length;
     O obj;
@@ -106,7 +109,8 @@ O char2Char(char* s) {
 
     obj = (O)allocTypeArray(T_CHAR, length, NULL);
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; i++)
+    {
         *((char*)(unsigned short*)obj->data+i) = s[i];
     }
 
@@ -117,14 +121,15 @@ O char2Char(char* s) {
 /*Create a new String
  *invoked by:OPC_LDC
  */
-O createString(char* s) {
+O createString(char* s)
+{
     if (java_lang_String == NULL)
-      java_lang_String = loadClass("java/lang/String");
+        java_lang_String = loadClass("java/lang/String");
 
     ClassBlock* cb = CLASS_CB(java_lang_String);
 
     if (!inited)
-      initString();
+        initString();
 
     O char_obj, string_obj;
     FieldBlock* fb;
@@ -154,7 +159,8 @@ O createString(char* s) {
 }
 
 /* Given a String object, and print*/
-void printStringObject(O obj) {
+void printStringObject(O obj)
+{
 
     int offset;
     O char_obj;

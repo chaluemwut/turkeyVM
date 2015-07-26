@@ -4,8 +4,6 @@
 
 #define C Class_t
 
-
-
 extern void initClass(C class);
 
 extern C loadClass_not_init(char* classname);

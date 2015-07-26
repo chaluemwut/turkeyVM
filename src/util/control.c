@@ -17,7 +17,7 @@
 #define TRUE 1
 
 /*
- * To control weather print vtable and ClassList. 
+ * To control weather print vtable and ClassList.
  * Be used in vm.c.
  * @qcliu 2015/01/27
  */

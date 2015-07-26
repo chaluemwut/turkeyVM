@@ -48,8 +48,6 @@ int Stack_size(T stk)
 
 /**
  * get the top element but not pop
- * 
- * @return 0 if stack is empty
  */
 P Stack_seek(T stk)
 {

@@ -3,6 +3,7 @@
 #include <string.h>
 #include "Command-line.h"
 #include "control.h"
+#include "../lib/trace.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -19,21 +20,29 @@ void actionArg_test();
 
 typedef enum
 {
+    ARGTYPE_BOOL,
+    ARGTYPE_EMPTY,
     ARGTYPE_INT,
-    ARGTYPE_EMPTY
+    ARGTYPE_STRING,
 }Arg_type;
 
-typedef struct 
+typedef struct
 {
     char* name;
     Arg_type type;
     char* desc;
     void (*action)(); //a call-back
-}Arg_t;
+} Arg_t;
 
+static void arg_setTrace(char* func)
+{
+    printf("set trace:%s\n", func);
+    Trace_addFunc(func);
+}
 
 static Arg_t allArgs[] =
 {
+    {"trace", ARGTYPE_STRING, "{name}", arg_setTrace},
     {"help", ARGTYPE_EMPTY,"help",actionArg_help},
     {"disv", ARGTYPE_EMPTY, "display vtable", actionArg_printVtable},
     {"dish", ARGTYPE_EMPTY, "display list", actionArg_printList},
@@ -64,7 +73,7 @@ void actionArg_printVtable()
 void printAllarg()
 {
     int i = 0;
-    for(;allArgs[i].action;i++)
+    for(; allArgs[i].action; i++)
     {
         printf("  -%s\t\t%s\n",allArgs[i].name,allArgs[i].desc);
     }
@@ -92,7 +101,7 @@ void commandline_doarg(int argc,char** argv)
         dis_testinfo = FALSE;
     }
     int index = 1;
-    for(;index < argc;index++)
+    for(; index < argc; index++)
     {
         char* inputName = argv[index];
 
@@ -106,7 +115,7 @@ void commandline_doarg(int argc,char** argv)
             continue;
         }
 
-        for(;allArgs[i].action;i++)
+        for(; allArgs[i].action; i++)
         {
             if(strcmp(allArgs[i].name,inputName+1) != 0)
             {
@@ -116,12 +125,23 @@ void commandline_doarg(int argc,char** argv)
             switch(allArgs[i].type)
             {
                 case ARGTYPE_EMPTY:
-                    allArgs[i].action();
-                    break;
+                    {
+                        allArgs[i].action();
+                        break;
+                    }
                 case ARGTYPE_INT:
-                    printf("ARGTYPE_INT no operate!");
-                    exit(0);
-                    break;
+                    {
+                        printf("ARGTYPE_INT no operate!");
+                        exit(0);
+                        break;
+                    }
+                case ARGTYPE_STRING:
+                    {
+                        index++;
+                        char* arg = argv[index++];
+                        allArgs[i].action(arg);
+                        break;
+                    }
                 default:
                     printf("%s\n","impossible");
                     exit(0);
