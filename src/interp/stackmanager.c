@@ -58,7 +58,7 @@ int getNewId()
 
 void print_Stack(JF frame)
 {
-    printf("----------------\n");
+    printf("\n----------------\n");
     printf("%s\n", getCurrentMethodName());
     printf("%s\n", getCurrentMethodDesc());
     int ms = frame->mb->max_stack;
@@ -67,9 +67,13 @@ void print_Stack(JF frame)
     int i;
     for (i=0; i<ms; i++)
     {
-        printf("[%d]%d\n", i, *(int*)p);
+        if (p == frame->ostack)
+          printf("[top]%d\n",*(int*)p);
+        else
+          printf("[%d]%d\n", i, *(int*)p);
         p++;
     }
+    fprintf(stdout, "%s", "\n");
 }
 
 /**
@@ -144,6 +148,7 @@ void createNativeFrame(MethodBlock* mb)
         current_frame->ostack--;
     }
 }
+
 /*
  * The method is not pop. It just clear the native_frame. Since
  * in a native method , it impossible to invoke another methods

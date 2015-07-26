@@ -74,6 +74,7 @@ void nativeValid();
 /* Binding method name with function*/
 Binding nativeMethods[] =
 {
+    {"getPrimitiveClass","(Ljava/lang/String;)Ljava/lang/Class;",getPrimitiveClass},
     {"nativeWriteBuf", "(J[BII)J", nativeWriteBuf},
     {"identityHashCode", "(Ljava/lang/Object;)I", identityHashCode},
     {"constructNative", "([Ljava/lang/Object;Ljava/lang/Class;I)Ljava/lang/Object;", constructNative},
@@ -699,6 +700,8 @@ static char getPrimType(char* s)
     return primtype;
 }
 
+
+
 void getPrimitiveClass()
 {
     JF current_frame = getCurrentFrame();
@@ -706,10 +709,11 @@ void getPrimitiveClass()
 
     /*In the frame is a String*/
     O obj = (O)nframe->locals[0];
-    O array = (O)obj->data[0];
+    O array = String_getValue(obj);
+    char* ty = String2Char(obj);
 
     //printf("getPrimitiveClass:%s\n", (char*)array->data);
-    char primtype = getPrimType((char*)array->data);
+    char primtype = getPrimType(ty);
 
     C class = (C)findPrimitiveClass(primtype);
     if (class != NULL)

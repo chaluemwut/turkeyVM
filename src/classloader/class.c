@@ -33,6 +33,7 @@
 #include "../native/native.h"
 #include "../util/control.h"
 #include "../lib/error.h"
+#include "../lib/string.h"
 
 #define MAX_PRIMITIVE 9
 #define C Class_t
@@ -56,9 +57,14 @@ extern int initable;
 static u2* for_test;
 
 
+//static char* test;
 
 C findClass(char* classname)
 {
+    //if (0 == strcmp(classname, "[Ljava/lang/Object;"))
+   // {
+     // test = classname;
+    //}
     //C c = (C)List_contains(CList, classname, equals);
     C c = (C)Hash_get(CMap, classname);
     return c;
@@ -569,13 +575,19 @@ static C loadSystemClass(char* classname)
     FILE* cfd;
 
     strcat(strcpy(filename, classname), ".class");
+
+    //printf("%s\n", filename);
+
     cfd = fopen(filename, "r");
 
     if (dis_testinfo)
         printf("this fiel name is %s\n", filename);
 
     if (cfd == NULL)
+    {
+        printf("\n%s\n", classname);
         throwException("NoFileInput");
+    }
 
     fseek(cfd, 0L, SEEK_END);
     file_len = ftell(cfd);
@@ -583,7 +595,10 @@ static C loadSystemClass(char* classname)
 
     data = (char*)sysMalloc(file_len);
     if (fread(data, sizeof(char), file_len, cfd) != file_len)
+    {
+        printf("\n%s\n", classname);
         throwException("NoFileInput");
+    }
     else
     {
         /*defineClass()*/
@@ -911,7 +926,8 @@ C loadClass_not_init(char* classname)
      **/
     //add class to the list
     //List_addLast(CList, class);
-    Hash_put(CMap, classname, class);
+    String_t s = String_new(classname);
+    Hash_put(CMap, s, class);
 
 
     //prepareClass
@@ -967,7 +983,8 @@ C loadClass(char* classname)
      **/
     //add class to the list
     //List_addLast(CList, class);
-    Hash_put(CMap, classname, class);
+    String_t s = String_new(classname);
+    Hash_put(CMap, s, class);
 
 
     //prepareClass
@@ -1001,6 +1018,7 @@ C loadClass(char* classname)
 static C loadArrayClass(char* classname)
 {
     /*{{{*/
+    //printf("%s, %d\n", classname, strlen(classname));
     int len = strlen(classname);
     int size = sizeof(struct C)+sizeof(ClassBlock);
     //C class = (C)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
@@ -1135,7 +1153,8 @@ static C loadPrimitiveClass(char* classname, int index)
     cb->dim = 0;
 
     //List_addLast(CList, class);
-    Hash_put(CMap, cb->this_classname, class);
+    String_t s = String_new(cb->this_classname);
+    Hash_put(CMap, s, class);
     //prepareClass
     prepareClass(class);
     //linkClass

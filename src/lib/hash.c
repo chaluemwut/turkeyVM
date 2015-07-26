@@ -279,7 +279,8 @@ V Hash_put(T h, K k, V v)
     hcode = h->hashCode(k);
     bktIdx = hcode & (h->mask);
     list = *(h->buckets+bktIdx);
-    List_addFirst(list, Triple_new(k, (P)hcode ,v));
+
+    List_addFirst(list, Triple_new(k, (P)hcode, v));
     h->numItems++;
 
     if (currentLoad(h) >= h->load)

@@ -55,23 +55,13 @@ static void initString()
 
 }
 
-/*Object* createString0(char* utf8)
-  {
-  int len = strlen(utf8);
-  Object* array;
-  Object* obj;
+O String_getValue(O obj)
+{
+    O array;
+    array = OBJECT_DATA(obj, value_offset-1, O);
+    return array;
+}
 
-  if((array = (Object*)allocTypeArray(T_CHAR, len))==NULL
-  || (obj = allocObject(java_lang_String)) == NULL)
-  throwException("@ createString");
-
-  int i;
-  for (i = 0; i < len; i++)
-  {
- *((char*)(unsigned short*)array->data+i) = utf8[i];
- }
-
- }*/
 
 /**
  *

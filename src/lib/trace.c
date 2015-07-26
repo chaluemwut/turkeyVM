@@ -9,14 +9,15 @@
 
 static L traceList;
 
-P Trace_contains(char* s)
+int Trace_contains(char* s)
 {
     if (!traceList)
         traceList = List_new();
 
-    return List_contains(traceList,
+    P exist =  List_contains(traceList,
                 s,
                 (Poly_tyEquals)String_equals);
+    return (exist)?1:0;
 }
 
 void Trace_addFunc(char* s)

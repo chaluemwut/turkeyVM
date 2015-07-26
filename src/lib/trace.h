@@ -3,9 +3,8 @@
 #include <stdio.h>
 #include "poly.h"
 
-#define P Poly_t
 
-P Trace_contains(char* s);
+int Trace_contains(char* s);
 
 void Trace_addFunc(char* s);
 
@@ -13,17 +12,26 @@ void Trace_addFunc(char* s);
     do {                                                \
         int exists = Trace_contains(s);                 \
         if (exists) {                                   \
-            fprintf(stdout, "%s\n", "do args");         \
+            dox x;                                      \
         }                                               \
         r = f x;                                        \
         if (exists) {                                   \
-            fprintf(stdout, "%s\n", "do result");       \
+            dor r;                                      \
         }                                               \
     }while(0)                                           
 
 
+#define Trace_Stack(s, f, x, dox)                       \
+    do {                                                \
+        int exists = Trace_contains(s);                 \
+        if (exists) {                                   \
+            dox x;                                      \
+        }                                               \
+        f x;                                            \
+        if (exists) {                                   \
+            dox x;                                      \
+        }                                               \
+    }while(0)            
 
 
-
-#undef P
 #endif

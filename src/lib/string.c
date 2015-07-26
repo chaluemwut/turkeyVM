@@ -1,5 +1,9 @@
 #include <string.h>
+#include <stdio.h>
 #include "string.h"
+#include "assert.h"
+#include "mem.h"
+#include "error.h"
 
 #define T String_t
 
@@ -22,6 +26,21 @@ int String_equals(T x, T y)
       return 1;
 
     return 0;
+}
+
+T String_new(T x)
+{
+    int len;
+    char* s;
+
+    len = strlen(x);
+    Mem_newSize(s, len+1);
+    strcpy(s, x);
+
+    if (String_equals(s, x))
+      return s;
+
+    ERROR("unknow");
 }
 
 

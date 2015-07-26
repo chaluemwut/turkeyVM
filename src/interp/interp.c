@@ -31,6 +31,8 @@
 #include "../native/reflect.h"
 #include "../lib/list.h"
 #include "stackmanager.h"
+#include "../lib/error.h"
+#include "../lib/mem.h"
 
 #define C Class_t
 #define O Object_t
@@ -2161,7 +2163,68 @@ static void exe_OPC_TABLESWITCH()
 
 static void exe_OPC_LOOKUPSWITCH()
 {
-    //TODO
+    int def;
+    int npairs;
+    int base;
+    int temp;
+    int pad;
+    int key;
+    int jump;
+
+    pop(&key, TYPE_INT);
+    base = getCurrentPCOffset();
+    temp = getCurrentPCOffset();
+    pad = 4-temp%4;
+    PCMOVE(pad);
+    READ_INT(def, getCurrentPC());
+    PCMOVE(4);
+    READ_INT(npairs, getCurrentPC());
+    PCMOVE(4);
+
+    int* match;
+    int* _offset;
+    Mem_newSize(match, npairs);
+    Mem_newSize(_offset, npairs);
+    int i;
+    for (i=0; i<npairs; i++)
+    {
+        READ_INT(match[i], getCurrentPC());
+        PCMOVE(4);
+        READ_INT(_offset[i], getCurrentPC());
+        PCMOVE(4);
+    }
+
+    /*
+    printf("match:\n");
+    for (i=0; i<npairs; i++)
+      printf("%d\n", match[i]);
+    printf("offset:\n");
+    for (i=0; i<npairs; i++)
+      printf("%d\n", _offset[i]);
+      */
+
+    //printf("key:%d\n", key);
+
+    for (i=0; i<npairs; i++)
+    {
+        if (key != match[i])
+          continue;
+
+        temp = getCurrentPCOffset();
+        jump = _offset[i]-(temp-base);
+        PCMOVE(jump-1);
+        return;
+
+    }
+    //default
+    temp = getCurrentPCOffset();
+    jump = def-(temp-base);
+    PCMOVE(jump-1);
+    return;
+
+    
+
+    ERROR("test");
 }
 
 static void exe_OPC_IRETURN(JF retFrame)
@@ -2933,7 +2996,7 @@ void executeJava(JF retFrame)
             printf("\nopcode: ---------%s\n", op_code[c]);//for test
             printf("pc_offset:------------%d\n", getCurrentPCOffset());
             printf("getCurrentPC():---------%d\n", (unsigned int)getCurrentPC());
-            printStack();
+            printStack(getCurrentFrame());
         }
         switch (c)
         {
@@ -3441,8 +3504,7 @@ void executeJava(JF retFrame)
             exe_OPC_TABLESWITCH();
             break;
         case OPC_LOOKUPSWITCH:
-            DEBUG("TODO");
-            exit(0);
+            exe_OPC_LOOKUPSWITCH();
             break;
         case OPC_IRETURN://172
             exe_OPC_IRETURN(retFrame);
@@ -3526,7 +3588,7 @@ void executeJava(JF retFrame)
             exe_OPC_IFNONNULL();
             break;
         default:
-            printStack();
+            printStack(getCurrentFrame());
             printf("\nwrong opcode!!%s\n", op_code[c]);
             exit(0);
         }

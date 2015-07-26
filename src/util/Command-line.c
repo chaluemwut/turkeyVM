@@ -36,7 +36,7 @@ typedef struct
 
 static void arg_setTrace(char* func)
 {
-    printf("set trace:%s\n", func);
+    //printf("set trace:%s\n", func);
     Trace_addFunc(func);
 }
 

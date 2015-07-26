@@ -32,6 +32,7 @@
 #include "../lib/string.h"
 #include "../lib/poly.h"
 #include "../lib/error.h"
+#include "../lib/assert.h"
 #include <time.h>
 #define TRUE 1
 #define FALSE 0
@@ -65,6 +66,19 @@ static char prim[] =
     'Z',
     ' '
 };
+
+void doKey(P key)
+{
+    printf("%s\n", (char*)key);
+}
+
+void doValue(P v)
+{
+    Assert_ASSERT(v);
+    C c = (C)v;
+    ClassBlock* cb = CLASS_CB(c);
+    printf("%s\n", cb->this_classname);
+}
 
 static void keyDup(P x, P y)
 {

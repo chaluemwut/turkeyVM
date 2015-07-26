@@ -26,6 +26,8 @@
 #include "../classloader/resolve.h"
 #include "../main/vm.h"
 #include "../util/exception.h"
+#include "../lib/trace.h"
+#include "../util/testvm.h"
 
 #define C Class_t
 #define O Object_t
@@ -65,7 +67,8 @@ void executeMethod(MethodBlock* mb, va_list jargs)
 
         createFrame(mb, jargs, ret);
         //executeJava
-        executeJava(retFrame);
+        Trace_Stack(mb->name, executeJava, (retFrame), printStack);
+        //executeJava(retFrame);
 
         popFrame();
     }

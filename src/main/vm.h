@@ -411,6 +411,10 @@ extern Hash_t CMap;
 extern Hash_t DMap;
 /*--------------------------Function prototypes---------------*/
 
+extern void doKey(void*);
+
+extern void doValue(void* v);
+
 extern void exitVM();
 
 #undef C
