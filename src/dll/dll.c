@@ -7,6 +7,7 @@
 #include "../lib/list.h"
 #include "dll.h"
 #include "../lib/poly.h"
+#include "../lib/hash.h"
 
 #define P Poly_t
 #define D Dll_t
@@ -16,43 +17,48 @@ static int equals(P x, P y)
     char* s = (char*)x;
     D d = (D)y;
     if (0 == strcmp(s, d->name))
-      return 1;
+        return 1;
     else
-      return 0;
+        return 0;
 }
 
 D findDllInTable(char* dllname)
 {
-    D dll = (D)List_contains(DList, dllname, equals);
+    //D dll = (D)List_contains(DList, dllname, equals);
+    D dll = (D)Hash_get(DMap, dllname);
 
     return dll;
 }
 
-char* getDllPath() {
+char* getDllPath()
+{
     return getenv("LD_LIBRARY_PATH");
 }
 
-int resolveDll(char* dllname) {
+int resolveDll(char* dllname)
+{
     D dll;
     dll = findDllInTable(dllname);
     if (dll != NULL)
-      return 1;
+        return 1;
 
     void* handle = dlopen(dllname, RTLD_LAZY);
     if (!handle)
-      return 0;
+        return 0;
 
     dll = (D)sysMalloc(sizeof(struct D));
     dll->name = dllname;
     dll->handle = handle;
 
-    List_addLast(DList, dll);
+    //List_addLast(DList, dll);
+    Hash_put(DMap, dll->name, dll);
 
     return 1;
 
 }
 
-char* getDllName(char* path, char* name) {
+char* getDllName(char* path, char* name)
+{
     char* buf = (char*)sysMalloc(strlen(path) + strlen(name) + 8);
     sprintf(buf, "%s/lib%s.so", path, name);
 

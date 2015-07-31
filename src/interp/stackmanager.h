@@ -129,6 +129,9 @@ extern void load(void* result, Type t, int index);
 extern void store(void* value, Type t, int index);
 
 
+void print_Stack(JF frame);
+
+
 #undef C
 #undef JF
 #undef NF

@@ -6,6 +6,7 @@
 #include "list.h"
 #include "mem.h"
 #include "error.h"
+#include "assert.h"
 
 
 #define T List_t
@@ -50,6 +51,7 @@ static T List_newNode(P x, T l)
 void List_addFirst(T l, P x) 
 {
     T t;
+    Assert_ASSERT(l);
 
     t = List_new();
     t = List_newNode(x, l->next);
@@ -68,6 +70,7 @@ void List_addFirst(T l, P x)
 void List_addLast(T l, P x) 
 {
     T tail, p;
+    Assert_ASSERT(l);
 
     if (l->next == NULL) {
         List_addFirst(l, x);
@@ -88,6 +91,7 @@ void List_addLast(T l, P x)
  */
 int List_size(T l) 
 {
+    Assert_ASSERT(l);
     T p;
     int i = 0;
     p = l->next;
@@ -101,6 +105,7 @@ int List_size(T l)
 
 int List_isEmpty(T l)
 {
+    Assert_ASSERT(l);
     return (0==l->next);
 }
 
@@ -109,6 +114,8 @@ int List_isEmpty(T l)
  */
 P List_getIndexOf(T l, int index) 
 {
+    Assert_ASSERT(l);
+
     T p = l->next;
     if (index < 0) {
         ERROR("invalid argument");
@@ -124,12 +131,23 @@ P List_getIndexOf(T l, int index)
 }
 
 /**
+ * getIndexOf(l, 0)
+ */
+P List_getFirst(T l)
+{
+    Assert_ASSERT(l);
+    return l->next;
+}
+
+/**
  * return the first fit
  *
  */
 P List_contains(T l, P x, Poly_tyEquals f)
 {
     T p;
+    Assert_ASSERT(l);
+    Assert_ASSERT(f);
 
     p = l->next;
     while (p) {
@@ -149,6 +167,7 @@ P List_contains(T l, P x, Poly_tyEquals f)
 P List_removeFirst(T l)
 {
     T p;
+    Assert_ASSERT(l);
 
     if (0 == l->next)
       ERROR("List size is 0\n"); 

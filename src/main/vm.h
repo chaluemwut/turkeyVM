@@ -1,7 +1,8 @@
 #ifndef VM_H
 #define VM_H
 #include <stdarg.h>
-#include "../lib/list.h"
+//#include "../lib/list.h"
+#include "../lib/hash.h"
 #include "../heapManager/alloc.h"
 
 #define FALSE 0
@@ -404,9 +405,15 @@ struct classblock
 
 extern C java_lang_Class;
 extern C java_lang_VMClass;
-extern List_t CList;
-extern List_t DList;
+//extern List_t CList;
+//extern List_t DList;
+extern Hash_t CMap;
+extern Hash_t DMap;
 /*--------------------------Function prototypes---------------*/
+
+extern void doKey(void*);
+
+extern void doValue(void* v);
 
 extern void exitVM();
 

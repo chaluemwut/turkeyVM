@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "testvm.h"
+#include "../main/vm.h"
+#include "../lib/hash.h"
 #include "../interp/stackmanager.h"
 
 extern JFrame_t current_frame;
@@ -11,6 +13,9 @@ void throwException(char* exception) {
     ClassBlock* cb = CLASS_CB(current_frame->class);
     printf("current_class:%s, current_method:%s%s\n", cb->this_classname,
                 current_frame->mb->name,current_frame->mb->type);
-    printStack();
+    printStack(current_frame);
+
+    Hash_status(CMap);
+
     exit(0);
 }

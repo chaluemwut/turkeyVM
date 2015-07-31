@@ -11,7 +11,7 @@
 /*
  * Revision log:
  *
- * 
+ *
  *
  *//*}}}*/
 #include <stdio.h>
@@ -28,18 +28,24 @@
 #include "../util/exception.h"
 #include "../interp/stackmanager.h"
 #include "../lib/list.h"
+#include "../lib/hash.h"
+#include "../lib/string.h"
+#include "../lib/poly.h"
+#include "../lib/error.h"
+#include "../lib/assert.h"
 #include <time.h>
 #define TRUE 1
 #define FALSE 0
 #define C Class_t
 #define O Object_t
+#define P Poly_t
 
 // global linkedlist that record the class already loaded
 
-//LinkedList* head = NULL; 
-//LinkedList* DLL = NULL;
-List_t CList = NULL;
-List_t DList = NULL;
+//List_t CList = NULL;
+//List_t DList = NULL;
+Hash_t CMap = NULL;
+Hash_t DMap = NULL;
 int vmsize = 0;
 
 C java_lang_Class;
@@ -60,6 +66,24 @@ static char prim[] =
     'Z',
     ' '
 };
+
+void doKey(P key)
+{
+    printf("%s\n", (char*)key);
+}
+
+void doValue(P v)
+{
+    Assert_ASSERT(v);
+    C c = (C)v;
+    ClassBlock* cb = CLASS_CB(c);
+    printf("%s\n", cb->this_classname);
+}
+
+static void keyDup(P x, P y)
+{
+    ERROR("dup key");
+}
 
 void exitVM()
 {
@@ -103,13 +127,19 @@ static void initSystemClass()
         java_lang_VMClass->class = obj;
     }
 
-    
+
 }
 
 static void initList()
 {
-    CList = List_new();
-    DList = List_new();
+    //CList = List_new();
+    //DList = List_new();
+    CMap = Hash_new((long(*)(P))String_hashCode
+                    ,(Poly_tyEquals)String_equals
+                    ,keyDup);
+    DMap = Hash_new((long(*)(P))String_hashCode
+                    ,(Poly_tyEquals)String_equals
+                    ,keyDup);
 }
 
 
@@ -127,31 +157,32 @@ int main(int argc, char** argv)
     start = clock();
     commandline_doarg(argc, argv);
 
-    int i = 0; 
-    C class=NULL; 
-    if (argc<2){
+    int i = 0;
+    C class=NULL;
+    if (argc<2)
+    {
     }
 
     initVM();
 
     //class = loadClass("[[[[LHello;");
-    class = loadClass(argv[1]); 
-    
+    class = loadClass(argv[1]);
+
     //find access main method!
     MethodBlock* main = findMethod(class, "main", "([Ljava/lang/String;)V");
     if ((!main)||!(main->access_flags & ACC_STATIC))
     {
-      printf("not found static main!\n");
-      exit(0);
+        printf("not found static main!\n");
+        exit(0);
     }
-    else 
+    else
     {
         if (dis_testinfo)
             printf("find static main!\n");
     }
 
     executeStaticMain(main);
-    
+
     if (dis_testinfo)
         printf("vmsize : %d B\n", vmsize);
     //exitVM();
@@ -159,16 +190,18 @@ int main(int argc, char** argv)
 
 
 
-      if (dis_list)
-        DEBUG("TODO");
-     //printList(head);
+    if (dis_list)
+        ERROR("TODO");
+    //printList(head);
     //  printVtable(head);
 
     end = clock();
 
     printf("\nVM run %f seconds\n", (double)(end-start)/CLOCKS_PER_SEC);
+    //Hash_status(CMap);
     return 0; /*}}}*/
 }
 
 #undef C
 #undef O
+#undef P
