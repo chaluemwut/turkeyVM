@@ -18,6 +18,12 @@ extern int parseArgs(char* type);
 
 extern C findClass(char* classname);
 
+extern char* getClassPath();
+
+extern void parseClassPath(char*);
+
+extern void parseFilename(char*);
+
 #undef C
 
 #endif

@@ -4,7 +4,7 @@
 #define T Poly_t
 
 
-typedef void* Poly_t;
+typedef void* T;
 
 typedef int(*Poly_tyEquals)(T, T);
 

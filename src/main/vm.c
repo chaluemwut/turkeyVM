@@ -85,12 +85,19 @@ static void keyDup(P x, P y)
     ERROR("dup key");
 }
 
+
 void exitVM()
 {
     printf("\nVM exit\n\n");
     exit(0);
 }
 
+static void initClassPath()
+{
+    char* classpath = getClassPath();
+    //printf("%s\n", classpath);
+    parseClassPath(classpath);
+}
 
 static void initSystemClass()
 {
@@ -145,6 +152,7 @@ static void initList()
 
 static void initVM()
 {
+    initClassPath();
     initList();
     initFrame();
     initNativeFrame();
@@ -166,6 +174,7 @@ int main(int argc, char** argv)
     initVM();
 
     //class = loadClass("[[[[LHello;");
+    parseFilename(argv[1]);
     class = loadClass(argv[1]);
 
     //find access main method!
@@ -181,6 +190,7 @@ int main(int argc, char** argv)
             printf("find static main!\n");
     }
 
+    printf("Init VM Ok...\n");
     executeStaticMain(main);
 
     if (dis_testinfo)
@@ -198,6 +208,7 @@ int main(int argc, char** argv)
     end = clock();
 
     printf("\nVM run %f seconds\n", (double)(end-start)/CLOCKS_PER_SEC);
+    //Hash_foreachKey(CMap, doKey);
     //Hash_status(CMap);
     return 0; /*}}}*/
 }
