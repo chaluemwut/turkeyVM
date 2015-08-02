@@ -47,6 +47,10 @@
  */
 C primClass[MAX_PRIMITIVE];
 
+static char** CLASSPATH = NULL;
+static int MAX_PATH_LEN = 0;
+static char* PREFIX = NULL;
+
 //method
 static C loadArrayClass(char* classname);
 C findArrayClass(char* classname);
@@ -61,13 +65,99 @@ static u2* for_test;
 
 C findClass(char* classname)
 {
-    //if (0 == strcmp(classname, "[Ljava/lang/Object;"))
-   // {
-     // test = classname;
-    //}
-    //C c = (C)List_contains(CList, classname, equals);
     C c = (C)Hash_get(CMap, classname);
     return c;
+}
+
+void parseFilename(char* s)
+{
+    char* p = s;
+    int i = 0;
+    int k = 0;
+    while (*p)
+    {
+        if (*p == '/')
+          k = i;
+
+        p++;
+        i++;
+    }
+
+    if (k == 0)
+      return;
+
+    PREFIX = (char*)malloc(k+2);
+    strncpy(PREFIX, s, k+1);
+    PREFIX[k+1] = '\0';
+}
+
+void parseClassPath(char* c)
+{
+    char* p;
+    char* q;
+    char* r;
+    int len = strlen(c);
+
+    q = (char*)malloc(len+1);
+    strcpy(q, c);
+    q[len] = '\0';
+    p = q;
+
+    int i = 0;
+    while (*p)
+    {
+        if (*p == ':')
+          i++;
+
+        p++;
+    }
+
+    int size = i+1;
+    CLASSPATH = (char**)malloc(sizeof(char*)*(i+2));
+    CLASSPATH[i+1] = NULL;
+    p = q;
+    r = q;
+    i=0;
+    int j = 0;
+    int k = 0;
+    while (*p)
+    {
+        if (*p == ':')
+        {
+            if (j == 0)
+            {
+                p++;
+                r = p;
+                continue;
+            }
+
+            char* s = (char*)malloc(j+1);
+            strncpy(s, r, j);
+            s[j] = '\0';
+            CLASSPATH[k++] = s;
+            p++;
+            r = p;
+            j = 0;
+            continue;
+        }
+
+        p++;
+        j++;
+    }
+
+    char* s = (char*)malloc(j+1);
+    strncpy(s, r, j);
+    s[j] = '\0';
+    CLASSPATH[k++] = s;
+    i=0;
+    while (CLASSPATH[i])
+    {
+        if (strlen(CLASSPATH[i])>MAX_PATH_LEN)
+          MAX_PATH_LEN = strlen(CLASSPATH[i]);
+        //printf("%s\n", CLASSPATH[i]);
+        i++;
+    }
+    //printf("max_path_len = %d\n", MAX_PATH_LEN);
 }
 
 
@@ -179,7 +269,7 @@ static C defineClass(char* classname, char* data, int file_len)
     classblock->element = NULL;
     classblock->dim = 0;
     classblock->super = NULL;
-    classblock->this_classname = classname;
+    classblock->this_classname = classname;//mast read from constant pool
     classblock->type_flags = 0;
     classblock->interface_count = 0;
 
@@ -569,22 +659,32 @@ static C loadSystemClass(char* classname)
     if (dis_testinfo)
         printf("loadSystemClass----------------------------\n");
 
-    int file_len, fname_len = strlen(classname) + 7;
+    int file_len, fname_len = strlen(classname) + 8;
+    char* buff = (char*)malloc(MAX_PATH_LEN + file_len);
     char filename[fname_len];
     char* data;
     FILE* cfd;
 
-    strcat(strcpy(filename, classname), ".class");
+    filename[0] = '/';
+    strcat(strcpy(&filename[1], classname), ".class");
 
     //printf("%s\n", filename);
 
-    cfd = fopen(filename, "r");
-
+    char** cp_ptr;
+    for (cp_ptr = CLASSPATH; 
+                *cp_ptr&&!(cfd = fopen(strcat(strcpy(buff, *cp_ptr), filename), "r"));
+                    cp_ptr++)
+                ;
+    if (cfd == NULL)
+    {
+        cfd = fopen(strcat(strcpy(buff, PREFIX), filename), "r");
+    }
     if (dis_testinfo)
         printf("this fiel name is %s\n", filename);
 
     if (cfd == NULL)
     {
+        printf("\n%s\n", buff);
         printf("\n%s\n", classname);
         throwException("NoFileInput");
     }
@@ -605,6 +705,7 @@ static C loadSystemClass(char* classname)
         class = defineClass(classname, data, file_len);
     }
 
+    free(buff);
     free(data);
 
 
@@ -926,7 +1027,8 @@ C loadClass_not_init(char* classname)
      **/
     //add class to the list
     //List_addLast(CList, class);
-    String_t s = String_new(classname);
+    cb = CLASS_CB(class);
+    String_t s = String_new(cb->this_classname);
     Hash_put(CMap, s, class);
 
 
@@ -983,7 +1085,8 @@ C loadClass(char* classname)
      **/
     //add class to the list
     //List_addLast(CList, class);
-    String_t s = String_new(classname);
+    cb = CLASS_CB(class);
+    String_t s = String_new(cb->this_classname);
     Hash_put(CMap, s, class);
 
 
@@ -1228,6 +1331,11 @@ C findPrimitiveClass(char primtype)
     else
         return loadPrimitiveClass(classname, index);
     /*}}}*/
+}
+
+char* getClassPath()
+{
+    return getenv("CLASSPATH");
 }
 
 #undef C
