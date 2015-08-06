@@ -2,4 +2,4 @@
 #include "stackmanager.h"
 /*interp*/
 
-extern void executeJava(JFrame_t);
+extern int executeJava(JFrame_t);

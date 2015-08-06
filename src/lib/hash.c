@@ -7,10 +7,10 @@
 #include "triple.h"
 #include "assert.h"
 
-
 #define INIT_SIZE 4096
 #define INIT_MASK 4095
-#define INIT_LOAD_FACTOR 0.5
+#define INIT_LOAD_FACTOR 0.75
+#define INIT_CONTRACTION 0.25
 
 #define T Hash_t
 #define L List_t
@@ -20,17 +20,27 @@
 #define V Poly_t
 #define S Status_t
 
+typedef enum rehash_t
+{
+    TYPE_EXPANSION,
+    TYPE_CONTRACTION
+}Rehash_t;
+
 typedef struct S *S;
 struct S
 {
     long insertions;//num of intert
+    long deletes;
     long lookups;//num of lookup
     long links;//num of l->next
     long longest;//longest chain
     long maxSize;
+    /*
+     * maxLoad must small than INIT_LOAD_FACTOR
+     */
     double maxLoad;
-    long expanded;
-    long shrink;
+    long expansions;
+    long contractions;
 };
 
 struct T
@@ -44,9 +54,9 @@ struct T
     long size;
     long mask;
     double load;
+    double min_load;
     S status;
 };
-
 
 
 //static Status_t all = {0,0,0,0,0,0};
@@ -58,13 +68,14 @@ S Status_new()
     Mem_new(s);
 
     s->insertions = 0;
+    s->deletes = 0;
     s->lookups = 0;
     s->links = 0;
     s->longest = 0;
     s->maxSize = 0;
     s->maxLoad = 0;
-    s->expanded = 0;
-    s->shrink = 0;
+    s->expansions = 0;
+    s->contractions = 0;
 
     return s;
 }
@@ -96,6 +107,7 @@ T Hash_new(long(*hashCode)(P)
     h->size = INIT_SIZE;
     h->mask = INIT_MASK;
     h->load = INIT_LOAD_FACTOR;
+    h->min_load = INIT_CONTRACTION;
     h->status = Status_new();
 
     return h;
@@ -118,6 +130,7 @@ static double currentLoad(T h)
  */
 static E Hash_containsCand(T h, K k, K *result)
 {
+    /*{{{*/
     long hcode;
     long bktIdx;
     long link = 0;
@@ -134,7 +147,7 @@ static E Hash_containsCand(T h, K k, K *result)
     if (size > h->status->maxSize)
       h->status->maxSize = size;
     load = currentLoad(h);
-    if (load>h->status->maxLoad)
+    if (load > h->status->maxLoad)
       h->status->maxLoad = load;
     //-----------------------------
 
@@ -148,7 +161,6 @@ static E Hash_containsCand(T h, K k, K *result)
         K key = Triple_first(e);
         V value = Triple_third(e);
         
-        link++;
 
         if (h->equals(k, key))
         {
@@ -162,6 +174,7 @@ static E Hash_containsCand(T h, K k, K *result)
               *result = key;
             return e;
         }
+        link++;
         list = list->next;
     }
 
@@ -172,10 +185,16 @@ static E Hash_containsCand(T h, K k, K *result)
     //-----------------------------
 
     return NULL;
+    /*}}}*/
 }
 
 /**
+ * Tests if the specified object is a key in this hashtable.
  *
+ * @param   key   possible key
+ * @return  <code>true</code> if and only if the specified object
+ *          is a key in this hashtable, as determined by the
+ *          <tt>equals</tt> method; <code>false</code> otherwise.
  */
 int Hash_containsKey(T h, K k)
 {
@@ -185,7 +204,17 @@ int Hash_containsKey(T h, K k)
 }
 
 /**
+ * Returns the value to which the specified key is mapped,
+ * or {@code null} if this map contains no mapping for the key.
  *
+ * <p>More formally, if this map contains a mapping from a key
+ * {@code k} to a value {@code v} such that {@code (key.equals(k))},
+ * then this method returns {@code v}; otherwise it returns
+ * {@code null}.  (There can be at most one such mapping.)
+ *
+ * @param key the key whose associated value is to be returned
+ * @return the value to which the specified key is mapped, or
+ *         {@code null} if this map contains no mapping for the key
  */
 V Hash_get(T h, K k)
 {
@@ -195,9 +224,16 @@ V Hash_get(T h, K k)
 }
 
 /**
+ * Expanded or contracted the capacity of and internally reorganizes this
+ * hashtable, in order to accommodate and access its entries more
+ * efficiently.  This method is called automatically when the
+ * number of keys in the hashtable exceeds this hashtable's capacity
+ * and load factor.
+ *
+ * @parm expansion(T) or sontraction(T)
  *
  */
-static void putAllInternal(T h)
+static void rehash(T h, void(*d)(T))
 {
     /*{{{*/
     L *oldBuckets;
@@ -208,17 +244,15 @@ static void putAllInternal(T h)
 
     Assert_ASSERT(h);
 
-    h->status->expanded+=1;
-
     oldBuckets = h->buckets;
     oldSize = h->size;
-    newSize = oldSize*2;
-    Mem_newSize(newBuckets, newSize);
-    for (i=0; i<newSize; i++)
+    d(h);
+
+    Mem_newSize(newBuckets, h->size);
+    for (i=0; i<h->size; i++)
       *(newBuckets+i) = List_new();
     h->buckets = newBuckets;
-    h->size = newSize;
-    h->mask = newSize-1;
+    h->mask = h->size-1;
 
     //traversal
     for (i=0; i<oldSize; i++)
@@ -232,12 +266,27 @@ static void putAllInternal(T h)
             long hcode = (long)Triple_second(e);
 
             long idx = hcode & h->mask;
-            List_addLast(*(newBuckets+idx), e);
+            List_addLast(*(h->buckets+idx), e);
             list = list->next;
         }
     }
     /*}}}*/
 }
+
+static void expansion(T h)
+{
+    h->status->expansions+=1;
+    h->size = h->size*2;
+}
+
+static void contraction(T h)
+{
+    h->status->contractions+=1;
+    h->size = h->size/2;
+}
+
+
+
 
 /**
  * @parm h the hashMap
@@ -259,7 +308,6 @@ V Hash_put(T h, K k, V v)
     Assert_ASSERT(h);
 
     h->status->insertions++;
-    //TODO deal with dup
     E e = (E)Hash_containsCand(h, k, &result);
     if (e)
     {
@@ -279,14 +327,63 @@ V Hash_put(T h, K k, V v)
     hcode = h->hashCode(k);
     bktIdx = hcode & (h->mask);
     list = *(h->buckets+bktIdx);
-
-    List_addFirst(list, Triple_new(k, (P)hcode, v));
+    List_addFirst(list, Triple_new(k, (P)hcode ,v));
     h->numItems++;
 
     if (currentLoad(h) >= h->load)
-        putAllInternal(h);
+    {
+        rehash(h, expansion);
+    }
 
     return NULL;
+    /*}}}*/
+}
+
+static int eleEquals(E x, E y)
+{
+    if (x == y)
+      return 1;
+    else 
+      return 0;
+}
+/**
+ * Removes the key (and its corresponding value) from this
+ * hashtable. This method does nothing if the key is not in the hashtable.
+ *
+ * @param   key   the key that needs to be removed
+ * @return  the value to which the key had been mapped in this hashtable,
+ *          or <code>null</code> if the key did not have a mapping
+ */
+V Hash_remove(T h, K k)
+{
+    /*{{{*/
+    Assert_ASSERT(h);
+    long hcode;
+    long bktIdx;
+    L list;
+    
+    h->status->deletes++;
+    E e = (E)Hash_containsCand(h, k, NULL);
+    if (e)
+    {
+
+        hcode = (long)Triple_second(e);
+        bktIdx = hcode&(h->mask);
+        list = *(h->buckets+bktIdx);
+        E ee = (E)List_remove(list, e, (Poly_tyEquals)eleEquals);
+        h->numItems--;
+        V r = Triple_third(ee);
+        //XXX free(ee)
+        
+        if ((currentLoad(h) <= h->min_load)&&
+                    (h->size > INIT_SIZE))
+            rehash(h, contraction);
+        return r;
+    }
+    else
+    {
+        return NULL;
+    }
     /*}}}*/
 }
 
@@ -358,13 +455,14 @@ void Hash_status(T h)
     printf("|Hash table status             |\n");
     printf("--------------------------------\n");
     printf("|Num of insertions:  %ld\n", h->status->insertions);
+    printf("|Num of deletes:     %ld\n", h->status->deletes);
     printf("|Num of lookups:     %ld\n", h->status->lookups);
     printf("|Num of links:       %ld\n", h->status->links);
     printf("|Longest chain:      %ld\n", h->status->longest);
     printf("|Max hash size:      %ld\n", h->status->maxSize);
     printf("|Max load factor:    %lf\n", h->status->maxLoad);
-    printf("|Expanded times:     %ld\n", h->status->expanded);
-    printf("|Shrink times:       %ld\n", h->status->shrink);
+    printf("|Expanded times:     %ld\n", h->status->expansions);
+    printf("|Contraction times:  %ld\n", h->status->contractions);
     printf("|Averager position:  %lf\n", 
                 1.0*h->status->links/h->status->lookups);
     printf("|Items nums:         %ld\n", h->numItems);
@@ -377,6 +475,7 @@ void Hash_status(T h)
 #undef INIT_SIZE
 #undef INIT_MASK
 #undef INIT_LOAD_FACTOR
+#undef INIT_CONTRACTION
 #undef T
 #undef L
 #undef K

@@ -21,6 +21,8 @@ T Hash_new(long (*hashCode)(P)
 
 V Hash_put(T, K, V);
 
+V Hash_remove(T, K);
+
 int Hash_containsKey(T, K);
 
 V Hash_get(T, K);

@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------*//*{{{*/
+/*^_^*--------------------------------------------------------------*//*{{{*/
 /* Copyright (C) SSE-USTC, 2014-2015                                */
 /*                                                                  */
 /*  FILE NAME             :  class.c                                */
@@ -73,6 +73,7 @@ C findClass(char* classname)
 
 void parseFilename(char* s)
 {
+    /*{{{*/
     char* p = s;
     int i = 0;
     int k = 0;
@@ -91,75 +92,21 @@ void parseFilename(char* s)
     PREFIX = (char*)malloc(k+2);
     strncpy(PREFIX, s, k+1);
     PREFIX[k+1] = '\0';
+    /*}}}*/
 }
 
 void parseClassPath(char* c)
 {
-    char* p;
-    char* q;
-    char* r;
-    int len = strlen(c);
-
-    q = (char*)malloc(len+1);
-    strcpy(q, c);
-    q[len] = '\0';
-    p = q;
-
+    /*{{{*/
+    CLASSPATH = String_split(c, ":");
     int i = 0;
-    while (*p)
-    {
-        if (*p == ':')
-          i++;
-
-        p++;
-    }
-
-    int size = i+1;
-    CLASSPATH = (char**)malloc(sizeof(char*)*(i+2));
-    CLASSPATH[i+1] = NULL;
-    p = q;
-    r = q;
-    i=0;
-    int j = 0;
-    int k = 0;
-    while (*p)
-    {
-        if (*p == ':')
-        {
-            if (j == 0)
-            {
-                p++;
-                r = p;
-                continue;
-            }
-
-            char* s = (char*)malloc(j+1);
-            strncpy(s, r, j);
-            s[j] = '\0';
-            CLASSPATH[k++] = s;
-            p++;
-            r = p;
-            j = 0;
-            continue;
-        }
-
-        p++;
-        j++;
-    }
-
-    char* s = (char*)malloc(j+1);
-    strncpy(s, r, j);
-    s[j] = '\0';
-    CLASSPATH[k++] = s;
-    i=0;
     while (CLASSPATH[i])
     {
         if (strlen(CLASSPATH[i])>MAX_PATH_LEN)
           MAX_PATH_LEN = strlen(CLASSPATH[i]);
-        //printf("%s\n", CLASSPATH[i]);
         i++;
     }
-    //printf("max_path_len = %d\n", MAX_PATH_LEN);
+    /*}}}*/
 }
 
 
@@ -967,10 +914,10 @@ static C linkClass(C class)
  */
 void initClass(C class)
 {
+    /*{{{*/
     if (!initable)
         return;
 
-    /*{{{*/
     ClassBlock* cb = CLASS_CB(class);
 
     if (dis_testinfo)

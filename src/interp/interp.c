@@ -2938,7 +2938,7 @@ static void exe_OPC_JSR_W()
 /*
  * invoke by: executeMethod(), executeStaticMethod() in execute.c
  */
-void executeJava(JF retFrame)
+int executeJava(JF retFrame)
 {
 
 
@@ -2980,7 +2980,7 @@ void executeJava(JF retFrame)
         /*
          * After the popFrame(), must return executeJava().
          */
-        return;
+        return 0;
     }
 
     /*
@@ -3508,23 +3508,23 @@ void executeJava(JF retFrame)
             break;
         case OPC_IRETURN://172
             exe_OPC_IRETURN(retFrame);
-            return;
+            return 0;
             break;
         case OPC_FRETURN://174
             throwException("todo");
             break;
         case OPC_DRETURN://175
             exe_OPC_DRETURN(retFrame);
-            return;
+            return 0;
             break;
         case OPC_ARETURN://176
             exe_OPC_ARETURN(retFrame);
-            return;
+            return 0;
             break;
         case OPC_RETURN://177
             //printf("---------------current  stack top:%d\n", *(int*)current_frame->ostack);
             //popFrame();
-            return;
+            return 0;
             break;
         case OPC_GETSTATIC://178
             exe_OPC_GETSTATIC();

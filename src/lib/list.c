@@ -42,12 +42,12 @@ static T List_newNode(P x, T l)
     return p;
 }
 
-/**
- * @parm l list head
- * @parm x poly type data
- * 
- * NOTE: we use head->data to record tail
- */
+ /**
+  * Inserts the specified element at the beginning of this list.
+  *
+  * @param e the element to add
+  * NOTE: we use head->data to record tail
+  */
 void List_addFirst(T l, P x) 
 {
     T t;
@@ -64,8 +64,9 @@ void List_addFirst(T l, P x)
 }
 
 /**
+ * Appends the specified element to the end of this list.
  *
- *
+ * @param e the element to add
  */
 void List_addLast(T l, P x) 
 {
@@ -110,7 +111,10 @@ int List_isEmpty(T l)
 }
 
 /**
- * @return if not found or index > size, return 0
+ * Returns the element at the specified position in this list.
+ *
+ * @param index index of the element to return
+ * @return the element at the specified position in this list
  */
 P List_getIndexOf(T l, int index) 
 {
@@ -143,7 +147,7 @@ P List_getFirst(T l)
  * return the first fit
  *
  */
-P List_contains(T l, P x, Poly_tyEquals f)
+static P List_containsInternal(T l, P x, Poly_tyEquals f)
 {
     T p;
     Assert_ASSERT(l);
@@ -158,6 +162,21 @@ P List_contains(T l, P x, Poly_tyEquals f)
     }
 
     return 0;
+}
+
+/**
+ * Returns {@code true} if this list contains the specified element.
+ *
+ * @param o element whose presence in this list is to be tested
+ * @return {@code true} if this list contains the specified element
+ *                                         */
+int List_contains(T l, P x, Poly_tyEquals f)
+{
+    P p = List_containsInternal(l, x, f);
+    if (p)
+      return 1;
+    else
+      return 0;
 }
 
 /**
@@ -178,6 +197,46 @@ P List_removeFirst(T l)
 
     return p->data;
 
+}
+/**
+ * Removes the first occurrence of the specified element from this list,
+ * if it is present (optional operation).  If this list does not contain
+ * the element, it is unchanged.  More formally, removes the element with
+ * the lowest index
+ *
+ * @param o element to be removed from this list, if present.
+ * @return <tt>data</tt> if this list contained the specified element.
+ */
+P List_remove(T l, P x, Poly_tyEquals equals)
+{
+    T prev;
+    T current;
+    P r;
+
+    Assert_ASSERT(l);
+    Assert_ASSERT(x);
+    Assert_ASSERT(equals);
+
+    prev = l;
+    current = l->next;
+    while (current)
+    {
+        if (equals(x, current->data))
+        {
+            r = current->data;
+            current = current->next;
+            prev->next = current;
+
+            //XXX free(current)
+            return r;
+        }
+
+        prev = current;
+        current = current->next;
+
+    }
+
+    return NULL;
 }
 
 

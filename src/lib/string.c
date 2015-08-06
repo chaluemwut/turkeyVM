@@ -1,10 +1,7 @@
 #include <string.h>
-#include <stdio.h>
 #include "string.h"
-#include <stdarg.h>
 #include "assert.h"
 #include "mem.h"
-#include "error.h"
 
 #define T String_t
 
@@ -27,6 +24,54 @@ int String_equals(T x, T y)
       return 1;
 
     return 0;
+}
+
+char** String_split(T x, T delim)
+{
+    Assert_ASSERT(x);
+    Assert_ASSERT(delim);
+
+    int len = strlen(x);
+    int len2 = strlen(delim);
+    Assert_ASSERT(len2==1);
+
+    char* buf;
+    Mem_newSize(buf, len+1);
+    strcpy(buf, x);
+    buf[len] = '\0';
+
+    char c = delim[0];
+    int size = 0;
+    char* p = x;
+    while(*p)
+    {
+        if (*p == c)
+          size++;
+        p++;
+    }
+    size+=2;
+
+    char** t;
+    Mem_newSize(t, size);
+    char* value = buf;
+    char* result = NULL;
+
+    int i = 0;
+    result = strsep(&value, delim);
+
+    for (i = 0; result != NULL; i++)
+    {
+        char* s;
+        Mem_newSize(s, strlen(result)+1);
+        strcpy(s, result);
+        s[strlen(result)] = '\0';
+        t[i] = s;
+
+        result = strsep(&value, delim);
+    }
+    t[i] = NULL;
+
+    return t;
 }
 
 T String_concat(T s, ...)
@@ -76,4 +121,6 @@ T String_new(T x)
 }
 
 
+
+#undef MULTIPLIER
 #undef T

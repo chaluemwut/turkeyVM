@@ -28,9 +28,11 @@ P List_getIndexOf(T, int);
 
 P List_getFirst(T);
 
-P List_contains(T, P, Poly_tyEquals f);
+int List_contains(T, P, Poly_tyEquals f);
 
 P List_removeFirst(T);
+
+P List_remove(T, P, Poly_tyEquals);
 
 
 #undef T
