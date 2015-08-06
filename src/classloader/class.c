@@ -24,14 +24,14 @@
 #include <stdlib.h>
 #include "../interp/execute.h"
 #include "../heapManager/alloc.h"
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "resolve.h"
 #include "../lib/list.h"
 #include "../lib/poly.h"
 #include "../util/exception.h"
 #include "class.h"
 #include "../native/native.h"
-#include "../util/control.h"
+#include "../control/control.h"
 #include "../lib/error.h"
 #include "../lib/string.h"
 
@@ -39,6 +39,8 @@
 #define C Class_t
 #define O Object_t
 #define P Poly_t
+
+static const int ClassHeaderSize = sizeof(struct C);
 
 /* This ia an talbe for primitiveClass, like
  * int, long, double, float, boolean, short, char...
@@ -240,12 +242,17 @@ static C defineClass(char* classname, char* data, int file_len)
     /*{{{*/
     unsigned char* ptr = (unsigned char*)data;
     u4 magic;
-    u2 major_version, minor_version, methods_count;
-    u2 cp_count, interfaces_count, fields_count, attr_count;
+    u2 major_v;
+    u2 minor_v;
+    u2 methodsCount;
+    u2 cp_count;
+    u2 interfaces_count;
+    u2 fieldsCount;
+    u2 attrCount;
     int i;
     ClassBlock* classblock;
     C class;//this is the return class
-    ConstantPool* constant_pool;
+    ConstantPool* constantPool;
     u2* interfaces_idx;
     FieldBlock* fields;
     MethodBlock* methods;
@@ -253,17 +260,15 @@ static C defineClass(char* classname, char* data, int file_len)
     READ_U4(magic, ptr);
     if (magic != 0xcafebabe)
         throwException("NoClassDefFound");
-    READ_U2(minor_version, ptr);
-    READ_U2(major_version , ptr);
-    //printf("minor_version:%d\n", minor_version);
-    //printf("major_version:%d\n", major_version);
-    class = sysMalloc(sizeof(ClassBlock) + sizeof(*class));
+    READ_U2(minor_v, ptr);
+    READ_U2(major_v , ptr);
+    class = sysMalloc(ClassHeaderSize+sizeof(ClassBlock));
     classblock = CLASS_CB(class);
 
     //init
     classblock->magic = magic;
-    classblock->minor_version = minor_version;
-    classblock->major_version = major_version;
+    classblock->minor_version = minor_v;
+    classblock->major_version = major_v;
     classblock->flags = 0;
     classblock->methods_table = NULL;
     classblock->element = NULL;
@@ -278,23 +283,23 @@ static C defineClass(char* classname, char* data, int file_len)
     //printf("constant_pool_count:%d\n", cp_count);
     classblock->constant_pool_count = cp_count;
 
-    constant_pool = &classblock->constant_pool;
-    constant_pool->type = (volatile u1*)sysMalloc(cp_count);
-    constant_pool->info = (ConstantPoolEntry*)
+    constantPool = &classblock->constant_pool;
+    constantPool->type = (volatile u1*)sysMalloc(cp_count);
+    constantPool->info = (ConstantPoolEntry*)
                           sysMalloc(cp_count * sizeof(ConstantPoolEntry));
 
     for (i=1; i<cp_count; i++)
     {
         u1 tag;
         READ_U1(tag, ptr);
-        CP_TYPE(constant_pool, i) = tag;
+        CP_TYPE(constantPool, i) = tag;
 
         switch (tag)
         {
         case CONSTANT_Class:
         case CONSTANT_String:
         case CONSTANT_MethodType:
-            READ_INDEX(CP_INFO(constant_pool, i), ptr);
+            READ_INDEX(CP_INFO(constantPool, i), ptr);
             break;
         case CONSTANT_Fieldref:
         case CONSTANT_Methodref:
@@ -305,15 +310,14 @@ static C defineClass(char* classname, char* data, int file_len)
             u2 idx1, idx2;
             READ_INDEX(idx1, ptr);
             READ_INDEX(idx2, ptr);
-            CP_INFO(constant_pool, i) = idx2<<16|idx1;
+            CP_INFO(constantPool, i) = idx2<<16|idx1;
             break;
         }
         case CONSTANT_Integer:
-            READ_U4(CP_INFO(constant_pool, i),  ptr);
+            READ_U4(CP_INFO(constantPool, i),  ptr);
             break;
         case CONSTANT_Float:
-            READ_U4(CP_INFO(constant_pool, i),  ptr);
-            //printf("%f\n",*(float*)&constant_pool->info[i]);
+            READ_U4(CP_INFO(constantPool, i),  ptr);
             break;
 
             /*NOTE: Long and Double use two step to obtain.
@@ -321,14 +325,13 @@ static C defineClass(char* classname, char* data, int file_len)
              *@qcliu 2015/03/15
              */
         case CONSTANT_Long:
-            //READ_U8(*(u8*)&(CP_INFO(constant_pool, i)), ptr);
-            READ_U4(CP_INFO(constant_pool, i+1), ptr);
-            READ_U4(CP_INFO(constant_pool, i), ptr);
+            READ_U4(CP_INFO(constantPool, i+1), ptr);
+            READ_U4(CP_INFO(constantPool, i), ptr);
             i++;
             break;
         case CONSTANT_Double:
-            READ_U4(CP_INFO(constant_pool, i+1), ptr);
-            READ_U4(CP_INFO(constant_pool, i), ptr);
+            READ_U4(CP_INFO(constantPool, i+1), ptr);
+            READ_U4(CP_INFO(constantPool, i), ptr);
             i++;
             break;
         case CONSTANT_Utf8:
@@ -342,7 +345,7 @@ static C defineClass(char* classname, char* data, int file_len)
             utf8[length]='\0';
             ptr += length;
 
-            CP_INFO(constant_pool,i) = (u4)utf8;
+            CP_INFO(constantPool,i) = (u4)utf8;
             break;
         }
         case CONSTANT_MethodHandle:
@@ -351,7 +354,7 @@ static C defineClass(char* classname, char* data, int file_len)
             u2 ref_idx;
             READ_U1(ref_kind, ptr);
             READ_U2(ref_idx, ptr);
-            CP_INFO(constant_pool, i) = ref_idx<<16 || ref_kind;
+            CP_INFO(constantPool, i) = ref_idx<<16 || ref_kind;
             break;
         }
         default:
@@ -361,7 +364,6 @@ static C defineClass(char* classname, char* data, int file_len)
 
 
     }
-    //printf("constant_pool\n");
     /*}}}*/
 
     /*---------------------------access_flag,this_class,super_class------------*/
@@ -371,10 +373,10 @@ static C defineClass(char* classname, char* data, int file_len)
     READ_U2(super_classidx, ptr);
     //printf("this_classidx:%d\n", this_classidx);
     //printf("super_classidx:%d\n", super_classidx);
-    this_classidx = CP_INFO(constant_pool, this_classidx);
-    super_name_idx = CP_INFO(constant_pool, super_classidx);
-    classblock->this_classname = CP_UTF8(constant_pool, this_classidx);
-    classblock->super_classname = CP_UTF8(constant_pool, super_name_idx);
+    this_classidx = CP_INFO(constantPool, this_classidx);
+    super_name_idx = CP_INFO(constantPool, super_classidx);
+    classblock->this_classname = CP_UTF8(constantPool, this_classidx);
+    classblock->super_classname = CP_UTF8(constantPool, super_name_idx);
     //resovle/*}}}*/
 
     /*----------------------------interface------------------------------------*/
@@ -412,8 +414,8 @@ static C defineClass(char* classname, char* data, int file_len)
         READ_U2(fields[i].access_flags, ptr);
         READ_INDEX(name_idx, ptr);
         READ_INDEX(type_idx, ptr);
-        fields[i].name = CP_UTF8(constant_pool, name_idx);
-        fields[i].type = CP_UTF8(constant_pool, type_idx);
+        fields[i].name = CP_UTF8(constantPool, name_idx);
+        fields[i].type = CP_UTF8(constantPool, type_idx);
         //printf("field_name:%s\n", fields[i].name);
         //printf("field_type:%s\n", fields[i].type);
         //init the field
@@ -430,7 +432,7 @@ static C defineClass(char* classname, char* data, int file_len)
             READ_U4(attr_length, ptr);
             //printf("attr_length:%d\n", attr_length);
 
-            char* attr_name = CP_UTF8(constant_pool, attr_name_idx);
+            char* attr_name = CP_UTF8(constantPool, attr_name_idx);
             //printf("%s\n", attr_name);
 
             //this field is static final
@@ -450,13 +452,13 @@ static C defineClass(char* classname, char* data, int file_len)
     /*}}}*/
 
     /*-------------------------------------Method----------------*/
-    READ_U2(methods_count, ptr);/*{{{*/
+    READ_U2(methodsCount, ptr);/*{{{*/
     //printf("methods_count:%d\n", methods_count);
-    classblock->methods_count = methods_count;
-    methods = (MethodBlock*)sysMalloc(methods_count * sizeof(MethodBlock));
+    classblock->methods_count = methodsCount;
+    methods = (MethodBlock*)sysMalloc(methodsCount * sizeof(MethodBlock));
     classblock->methods = methods;
 
-    for (i = 0; i < methods_count; i++)
+    for (i = 0; i < methodsCount; i++)
     {
         u2 access_flags, name_idx, type_idx, attr_count;
         READ_U2(access_flags, ptr);
@@ -466,7 +468,7 @@ static C defineClass(char* classname, char* data, int file_len)
 
         methods->access_flags = access_flags;
 
-        methods->name = CP_UTF8(constant_pool, name_idx);
+        methods->name = CP_UTF8(constantPool, name_idx);
 
         /*@TEST
          *
@@ -475,7 +477,7 @@ static C defineClass(char* classname, char* data, int file_len)
         //if (0 == strcmp(methods->name, "constructNative"))
         //DEBUG("constructNative");
 
-        methods->type = CP_UTF8(constant_pool, type_idx);
+        methods->type = CP_UTF8(constantPool, type_idx);
         methods->code_length = 0;
         methods->native_invoker = 0;
         methods->max_locals = 0;
@@ -527,7 +529,7 @@ static C defineClass(char* classname, char* data, int file_len)
             char* attr_name;
             READ_INDEX(attr_name_idx, ptr);
             READ_U4(attr_length, ptr);
-            attr_name = CP_UTF8(constant_pool, attr_name_idx);
+            attr_name = CP_UTF8(constantPool, attr_name_idx);
             /*code*/
             if (strcmp(attr_name, "Code") == 0)
             {
@@ -576,7 +578,7 @@ static C defineClass(char* classname, char* data, int file_len)
                     u2 attr_nameidx;
                     u4 len;
                     READ_INDEX(attr_nameidx, ptr);
-                    char* temp = CP_UTF8(constant_pool, attr_nameidx);
+                    char* temp = CP_UTF8(constantPool, attr_nameidx);
                     READ_U4(len, ptr);
                     ptr += len;
                 }
@@ -610,10 +612,10 @@ static C defineClass(char* classname, char* data, int file_len)
     /*}}}*/
 
     /*----------------------------attr-----------------------*/
-    READ_U2(attr_count, ptr);/*{{{*/
+    READ_U2(attrCount, ptr);/*{{{*/
     //printf("attr_count:%d\n", attr_count);
 
-    for (; attr_count != 0; attr_count--)
+    for (; attrCount != 0; attrCount--)
     {
         u2 attr_name_idx;
         u4 attr_length;
@@ -1123,7 +1125,7 @@ static C loadArrayClass(char* classname)
     /*{{{*/
     //printf("%s, %d\n", classname, strlen(classname));
     int len = strlen(classname);
-    int size = sizeof(struct C)+sizeof(ClassBlock);
+    int size = ClassHeaderSize+sizeof(ClassBlock);
     //C class = (C)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
     C class = (C)sysMalloc(size);
     ClassBlock* cb = CLASS_CB(class);
@@ -1230,7 +1232,7 @@ static C loadPrimitiveClass(char* classname, int index)
 {
     /*{{{*/
     int len = strlen(classname);
-    int size = sizeof(struct C)+sizeof(ClassBlock);
+    int size = ClassHeaderSize+sizeof(ClassBlock);
     //C class = (C)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
     C class = (C)sysMalloc(size);
     ClassBlock* cb = CLASS_CB(class);

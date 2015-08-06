@@ -17,13 +17,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "vm.h"
+#include "turkey.h"
 #include "../interp/execute.h"
 #include "../heapManager/alloc.h"
 #include "../util/testvm.h"
-#include "../util/Command-line.h"
+#include "../control/command-line.h"
 #include "../classloader/resolve.h"
-#include "../util/control.h"
+#include "../control/control.h"
 #include "../classloader/class.h"
 #include "../util/exception.h"
 #include "../interp/stackmanager.h"
@@ -33,6 +33,7 @@
 #include "../lib/poly.h"
 #include "../lib/error.h"
 #include "../lib/assert.h"
+#include "../control/verbose.h"
 #include <time.h>
 #define TRUE 1
 #define FALSE 0
@@ -172,6 +173,11 @@ int main(int argc, char** argv)
     }
 
     initVM();
+    /*
+#define NRETURN
+    Verbose_TRACE("initVM", initVM, ((void)), r, VERBOSE_PASS);
+#undef NRETURN
+*/
 
     //class = loadClass("[[[[LHello;");
     parseFilename(argv[1]);

@@ -3,6 +3,11 @@
 #include <stdio.h>
 #include "poly.h"
 
+void Trace_indent();
+
+void Trace_unindent();
+
+void Trace_spaces();
 
 int Trace_contains(char* s);
 

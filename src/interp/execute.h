@@ -1,6 +1,6 @@
 #ifndef EXE_H
 #define EXE_H
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../heapManager/alloc.h"
 
 #define C Class_t

@@ -1,7 +1,7 @@
 #ifndef DLL_H
 #define DLL_H
 
-#include "../main/vm.h"
+#include "../main/turkey.h"
 
 #define D Dll_t
 

@@ -1,4 +1,4 @@
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "stackmanager.h"
 /*interp*/
 

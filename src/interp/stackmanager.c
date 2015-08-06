@@ -16,9 +16,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../heapManager/alloc.h"
-#include "../util/control.h"
+#include "../control/control.h"
 #include "stackmanager.h"
 #include "../lib/stack.h"
 #include "../lib/error.h"

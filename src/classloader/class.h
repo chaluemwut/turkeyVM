@@ -1,6 +1,6 @@
 #ifndef CLASS_H
 #define CLASS_H
-#include "../main/vm.h"
+#include "../main/turkey.h"
 
 #define C Class_t
 

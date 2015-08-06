@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "testvm.h"
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../lib/hash.h"
 #include "../interp/stackmanager.h"
 

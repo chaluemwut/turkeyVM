@@ -1,7 +1,7 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../heapManager/alloc.h"
 
 #define O Object_t

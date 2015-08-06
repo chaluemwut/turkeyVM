@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include "../classloader/class.h"
 #include "../heapManager/alloc.h"
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../util/exception.h"
 #include "native.h"
 #include "../classloader/resolve.h"

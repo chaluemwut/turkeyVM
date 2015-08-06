@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Command-line.h"
+#include "command-line.h"
 #include "control.h"
 #include "../lib/trace.h"
+#include "../lib/error.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -40,8 +41,32 @@ static void arg_setTrace(char* func)
     Trace_addFunc(func);
 }
 
+
+static void arg_setVerbose(int i)
+{
+    switch (i)
+    {
+        case 0:
+            Control_verbose = VERBOSE_SILENT;
+            break;
+        case 1:
+            Control_verbose = VERBOSE_PASS;
+            break;
+        case 2:
+            Control_verbose = VERBOSE_SUBPASS;
+            break;
+        case 3:
+            Control_verbose = VERBOSE_DETAIL;
+            break;
+        default:
+            ERROR("-verbose {0|1|2|3}");
+    }
+}
+
+
 static Arg_t allArgs[] =
 {
+    {"verbose", ARGTYPE_INT, "{0|1|2|3}", arg_setVerbose},
     {"trace", ARGTYPE_STRING, "{name}", arg_setTrace},
     {"help", ARGTYPE_EMPTY,"help",actionArg_help},
     {"disv", ARGTYPE_EMPTY, "display vtable", actionArg_printVtable},
@@ -108,8 +133,6 @@ void commandline_doarg(int argc,char** argv)
         int i = 0;
         if(inputName[0] != '-')
         {
-            //printf("error:the arg must start with '-'\n");
-            //exit(0);
             filename[j++] = argv[index];
             file_length++;
             continue;
@@ -131,27 +154,29 @@ void commandline_doarg(int argc,char** argv)
                     }
                 case ARGTYPE_INT:
                     {
-                        printf("ARGTYPE_INT no operate!");
-                        exit(0);
+                        //FIXME need bound check
+                        index++;
+                        char* arg = argv[index++];
+                        int n = atoi(arg);
+                        allArgs[i].action(n);
                         break;
                     }
                 case ARGTYPE_STRING:
                     {
+                        //FIXME need bound check
                         index++;
                         char* arg = argv[index++];
                         allArgs[i].action(arg);
                         break;
                     }
                 default:
-                    printf("%s\n","impossible");
-                    exit(0);
+                    ERROR("impossible arg");
             }
             break;
         }
         if(!allArgs[i].action)
         {
-            printf("error:no arg match!!!\n");
-            exit(0);
+            ERROR("no arg match!!\n");
         }
 
     }

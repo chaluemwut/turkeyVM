@@ -1,7 +1,7 @@
 #ifndef ALLOC_H
 #define ALLOC_H
 
-#include "../main/vm.h"
+#include "../main/turkey.h"
 
 #define C Class_t
 #define O Object_t

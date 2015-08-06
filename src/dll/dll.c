@@ -3,7 +3,7 @@
 #include <string.h>
 #include <dlfcn.h>
 #include "../heapManager/alloc.h"
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../lib/list.h"
 #include "dll.h"
 #include "../lib/poly.h"

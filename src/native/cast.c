@@ -19,7 +19,7 @@
  */
 
 #include <stdio.h>
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "cast.h"
 
 #define C Class_t

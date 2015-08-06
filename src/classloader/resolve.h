@@ -16,7 +16,7 @@
 #ifndef RESOLVE_H
 #define RESOLVE_H
 
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "class.h"
 
 #define C Class_t

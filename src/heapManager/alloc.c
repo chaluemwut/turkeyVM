@@ -17,7 +17,8 @@
 #include <stdlib.h>
 #include "../classloader/class.h"
 #include "../util/exception.h"
-#include "../main/vm.h"
+#include "../main/turkey.h"
+#include "../lib/error.h"
 
 #define C Class_t
 #define O Object_t
@@ -25,15 +26,16 @@
 extern int vmsize;
 extern C primClass[];
 
+static const int ObjHeaderSize = sizeof(struct O);
+
 void* sysMalloc(int n)
 {
     void* mem = malloc(n);
 
     if(mem == NULL)
-    {
-        printf("malloc error!\n");
-        exit(0);
-    }
+      ERROR("malloc error");
+
+    memset(mem, 0, n);
 
     vmsize += n;
     return mem;
@@ -52,7 +54,7 @@ O allocObject(C class)
 {
     ClassBlock* cblock = CLASS_CB(class);
     int obj_size = cblock->obj_size;
-    O obj = (O)sysMalloc(sizeof(struct O) + sizeof(int)*obj_size);
+    O obj = (O)sysMalloc(ObjHeaderSize + sizeof(int)*obj_size);
     //---------------------------------
     obj->isArray = FALSE;
     obj->length = 0;
@@ -65,7 +67,7 @@ O allocObject(C class)
 
     obj->cb = cblock;
     obj->el_size = sizeof(int);
-    obj->copy_size = sizeof(struct O)+ sizeof(int)*obj_size;
+    obj->copy_size = ObjHeaderSize+ sizeof(int)*obj_size;
 
     return obj;
 
@@ -79,7 +81,7 @@ O allocArray(C class, int size, int el_size, int atype)
 {
     O obj;
     ClassBlock* cb = CLASS_CB(class);
-    obj = (O)sysMalloc(sizeof(struct O)+ size*el_size);
+    obj = (O)sysMalloc(ObjHeaderSize+ size*el_size);
     //------------------------
     obj->isArray = TRUE;
     obj->length = size;
@@ -93,7 +95,7 @@ O allocArray(C class, int size, int el_size, int atype)
 
     /*NOTE: this is used when visited the array*/
     obj->el_size = el_size;
-    obj->copy_size = sizeof(struct O)+size*el_size;
+    obj->copy_size = ObjHeaderSize+size*el_size;
     return obj;
 }
 

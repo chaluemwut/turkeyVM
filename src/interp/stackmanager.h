@@ -1,7 +1,7 @@
 #ifndef STACKMANAGER_H
 #define STACKMANAGER_H
 
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include <stdarg.h>
 
 #define C Class_t

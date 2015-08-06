@@ -1,16 +1,12 @@
 #ifndef TEST_H
 #define TEST_H
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../heapManager/alloc.h"
 #include "../interp/stackmanager.h"
 
 #define C Class_t
 #define O Object_t
 #define JF JFrame_t
-
-
-//void printList(LinkedList* head);
-//void printVtable(LinkedList* head);
 
 void printStack(JF);
 

@@ -19,8 +19,8 @@
 #include "../interp/interp.h"
 #include "../dll/dll.h"
 #include "../heapManager/alloc.h"
-#include "../main/vm.h"
-#include "../util/control.h"
+#include "../main/turkey.h"
+#include "../control/control.h"
 #include "../util/string.h"
 #include "../classloader/resolve.h"
 #include "../classloader/class.h"
@@ -132,8 +132,6 @@ void identityHashCode()
 
     current_frame->ostack++;
     *(int*)current_frame->ostack = (int)this;
-
-
 }
 
 

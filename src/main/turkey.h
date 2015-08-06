@@ -1,7 +1,6 @@
 #ifndef VM_H
 #define VM_H
 #include <stdarg.h>
-//#include "../lib/list.h"
 #include "../lib/hash.h"
 #include "../heapManager/alloc.h"
 
@@ -371,7 +370,6 @@ typedef struct methodblock
     u2 slot;//the offset in the ClassBlock's MethodBlock**
 
     void* native_invoker;//it's need bingding to the nativemethod.
-    //void* native_arg;//no need
 
 }MethodBlock;
 
@@ -405,8 +403,6 @@ struct classblock
 
 extern C java_lang_Class;
 extern C java_lang_VMClass;
-//extern List_t CList;
-//extern List_t DList;
 extern Hash_t CMap;
 extern Hash_t DMap;
 /*--------------------------Function prototypes---------------*/

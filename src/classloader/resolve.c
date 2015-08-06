@@ -16,10 +16,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "resolve.h"
 #include "class.h"
-#include "../util/control.h"
+#include "../control/control.h"
 #include "../util/exception.h"
 #include "../interp/stackmanager.h"
 

@@ -19,7 +19,7 @@
 #include <string.h>
 #include "exception.h"
 #include "../classloader/resolve.h"
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../interp/stackmanager.h"
 
 /*packing the print operation*/

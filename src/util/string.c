@@ -18,7 +18,7 @@
 #include "string.h"
 #include "../classloader/class.h"
 #include "../heapManager/alloc.h"
-#include "../main/vm.h"
+#include "../main/turkey.h"
 #include "../classloader/resolve.h"
 #include "exception.h"
 
