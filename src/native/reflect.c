@@ -21,6 +21,7 @@
 #include "../util/exception.h"
 #include "native.h"
 #include "../classloader/resolve.h"
+#include "../lib/assert.h"
 
 #define C Class_t
 #define O Object_t
@@ -34,6 +35,7 @@
  */
 static int getArgsCount(char* mbtype)
 {
+    /*{{{*/
     int args_count = 0;
     char* ptr = mbtype;
     ptr++;
@@ -81,6 +83,7 @@ static int getArgsCount(char* mbtype)
     }
 
     return args_count;
+    /*}}}*/
 
 }
 
@@ -93,6 +96,7 @@ static int getArgsCount(char* mbtype)
  */
 static char** getArgsName(char* desc, int argcount)
 {
+    /*{{{*/
     char** names = (char**)sysMalloc(sizeof(int)*(argcount+1));
     names[argcount] = 0;
     int index = 0;
@@ -224,7 +228,7 @@ static char** getArgsName(char* desc, int argcount)
     }
 
     return names;
-
+    /*}}}*/
 }
 
 /**
@@ -238,6 +242,7 @@ static char** getArgsName(char* desc, int argcount)
  */
 O getClassConstructors(O vmClass, int isPublic)
 {
+    /*{{{*/
     C array_class = findArrayClass("[Ljava/lang/reflect/Constructor;");
     C reflect_class = loadClass("java/lang/reflect/Constructor");
     /**/
@@ -320,6 +325,7 @@ O getClassConstructors(O vmClass, int isPublic)
         }
     }
     return array;
+    /*}}}*/
 }
 
 
@@ -330,6 +336,7 @@ char* getObjectClassName(O obj)
     ClassBlock* cb = CLASS_CB(class);
     return cb->this_classname;
 }
+
 
 
 /* invoke by: OPC_INSTANCEOF */

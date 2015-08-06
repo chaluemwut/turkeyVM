@@ -28,6 +28,8 @@
 #include "../util/exception.h"
 #include "../lib/trace.h"
 #include "../util/testvm.h"
+#include "../control/verbose.h"
+#include "../lib/string.h"
 
 #define C Class_t
 #define O Object_t
@@ -43,7 +45,7 @@ extern List_t CList;
  * Create a new Frame, and copy args form old stack to new locals.
  * Then, execute the new method.
  */
-void executeMethod(MethodBlock* mb, va_list jargs)
+int executeMethod0(MethodBlock* mb, va_list jargs)
 {
     void* ret;/*{{{*/
     if (mb->native_invoker)
@@ -72,7 +74,19 @@ void executeMethod(MethodBlock* mb, va_list jargs)
 
         popFrame();
     }
+
+    return 0;
     /*}}}*/
+}
+
+void executeMethod(MethodBlock* mb, va_list jargs)
+{
+    char* cName = getMethodClassName(mb);
+    char* mName = mb->name;
+    char* info = String_concat(cName, ":", mName, NULL);
+    int i;
+
+    Verbose_TRACE(info, executeMethod0, (mb, jargs), i, VERBOSE_DETAIL);
 }
 
 /*
@@ -83,7 +97,7 @@ void executeMethod(MethodBlock* mb, va_list jargs)
  *       can use executeMethod() instead of executeStaticMain().
  * @qcliu 2015/01/30
  */
-void executeStaticMain(MethodBlock* mb)
+int executeStaticMain0(MethodBlock* mb)
 {
     unsigned short max_stack = mb->max_stack;/*{{{*/
     unsigned short max_locals = mb->max_locals;
@@ -95,7 +109,15 @@ void executeStaticMain(MethodBlock* mb)
     //
     executeJava(NULL);
     popFrame();
+
+    return 0;
     /*}}}*/
+}
+
+void executeStaticMain(MethodBlock* mb)
+{
+    int i;
+    Verbose_TRACE("static Main", executeStaticMain0, (mb),i, VERBOSE_PASS);
 }
 
 

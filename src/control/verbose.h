@@ -21,6 +21,6 @@
             Trace_spaces();                     \
             printf("%s finished\n", s);         \
         }                                       \
-    }while(0)                                   
+    }while(0)
 
 #endif

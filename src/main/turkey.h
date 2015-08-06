@@ -413,6 +413,8 @@ extern void doValue(void* v);
 
 extern void exitVM();
 
+extern char* getMethodClassName(MethodBlock* mb);
+
 #undef C
 #undef O
 #endif

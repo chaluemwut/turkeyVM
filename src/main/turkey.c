@@ -151,13 +151,14 @@ static void initList()
 }
 
 
-static void initVM()
+static int initVM()
 {
     initClassPath();
     initList();
     initFrame();
     initNativeFrame();
     initSystemClass();
+    return 0;
 }
 
 int main(int argc, char** argv)
@@ -172,12 +173,9 @@ int main(int argc, char** argv)
     {
     }
 
-    initVM();
-    /*
-#define NRETURN
-    Verbose_TRACE("initVM", initVM, ((void)), r, VERBOSE_PASS);
-#undef NRETURN
-*/
+    //initVM();
+    int r;
+    Verbose_TRACE("initVM", initVM, (), r, VERBOSE_PASS);
 
     //class = loadClass("[[[[LHello;");
     parseFilename(argv[1]);
@@ -196,7 +194,6 @@ int main(int argc, char** argv)
             printf("find static main!\n");
     }
 
-    printf("Init VM Ok...\n");
     executeStaticMain(main);
 
     if (dis_testinfo)
@@ -218,6 +215,16 @@ int main(int argc, char** argv)
     //Hash_status(CMap);
     return 0; /*}}}*/
 }
+
+
+
+char* getMethodClassName(MethodBlock* mb)
+{
+    Assert_ASSERT(mb);
+    ClassBlock* cb = CLASS_CB(mb->class);
+    return cb->this_classname;
+}
+
 
 #undef C
 #undef O

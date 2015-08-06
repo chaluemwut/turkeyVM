@@ -5,6 +5,7 @@
 #include "control.h"
 #include "../lib/trace.h"
 #include "../lib/error.h"
+#include "../lib/assert.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -31,6 +32,7 @@ typedef struct
 {
     char* name;
     Arg_type type;
+    char* arg;
     char* desc;
     void (*action)(); //a call-back
 } Arg_t;
@@ -66,13 +68,14 @@ static void arg_setVerbose(int i)
 
 static Arg_t allArgs[] =
 {
-    {"verbose", ARGTYPE_INT, "{0|1|2|3}", arg_setVerbose},
-    {"trace", ARGTYPE_STRING, "{name}", arg_setTrace},
-    {"help", ARGTYPE_EMPTY,"help",actionArg_help},
-    {"disv", ARGTYPE_EMPTY, "display vtable", actionArg_printVtable},
-    {"dish", ARGTYPE_EMPTY, "display list", actionArg_printList},
-    {"disb", ARGTYPE_EMPTY, "display bytecode", actionArg_printBytecode},
-    {"test", ARGTYPE_EMPTY, "for qcliu testing the VM", actionArg_test}
+    {"verbose", ARGTYPE_INT, "{0|1|2|3}", "verbose turkey",  arg_setVerbose},
+    {"trace", ARGTYPE_STRING, "{name}", "trace specific method", arg_setTrace},
+    {"help", ARGTYPE_EMPTY,"<NULL>", "commandline list", actionArg_help},
+    {"disv", ARGTYPE_EMPTY, "<NULL>", "display vtable", actionArg_printVtable},
+    {"dish", ARGTYPE_EMPTY,  "<NULL>", "display list", actionArg_printList},
+    {"disb", ARGTYPE_EMPTY, "<NULL>", "display bytecode", actionArg_printBytecode},
+    {"test", ARGTYPE_EMPTY, "<NULL>", "super test!!", actionArg_test},
+    {NULL, 0, NULL, NULL, NULL}
 };
 
 void actionArg_test()
@@ -95,12 +98,30 @@ void actionArg_printVtable()
     dis_vtable = TRUE;
 }
 
+static int printSpace(int i, int indent)
+{
+    Assert_ASSERT(i<=indent);
+    while(i < indent)
+    {
+        i += printf(" ");
+    }
+
+    return i;
+}
+
 void printAllarg()
 {
     int i = 0;
     for(; allArgs[i].action; i++)
     {
-        printf("  -%s\t\t%s\n",allArgs[i].name,allArgs[i].desc);
+        int k=0;
+        k += printf("  -%s", allArgs[i].name);
+        k = printSpace(k, 15);
+        k += printf("%s", allArgs[i].arg);
+        k = printSpace(k, 30);
+        k += printf("%s", allArgs[i].desc);
+        printf("\n");
+        //printf("  -%s    %s    %s\n",allArgs[i].name, allArgs[i].arg, allArgs[i].desc);
     }
 }
 
