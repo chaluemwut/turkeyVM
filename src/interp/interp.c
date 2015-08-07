@@ -3594,8 +3594,7 @@ int executeJava(JF retFrame)
         }
         PCMOVE(1);
     }
-
-
+    return 0;
 }
 
 #undef C

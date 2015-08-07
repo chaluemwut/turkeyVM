@@ -1,0 +1,13 @@
+*.swp
+*.bak
+*.taghl
+tags
+*.out
+*_test
+*~
+/src/CMakeFiles
+*.cmake
+CMakeCache.txt
+turkey
+Makefile
+/bin/
