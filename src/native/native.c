@@ -21,12 +21,11 @@
 #include "../heapManager/alloc.h"
 #include "../main/turkey.h"
 #include "../control/control.h"
-#include "../util/string.h"
+#include "../util/jstring.h"
 #include "../classloader/resolve.h"
 #include "../classloader/class.h"
 #include "../util/exception.h"
 #include "../util/testvm.h"
-#include "../util/string.h"
 #include "../interp/stackmanager.h"
 #include "native.h"
 #include <sys/utsname.h>

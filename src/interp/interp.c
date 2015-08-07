@@ -27,7 +27,7 @@
 #include "../util/testvm.h"
 #include "../util/exception.h"
 #include "../main/turkey.h"
-#include "../util/string.h"
+#include "../util/jstring.h"
 #include "../native/reflect.h"
 #include "../lib/list.h"
 #include "stackmanager.h"

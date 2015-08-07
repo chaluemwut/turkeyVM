@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "string.h"
+#include "jstring.h"
 #include "../classloader/class.h"
 #include "../heapManager/alloc.h"
 #include "../main/turkey.h"
@@ -32,7 +32,7 @@ static int value_offset;
 static int offset_offset;
 static int inited;
 
-static void initString()
+void initString()
 {
     if (java_lang_String == NULL)
         java_lang_String = loadClass("java/lang/String");

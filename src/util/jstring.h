@@ -1,5 +1,5 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef JSTRING_H
+#define JSTRING_H
 
 #include "../main/turkey.h"
 #include "../heapManager/alloc.h"
