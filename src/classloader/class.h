@@ -4,6 +4,10 @@
 
 #define C Class_t
 
+#define CLASSNAME(c) (((ClassBlock*)(c+1))->this_classname)
+
+
+
 extern void initClass(C class);
 
 extern C loadClass_not_init(char* classname);

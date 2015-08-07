@@ -18,7 +18,6 @@
  *2015/01/20
  *Add loadArrayClass();
  *//*}}}*/
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,11 +33,14 @@
 #include "../control/control.h"
 #include "../lib/error.h"
 #include "../lib/string.h"
+#include "../control/verbose.h"
+#include "../lib/assert.h"
 
 #define MAX_PRIMITIVE 9
 #define C Class_t
 #define O Object_t
 #define P Poly_t
+
 
 static const int ClassHeaderSize = sizeof(struct C);
 
@@ -184,7 +186,7 @@ int parseArgs(char* args)
  * invoke by: loadSystemClass()
  * @qcliu 2015/01/27
  */
-static C defineClass(char* classname, char* data, int file_len)
+static C Trace_defineClass(char* classname, char* data, int file_len)
 {
     /*{{{*/
     unsigned char* ptr = (unsigned char*)data;
@@ -584,6 +586,15 @@ static C defineClass(char* classname, char* data, int file_len)
     /*}}}*/
 }
 
+static C defineClass(char* classname, char* data, int file_len)
+{
+    char* s = String_concat(classname, " \e[34m\e[1mdefine\e[0m", NULL);
+    C r;
+    Verbose_TRACE(s, Trace_defineClass, (classname, data, file_len), r, VERBOSE_SUBPASS);
+    return r;
+}
+
+
 /*
  * Copy the Class file to the mem.Then invoke the defineClass()
  * to establish the data structure.
@@ -612,21 +623,24 @@ static C loadSystemClass(char* classname)
     char* buff = (char*)malloc(MAX_PATH_LEN + file_len);
     char filename[fname_len];
     char* data;
-    FILE* cfd;
 
     filename[0] = '/';
     strcat(strcpy(&filename[1], classname), ".class");
+    filename[fname_len-1] = '\0';
 
-    //printf("%s\n", filename);
+    char** cp_ptr = CLASSPATH;
+    FILE* cfd = NULL;
+    do
+    {
+        char* fullName = String_concat(*cp_ptr, filename, NULL);
+        cfd = fopen(fullName, "r");
+        cp_ptr++;
+    }while(*cp_ptr&&!cfd);
 
-    char** cp_ptr;
-    for (cp_ptr = CLASSPATH; 
-                *cp_ptr&&!(cfd = fopen(strcat(strcpy(buff, *cp_ptr), filename), "r"));
-                    cp_ptr++)
-                ;
     if (cfd == NULL)
     {
-        cfd = fopen(strcat(strcpy(buff, PREFIX), filename), "r");
+        char* fullName = String_concat(PREFIX, filename, NULL);
+        cfd = fopen(fullName, "r");
     }
     if (dis_testinfo)
         printf("this fiel name is %s\n", filename);
@@ -670,7 +684,7 @@ static C loadSystemClass(char* classname)
  *
  * invoke by: loadClass()
  **/
-static void prepareClass(C class)
+static int Trace_prepareClass(C class)
 {
     /*{{{*/
     ClassBlock* cb = CLASS_CB(class);
@@ -687,7 +701,7 @@ static void prepareClass(C class)
 
     //if already prepared,return
     if (cb->flags >= PREPARED)
-        return;
+        return 0;
 
     if (dis_testinfo)
         printf("preparing class.....%s\n", cb->this_classname);
@@ -809,8 +823,18 @@ static void prepareClass(C class)
 
 
     cb->flags = PREPARED;
+
+    return 0;
     /*}}}*/
 }//end prepareClass()
+
+static void prepareClass(C class)
+{
+    char* c = CLASSNAME(class);
+    char* s = String_concat(c, " \e[35m\e[1mprepare\e[0m", NULL);
+    int r;
+    Verbose_TRACE(s, Trace_prepareClass, (class), r, VERBOSE_SUBPASS);
+}
 
 
 
@@ -821,7 +845,7 @@ static void prepareClass(C class)
  * invoke by: loadClass()
  */
 
-static C linkClass(C class)
+static C Trace_linkClass(C class)
 {
     /*{{{*/
     ClassBlock* cb = CLASS_CB(class);
@@ -905,6 +929,17 @@ static C linkClass(C class)
     return class;
     /*}}}*/
 }//end linkClass()
+
+
+static C linkClass(C class)
+{
+    char* c = CLASSNAME(class);
+    char* s = String_concat(c, " \e[36m\e[1mlink\e[0m", NULL);
+    C r;
+    Verbose_TRACE(s, Trace_linkClass, (class), r, VERBOSE_SUBPASS);
+
+    return r;
+}
 
 /*
  * This is to invoke the class's <clinit>
@@ -995,10 +1030,53 @@ C loadClass_not_init(char* classname)
 
     return class;
     /*}}}*/
+}
+
+static C Trace_loadClass0(char* classname)
+{
+    C class = NULL;
+    ClassBlock* cb = NULL;
+    if (classname[0] == '[')
+        class = loadArrayClass(classname);
+    else
+        class = loadSystemClass(classname);
+
+    /*
+     * This must before initClass().Otherwise, there will
+     * be loop untill death.
+     **/
+    cb = CLASS_CB(class);
+    String_t s = String_new(cb->this_classname);
+    Hash_put(CMap, s, class);
+
+
+    //prepareClass
+    prepareClass(class);
+
+    //linkClass
+    class = linkClass(class);
+
+    // If the class is not interface, initClass
+    cb = CLASS_CB(class);
+
+    if (!(cb->access_flags & ACC_INTERFACE))
+        initClass(class);
+
+    return class;
 
 }
+
+C loadClass0(char* classname)
+{
+    char* s = String_concat(classname, " \e[33m\e[1mload\e[0m", NULL);
+    C r;
+    Verbose_TRACE(s, Trace_loadClass0, (classname), r, VERBOSE_PASS);
+
+    return r;
+}
+
 /*
- * First find class in LinkedList, if not, there need a assert
+ * First find class in Hash, if not, there need a assert
  * weather it's a array or a normal class.
  * When loaded the class, need prepareClass() and linkClass().
  * The recursive method loadSystemClass() ensured that the super
@@ -1023,42 +1101,12 @@ C loadClass(char* classname)
 
         return class;
     }
-    else if (classname[0] == '[')
-        class = loadArrayClass(classname);
     else
-        class = loadSystemClass(classname);
-
-    /*
-     * This must before initClass().Otherwise, there will
-     * be loop untill death.
-     **/
-    //add class to the list
-    //List_addLast(CList, class);
-    cb = CLASS_CB(class);
-    String_t s = String_new(cb->this_classname);
-    Hash_put(CMap, s, class);
-
-
-    //prepareClass
-    prepareClass(class);
-
-    //linkClass
-    class = linkClass(class);
-
-    // If the class is not interface, initClass
-    cb = CLASS_CB(class);
-
-    if (!(cb->access_flags & ACC_INTERFACE))
-        initClass(class);
-
-
-    //if (dis_testinfo)
-    //  printList(head);
-
-    return class;
-    /*}}}*/
+    {
+        return loadClass0(classname);
+    }
+        /*}}}*/
 }
-
 
 /**
   * This is a recursive for multi-array, normal-array is a special case.

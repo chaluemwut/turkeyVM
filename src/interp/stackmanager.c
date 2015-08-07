@@ -58,22 +58,12 @@ int getNewId()
 
 void print_Stack(JF frame)
 {
+    C class = getCurrentClass();
+    ClassBlock* cb = CLASS_CB(class);
     printf("\n----------------\n");
-    printf("%s\n", getCurrentMethodName());
+    printf("CurrentClass:%s\n", cb->this_classname);
+    printf("Current method:%s   ", getCurrentMethodName());
     printf("%s\n", getCurrentMethodDesc());
-    int ms = frame->mb->max_stack;
-    int ml = frame->mb->max_locals;
-    unsigned int* p = frame->locals+ms;
-    int i;
-    for (i=0; i<ms; i++)
-    {
-        if (p == frame->ostack)
-          printf("[top]%d\n",*(int*)p);
-        else
-          printf("[%d]%d\n", i, *(int*)p);
-        p++;
-    }
-    fprintf(stdout, "%s", "\n");
 }
 
 /**
