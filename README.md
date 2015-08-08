@@ -45,22 +45,11 @@ also, you can give static main args
 
 	./turkey ../test/bin/Test arg1 arg2 arg3
 
-you can find all source of test case in `test/`
 
-	test case1: hello, world
-	hello,world
+you can find all source of test case in `test/`. All test case(except Test.java) are in miniJava lanuage, and they can compile by [tiger-comp](https://github.com/qc1iu/tiger-comp#tiger)**^_^**
+	
 
-	test case2: sum
-	1+2+...+100=5050
-
-	test case3: args
-	arg1
-	arg2
-	arg3
-
-	VM run 0.054505 seconds
-
-###Command-line
+##Command-line
 
 	-verbose     {0|1|2|3}      verbose turkey
   	-trace       {name}         trace specific method

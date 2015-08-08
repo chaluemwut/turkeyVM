@@ -11,3 +11,5 @@ CMakeCache.txt
 turkey
 Makefile
 /bin/
+*txt
+!CMakeList.txt

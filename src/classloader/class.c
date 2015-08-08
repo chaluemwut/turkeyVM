@@ -53,7 +53,7 @@ C primClass[MAX_PRIMITIVE];
 
 static char** CLASSPATH = NULL;
 static int MAX_PATH_LEN = 0;
-static char* PREFIX = NULL;
+char* PREFIX = NULL;
 
 //method
 static C loadArrayClass(char* classname);
@@ -64,6 +64,27 @@ extern int initable;
 
 static u2* for_test;
 
+void addClassHeader(C class)
+{
+    if (java_lang_Class)
+    {
+        O obj = allocObject(java_lang_Class);
+
+        if (java_lang_VMClass == NULL)
+            java_lang_VMClass = loadClass("java/lang/VMClass");
+
+        O vmobj = allocObject(java_lang_VMClass);
+        //NOTE: vmClass obj can also known which class he belong to
+        vmobj->binding = (C)obj;
+
+        /* Every Class obj need a VMClass obj.*/
+        FieldBlock* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
+        OBJECT_DATA(obj, fb->offset-1, O) = vmobj;
+
+        obj->binding = class;//Class obj's binding refer to the method area.
+        class->class = obj;
+    }
+}
 
 //static char* test;
 
@@ -647,8 +668,8 @@ static C loadSystemClass(char* classname)
 
     if (cfd == NULL)
     {
-        printf("\n%s\n", buff);
-        printf("\n%s\n", classname);
+        //printf("\n%s\n", buff);
+        //printf("\n%s\n", classname);
         throwException("NoFileInput");
     }
 
@@ -905,6 +926,8 @@ static C Trace_linkClass(C class)
     /*in the <clinit>, it maybe need java/lang/Class*/
 
 
+    addClassHeader(class);
+    /*
     if (java_lang_Class)
     {
         O obj = allocObject(java_lang_Class);
@@ -916,13 +939,14 @@ static C Trace_linkClass(C class)
         //NOTE: vmClass obj can also known which class he belong to
         vmobj->binding = (C)obj;
 
-        /* Every Class obj need a VMClass obj.*/
+        // Every Class obj need a VMClass obj.
         FieldBlock* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
         OBJECT_DATA(obj, fb->offset-1, O) = vmobj;
 
         obj->binding = class;//Class obj's binding refer to the method area.
         class->class = obj;
     }
+    */
 
     cb->flags = LINKED;
 
@@ -1261,14 +1285,9 @@ static C loadPrimitiveClass(char* classname, int index)
     class = linkClass(class);
 
     cb->flags = PRIM;
-    /*
-        if (java_lang_Class)
-        {
-            Object* obj = allocObject(java_lang_Class);
-            obj->binding = class;
-            class->class = obj;
-        }
-    */
+
+    addClassHeader(class);
+
     primClass[index] = class;
     return class;
 

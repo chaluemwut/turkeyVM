@@ -8,9 +8,9 @@
 extern JFrame_t current_frame;
 
 void throwException(char* exception) {
-    JFrame_t current_frame = getCurrentFrame();
-    printf("\nException: %s\n", exception);
-    print_Stack(current_frame);
+    //JFrame_t current_frame = getCurrentFrame();
+    printf("\n\e[31m\e[1mException:\e[0m %s\n", exception);
+    //print_Stack(current_frame);
 
     Hash_status(CMap);
 

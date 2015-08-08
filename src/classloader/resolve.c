@@ -22,6 +22,7 @@
 #include "../control/control.h"
 #include "../util/exception.h"
 #include "../interp/stackmanager.h"
+#include "../lib/error.h"
 
 #define C Class_t
 #define JF JFrame_t
@@ -265,6 +266,7 @@ MethodBlock* resolveInterfaceMethod(C class, u2 index)
         {
             ClassBlock* cb = CLASS_CB(class);
             printf("%s %s in %s\n", name, type, cb->this_classname);
+            ERROR("resolveInterfaceMethod");
             throwException("no such method");
         }
 
@@ -334,6 +336,7 @@ MethodBlock* resolveMethod(C class, u2 index)
         {
             ClassBlock* cb = CLASS_CB(class);
             printf("%s %s in %s\n", name, type, cb->this_classname);
+            ERROR("resolveMethod");
             throwException("no such method");
         }
 
