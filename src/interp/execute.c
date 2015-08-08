@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------*//*{{{*/
+/*^_^*--------------------------------------------------------------*//*{{{*/
 /* Copyright (C) SSE-USTC, 2014-2015                                */
 /*                                                                  */
 /*  FILE NAME             :  execute.c                              */
@@ -40,6 +40,23 @@ extern List_t CList;
 
 
 
+static int executeNativeMethod(MethodBlock* mb)
+{
+    if (dis_testinfo)
+    {
+        printf("This is a native method!!!");
+        printf("name:%s, type:%s\n", mb->name, mb->type);
+    }
+    createNativeFrame(mb);
+
+    //TODO According to the method->type, need change the return type.@qcliu 2015/03/06
+    ((void (*)())mb->native_invoker)();
+
+    popNativeFrame();
+    //printf("pop Native method:%s\n", mb->name);
+
+    return 0;
+}
 
 /*
  * Create a new Frame, and copy args form old stack to new locals.
@@ -50,28 +67,14 @@ int executeMethod0(MethodBlock* mb, va_list jargs)
     void* ret;/*{{{*/
     if (mb->native_invoker)
     {
-        if (dis_testinfo)
-        {
-            printf("This is a native method!!!");
-            printf("name:%s, type:%s\n", mb->name, mb->type);
-        }
-        createNativeFrame(mb);
-
-        //TODO According to the method->type, need change the return type.@qcliu 2015/03/06
-        ((void (*)())mb->native_invoker)();
-
-        popNativeFrame();
-        //printf("pop Native method:%s\n", mb->name);
+        return executeNativeMethod(mb);
     }
     else
     {
         JF retFrame = getCurrentFrame();
-
         createFrame(mb, jargs, ret);
         //executeJava
         Trace_Stack(mb->name, executeJava, (retFrame), printStack);
-        //executeJava(retFrame);
-
         popFrame();
     }
 
@@ -97,15 +100,16 @@ void executeMethod(MethodBlock* mb, va_list jargs)
  *       can use executeMethod() instead of executeStaticMain().
  * @qcliu 2015/01/30
  */
-int executeStaticMain0(MethodBlock* mb)
+static int executeStaticMain0(MethodBlock* mb, O args)
 {
     unsigned short max_stack = mb->max_stack;/*{{{*/
     unsigned short max_locals = mb->max_locals;
     int args_count = mb->args_count;
     JF frame = createFrame0(mb);
+    *(O*)(frame->locals+0) = *(O*)&args;
 
     if (dis_testinfo)
-        printf("\nnew Frame: %d\n", getCurrentFrameId());
+      printf("\nnew Frame: %d\n", getCurrentFrameId());
     //
     executeJava(NULL);
     popFrame();
@@ -114,13 +118,11 @@ int executeStaticMain0(MethodBlock* mb)
     /*}}}*/
 }
 
-void executeStaticMain(MethodBlock* mb)
+void executeStaticMain(MethodBlock* mb, O args)
 {
     int i;
-    Verbose_TRACE("static Main", executeStaticMain0, (mb),i, VERBOSE_PASS);
+    Verbose_TRACE("static Main", executeStaticMain0, (mb, args), i, VERBOSE_PASS);
 }
-
-
 
 void executeMethodArgs(C class, MethodBlock* mb, ...)
 {
@@ -161,9 +163,9 @@ void invoke(MethodBlock* mb, O args, O this)
     }
     //copyArgs(Frame* frame, MethodBlock* mb)
     if (!(mb->access_flags & ACC_STATIC))//non-static
-        locals_idx = args_count;
+      locals_idx = args_count;
     else
-        throwException("construct method must be non-static");
+      throwException("construct method must be non-static");
 
     if (args->length != locals_idx)
     {
@@ -190,6 +192,7 @@ void invoke(MethodBlock* mb, O args, O this)
     popFrame();
     /*}}}*/
 }
+
 
 #undef C
 #undef O

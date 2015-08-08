@@ -12,10 +12,6 @@
 
 static const char* VERSION = "turkey v0.0.1";
 
-char** filename;
-int file_length;
-
-
 void actionArg_help();
 void actionArg_printVtable();
 void actionArg_printList();
@@ -146,11 +142,43 @@ static int printUsage()
     return 0;
 }
 
-int j=0;
-void commandline_doarg(int argc,char** argv)
+static void argException(char* s)
 {
-    filename = argv;
-    file_length = 0;
+    printf("\e[31m\e[1mArgs error: \e[0m%s\n", s);
+    exit(0);
+}
+
+static int doTurkeyArgs(int argc, char** argv)
+{
+    int i = 1;
+    int argCount = 0;
+    char* file = NULL;
+    for (; i<argc; i++)
+    {
+        if (file == NULL)
+        {
+            file = argv[i];
+            if (file[0] == '-')
+              argException("invailid file name");
+
+            continue;
+        }
+
+        if (argv[i][0] != '-')
+        {
+            argCount++;
+        }
+        else
+        {
+            return argCount;
+        }
+    }
+
+    return argCount;
+
+}
+int commandline_doarg(int argc,char** argv)
+{
     if (argc == 1)
     {
         printUsage();
@@ -163,6 +191,7 @@ void commandline_doarg(int argc,char** argv)
         dis_bytecode = FALSE;
         dis_testinfo = FALSE;
     }
+    int count = doTurkeyArgs(argc, argv);
     int index = 1;
     for(; index < argc; index++)
     {
@@ -171,8 +200,8 @@ void commandline_doarg(int argc,char** argv)
         int i = 0;
         if(inputName[0] != '-')
         {
-            filename[j++] = argv[index];
-            file_length++;
+            //filename[j++] = argv[index];
+            //file_length++;
             continue;
         }
 
@@ -218,4 +247,6 @@ void commandline_doarg(int argc,char** argv)
         }
 
     }
+
+    return count;
 }

@@ -9,7 +9,7 @@
 /*execute*/
 extern void executeMethod(MethodBlock* mb, va_list jargs);
 
-extern void executeStaticMain(MethodBlock* mb);
+extern void executeStaticMain(MethodBlock* mb, O args);
 
 extern void executeMethodArgs(C class, MethodBlock* mb,...);
 

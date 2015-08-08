@@ -21,11 +21,12 @@
 #include "../interp/execute.h"
 #include "../heapManager/alloc.h"
 #include "../util/testvm.h"
+#include "../util/exception.h"
+#include "../util/jstring.h"
 #include "../control/command-line.h"
 #include "../classloader/resolve.h"
 #include "../control/control.h"
 #include "../classloader/class.h"
-#include "../util/exception.h"
 #include "../interp/stackmanager.h"
 #include "../lib/list.h"
 #include "../lib/hash.h"
@@ -165,15 +166,9 @@ int main(int argc, char** argv)
 {
     clock_t start, end;/*{{{*/
     start = clock();
-    commandline_doarg(argc, argv);
+    int args_array_size = commandline_doarg(argc, argv);
 
-    int i = 0;
     C class=NULL;
-    if (argc<2)
-    {
-    }
-
-    //initVM();
     int r;
     Verbose_TRACE("initVM", initVM, (), r, VERBOSE_PASS);
 
@@ -183,18 +178,21 @@ int main(int argc, char** argv)
 
     //find access main method!
     MethodBlock* main = findMethod(class, "main", "([Ljava/lang/String;)V");
+
     if ((!main)||!(main->access_flags & ACC_STATIC))
+        throwException("Not find static main");
+
+    C stringArray= NULL;
+    stringArray = findArrayClass("[Ljava/lang/String;");
+    Assert_ASSERT(stringArray);
+    O args = allocArray(stringArray, args_array_size, sizeof(O), TYPE_REFERENCE);
+    int i;
+    for (i = 0; i<args_array_size; i++)
     {
-        printf("not found static main!\n");
-        exit(0);
-    }
-    else
-    {
-        if (dis_testinfo)
-            printf("find static main!\n");
+        ARRAY_DATA(args, i, O) = createString(argv[i+2]);
     }
 
-    executeStaticMain(main);
+    executeStaticMain(main, args);
 
     if (dis_testinfo)
         printf("vmsize : %d B\n", vmsize);

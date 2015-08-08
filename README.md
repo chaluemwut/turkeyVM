@@ -22,22 +22,43 @@ finally,
 	cmake CMakeList.txt
 	make
 
-This will retrieve the library and compile the turkey into src/.Then run
-	
-	./turkey ../test/Test
+This will retrieve the library and compile the turkey into src/.
+
+
+We supply some file in `test/` for test.
+
+	./turkey ../test/bin/Test
 
 will get the result like this
 
+	test case1: hello, world
 	hello,world
+
+	test case2: sum
 	1+2+...+100=5050
+
+	test case3: args
 
 	VM run 0.054671 seconds
 
-also, you can run 
+also, you can give static main args 
 
-	./turkey/LinkedList
+	./turkey ../test/bin/Test arg1 arg2 arg3
 
-magic!!!
+you can find all source of test case in `test/`
+
+	test case1: hello, world
+	hello,world
+
+	test case2: sum
+	1+2+...+100=5050
+
+	test case3: args
+	arg1
+	arg2
+	arg3
+
+	VM run 0.054505 seconds
 
 ###Command-line
 

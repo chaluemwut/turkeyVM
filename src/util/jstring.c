@@ -149,6 +149,7 @@ O createString(char* s)
 }
 
 /* Given a String object, and print*/
+//FIXME
 void printStringObject(O obj)
 {
 

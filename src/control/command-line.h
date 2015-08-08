@@ -2,9 +2,9 @@
 #define COMMAND_LINE_H
 
 
-extern char** filename;
-extern int file_length;
+//extern char** filename;
+//extern int file_length;
 
-extern void commandline_doarg(int argc,char** argv);
+extern int commandline_doarg(int argc,char** argv);
 
 #endif
