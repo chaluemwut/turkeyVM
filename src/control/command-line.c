@@ -10,8 +10,11 @@
 #define TRUE 1
 #define FALSE 0
 
+static const char* VERSION = "turkey v0.0.1";
+
 char** filename;
 int file_length;
+
 
 void actionArg_help();
 void actionArg_printVtable();
@@ -121,7 +124,6 @@ void printAllarg()
         k = printSpace(k, 30);
         k += printf("%s", allArgs[i].desc);
         printf("\n");
-        //printf("  -%s    %s    %s\n",allArgs[i].name, allArgs[i].arg, allArgs[i].desc);
     }
 }
 
@@ -132,13 +134,28 @@ void actionArg_help()
 }
 
 
-
+static int printUsage()
+{
+    printf("Turkey is a Java virtual mechine for GNU Classpath0.0.6\n\n");
+    printf("Usage:\n\n");
+    printf("\tcommand [arguments]\n\n");
+    printf("The commands are:\n\n");
+    printAllarg();
+    printf("\n");
+    printf("%s\n", VERSION);
+    return 0;
+}
 
 int j=0;
 void commandline_doarg(int argc,char** argv)
 {
     filename = argv;
     file_length = 0;
+    if (argc == 1)
+    {
+        printUsage();
+        exit(0);
+    }
     if(argc == 2)
     {
         dis_vtable = FALSE;
