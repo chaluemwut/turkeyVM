@@ -56,7 +56,7 @@ O allocObject(C class)
     int obj_size = cblock->obj_size;
     O obj = (O)sysMalloc(ObjHeaderSize + sizeof(int)*obj_size);
     //---------------------------------
-    obj->isArray = FALSE;
+    obj->type = TYPE_OBJECT;
     obj->length = 0;
     obj->atype = 0;
     //--------------------------
@@ -83,7 +83,7 @@ O allocArray(C class, int size, int el_size, int atype)
     ClassBlock* cb = CLASS_CB(class);
     obj = (O)sysMalloc(ObjHeaderSize+ size*el_size);
     //------------------------
-    obj->isArray = TRUE;
+    obj->type = TYPE_ARRAY;
     obj->length = size;
     obj->atype = atype;
     //------------------------

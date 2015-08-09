@@ -37,8 +37,8 @@ static const int DSYNC = 32;
  *
  * @exception IOException If an error occurs.
  */
- // private native long nativeOpen(String path, int mode)
- //           throws FileNotFoundException;
+ // private native long nativeOpen(String path, int mode) throws FileNotFoundException;
+ // Class: java/io/FileDescriptor 
 void nativeOpen(JF retFrame)
 {
     NF f = getNativeFrame();
@@ -48,7 +48,6 @@ void nativeOpen(JF retFrame)
     char* fpath = String2Char(path);
     FILE* fp = NULL;
     long long r;
-    
 
     //FIXME 
     switch (mode)
@@ -64,15 +63,58 @@ void nativeOpen(JF retFrame)
             break;
     }
     if (fp == NULL)
+    {
       r = -1;
+      WARNING("file not exsit");
+    }
     else
       r = (long long)fp;
+    printf("%lld\n", r);
 
     push(retFrame, &r, TYPE_LONG);
 
-    //TODO("todo");
-
 }
+
+
+
+
+
+/**
+ * Reads a buffer of  bytes from the file
+ *
+ * @param fd The native file descriptor to read from
+ * @param buf The buffer to read bytes into
+ * @param offset The offset into the buffer to start storing bytes
+ * @param len The number of bytes to read.
+ *
+ * @return The number of bytes read, or -1 if end of file.
+ *
+ * @exception IOException If an error occurs
+ */
+//
+//private native int nativeReadBuf(long fd, byte[] buf, int offset, int len) throws IOException;
+//Class: java/io/FileDescriptor
+void nativeReadBuf(JF retFrame)
+{
+    NF n = getNativeFrame();
+    O this;// = (O)n->locals[0];
+    O buf;
+    long long fd;
+    int offset;
+    int len;
+
+    LOAD(n, this, O, 0);
+    LOAD(n, fd, long long, 1);
+    LOAD(n, buf, O, 3);
+    LOAD(n, offset, int, 4);
+    LOAD(n, len, int, 5);
+
+    printf("%lld\n", fd);
+    FILE* fp = (FILE*)fd;
+
+    TODO("nativeReadBuf");
+}
+
 
 
 #undef JF

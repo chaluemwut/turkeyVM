@@ -76,6 +76,7 @@ void nativeValid();
 /* Binding method name with function*/
 Binding nativeMethods[] =
 {
+    {"nativeReadBuf", "(J[BII)I", nativeReadBuf},
     {"nativeOpen", "(Ljava/lang/String;I)J", nativeOpen},
     {"getPrimitiveClass","(Ljava/lang/String;)Ljava/lang/Class;",getPrimitiveClass},
     {"nativeWriteBuf", "(J[BII)J", nativeWriteBuf},
@@ -110,8 +111,7 @@ void nativeWriteBuf(JF retFrame)
     int _offset = nframe->locals[4];
     int len = nframe->locals[5];
 
-    if (!buf->isArray)
-        throwException("not array");
+    Assert_ASSERT(buf->type == TYPE_ARRAY);
     char* p = (char*)buf->data;
     int i;
     for (i=_offset; i<len; i++)

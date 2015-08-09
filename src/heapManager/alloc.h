@@ -8,15 +8,27 @@
 
 typedef struct O *O;
 
+typedef enum otype
+{
+    TYPE_OBJECT,
+    TYPE_ARRAY,
+    TYPE_STRING,
+}Object_type;
+
+typedef enum atype
+{
+    TODO
+}Array_type;
+
 struct O
 {
     struct C* class;//refer to the methodArea.
     struct classblock* cb;
     unsigned int* data;
     //-------------------------
-    int isArray;
+    Object_type type;
     int length;//If it's array, it the arraylength, otherwise, it's 0.
-    int atype;
+    int atype;//array type
     //----------------------------------------------
     /*
      * The bingding is for the head of every Class. When reflected, 
@@ -42,6 +54,8 @@ extern O allocObject(struct C* class);
 extern O allocTypeArray(int type, int size, char* element_name);
 
 extern O allocArray(struct C* class, int size, int el_size, int atype);
+
+extern void dumpObject(O);
 
 #undef C
 #undef O

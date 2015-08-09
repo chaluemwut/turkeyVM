@@ -34,6 +34,7 @@
 #include "../lib/error.h"
 #include "../lib/mem.h"
 #include "../lib/trace.h"
+#include "../lib/assert.h"
 
 #define C Class_t
 #define O Object_t
@@ -575,8 +576,7 @@ static void exe_OPC_IALOAD(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-    if (!obj->isArray)
-        throwException("NoArray");
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -613,8 +613,7 @@ static void exe_OPC_FALOAD(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-    if (!obj->isArray)
-        throwException("NoArray");
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -634,8 +633,7 @@ static void exe_OPC_DALOAD(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-    if (!obj->isArray)
-        throwException("obj is not array");
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -654,8 +652,7 @@ static void exe_OPC_AALOAD(JF f)
 
     if (arrayref == NULL)
         throwException("NullPointerException");
-    if (!arrayref->isArray)
-        throwException("obj is not array");
+    Assert_ASSERT(arrayref->type == TYPE_ARRAY);
     if (index < 0 || index >= arrayref->length)
         throwException("OutofArrayBound");
 
@@ -680,8 +677,7 @@ static void exe_OPC_BALOAD(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-    if (!obj->isArray)
-        throwException("obj is not array");
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -702,8 +698,7 @@ static void exe_OPC_CALOAD(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-    if (!obj->isArray)
-        throwException("obj is not array");
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -724,8 +719,7 @@ static void exe_OPC_SALOAD(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-    if (!obj->isArray)
-        throwException("obj is not array");
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -969,10 +963,7 @@ static void exe_OPC_IASTORE(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-
-    if (!obj->isArray)
-        throwException("NoArray");
-
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -1008,10 +999,7 @@ static void exe_OPC_FASTORE(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-
-    if (!obj->isArray)
-        throwException("obj is not array");
-
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -1031,8 +1019,7 @@ static void exe_OPC_DASTORE(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-    if (!obj->isArray)
-        throwException("obj is not array");
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -1052,8 +1039,7 @@ static void exe_OPC_AASTORE(JF f)
 
     if (arrayref == NULL)
         throwException("NullPointerException");
-    if (!arrayref->isArray)
-        throwException("obj is not array");
+    Assert_ASSERT(arrayref->type == TYPE_ARRAY);
     if (index < 0 || index >= arrayref->length )
         throwException("OutofArrayBount");
 
@@ -1074,8 +1060,7 @@ static void exe_OPC_BASTORE(JF f)
 
     if (obj == NULL)
         throwException("NullPointerException");
-    if (!obj->isArray)
-        throwException("obj is not array");
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     if (index < 0 || index >= obj->length)
         throwException("OutofArrayBound");
 
@@ -1626,7 +1611,7 @@ static void Trace_exe_OPC_I2L(JF f)
 
 static void exe_OPC_I2L(JF f)
 {
-    Trace_Opc("opc_i2l", Trace_exe_OPC_I2L, printStack, (f), printStack);
+    Trace_Opc("opc_i2l", Trace_exe_OPC_I2L,(f), printStack, printStack);
 }
 
 static void exe_OPC_I2F(JF f)
@@ -2802,7 +2787,7 @@ static void exe_OPC_ARRAYLENGTH(JF f)
     if (0 == arrayref)
         throwException("NullPointerException");
 
-    if (!arrayref->isArray)
+    if (!arrayref->type)
         throwException("this obj is not a array.");
 
     len = arrayref->length;

@@ -30,6 +30,7 @@
 #include "../util/testvm.h"
 #include "../control/verbose.h"
 #include "../lib/string.h"
+#include "../lib/assert.h"
 
 #define C Class_t
 #define O Object_t
@@ -158,10 +159,7 @@ void invoke(MethodBlock* mb, O args, O this)
      * @qcliu 2015/01/29
      */
 
-    if (args->isArray != 1)
-    {
-        throwException("args must be array");
-    }
+    Assert_ASSERT(args->type == TYPE_ARRAY);
     //copyArgs(Frame* frame, MethodBlock* mb)
     if (!(mb->access_flags & ACC_STATIC))//non-static
       locals_idx = args_count;

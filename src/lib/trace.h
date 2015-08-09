@@ -27,7 +27,7 @@ void Trace_addFunc(char* s);
     }while(0)                                           
 
 
-#define Trace_Stack(s, f, x, y, dox, r, dor)               \
+#define Trace_Stack(s, f, x, y, dox, r, dor)            \
     do {                                                \
         int exists = Trace_contains(s);                 \
         if (exists) {                                   \
@@ -36,20 +36,20 @@ void Trace_addFunc(char* s);
         f x;                                            \
         if (exists) {                                   \
             dox y;                                      \
-            exit(0);                                        \
+            exit(0);                                    \
         }                                               \
     }while(0)            
 
-#define Trace_Opc(s, f, dox, r, dor)                    \
+#define Trace_Opc(s, f, x, dox, dor)                    \
     do {                                                \
         int exists = Trace_contains(s);                 \
         if (exists) {                                   \
-            dox r;                                      \
+            dox x;                                      \
         }                                               \
-        f r;                                           \
+        f x;                                            \
         if (exists) {                                   \
-            dox r;                                      \
-            exit(0);                                        \
+            dox x;                                      \
+            exit(0);                                    \
         }                                               \
     }while(0)            
 

@@ -31,6 +31,16 @@
 #define VA_DOUBLE(args, sp) *(u8*)sp = va_arg(args, u8);sp+=2
 #define VA_SINGLE(args, sp) *sp = va_arg(args, u4);sp+=1
 
+#define LOAD(f, v, t, i)        \
+    do{                         \
+        v = *(t*)(f->locals+i);  \
+    }while(0)
+
+#define STORE(f, v, t, i)       \
+    do{                         \
+        *(t*)(f->locals+i)=v;   \
+    }while(0)
+
 typedef enum type {
     TYPE_INT,
     TYPE_LONG,

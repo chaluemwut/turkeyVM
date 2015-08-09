@@ -21,6 +21,7 @@
 #include "../main/turkey.h"
 #include "../classloader/resolve.h"
 #include "exception.h"
+#include "../lib/assert.h"
 
 #include "testUTF8.h"
 #define C Class_t
@@ -133,7 +134,7 @@ O createString(char* s)
     convertUtf8(ss, data);
 
     string_obj = allocObject(java_lang_String);
-    string_obj->isArray = 2;
+    string_obj->type = TYPE_STRING;
     OBJECT_DATA(string_obj, value_offset-1, O) = char_obj;
     OBJECT_DATA(string_obj, count_offset-1, int) = length;
     //*(((Object**)string_obj->data)+offset-1) = char_obj;
@@ -161,5 +162,41 @@ void printStringObject(O obj)
     printf("String:%s\n", (char*)char_obj->data);
 
 }
+
+
+/** 
+ * print char[].
+ * @parm obj an Object_t, and type must be array.
+ */
+void dumpChar(O obj)
+{
+
+    Assert_ASSERT(obj);
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
+    short* p = (short*)obj->data;
+    int i;
+    for (i = 0; i < obj->length; i++)
+    {
+        char c = (char)(*p);
+        printf("%c", c);
+        p++;
+    }
+    printf("\n");
+}
+
+
+/**
+ *
+ */
+void dumpJstring(O obj)
+{
+    Assert_ASSERT(obj);
+    Assert_ASSERT(value_offset);
+
+    O c = OBJECT_DATA(obj, value_offset-1, O);
+
+    dumpChar(c);
+}
+
 #undef C
 #undef O

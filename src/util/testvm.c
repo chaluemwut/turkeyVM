@@ -21,6 +21,7 @@
 #include "../classloader/resolve.h"
 #include "../main/turkey.h"
 #include "../interp/stackmanager.h"
+#include "../lib/assert.h"
 
 /*packing the print operation*/
 /*{{{*/
@@ -272,7 +273,7 @@ void printObjectWrapper(O objref)
     if (objref == NULL)
         throwException("printObjectWrapper: arg is NULL");
 
-    if (objref->isArray == 1)
+    if (objref->type == TYPE_ARRAY)
         printArray(objref);
     else
         printObject(objref);
@@ -324,9 +325,8 @@ void printObject(O objref)
 
 void printChar0(O obj)
 {
-
-    if (!obj->isArray)
-        throwException("not array");
+    Assert_ASSERT(obj);
+    Assert_ASSERT(obj->type == TYPE_ARRAY);
     short* p = (short*)obj->data;
     int i;
     for (i = 0; i < obj->length; i++)
