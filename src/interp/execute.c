@@ -73,8 +73,9 @@ int executeMethod0(MethodBlock* mb, va_list jargs)
     {
         JF retFrame = getCurrentFrame();
         createFrame(mb, jargs, ret);
+        JF currentF = getCurrentFrame();
         //executeJava
-        Trace_Stack(mb->name, executeJava, (retFrame), printStack);
+        Trace_Stack(mb->name, executeJava, (retFrame, currentF), (retFrame), printStack, (currentF), printStack);
         popFrame();
     }
 
@@ -111,7 +112,7 @@ static int executeStaticMain0(MethodBlock* mb, O args)
     if (dis_testinfo)
       printf("\nnew Frame: %d\n", getCurrentFrameId());
     //
-    executeJava(NULL);
+    executeJava(NULL, frame);
     popFrame();
 
     return 0;
@@ -187,7 +188,7 @@ void invoke(MethodBlock* mb, O args, O this)
         //current_frame->ostack--;
     }
 
-    executeJava(retFrame);
+    executeJava(retFrame, frame);
 
     popFrame();
     /*}}}*/

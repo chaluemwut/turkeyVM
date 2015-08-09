@@ -120,9 +120,9 @@ extern void createNativeFrame(MethodBlock* mb);
 
 extern NF getNativeFrame();
 
-extern void pop(void* result, Type t);
+extern void pop(JF f, void* result, Type t);
 
-extern void push(JF frame, void* value, Type t);
+extern void push(JF f, void* value, Type t);
 
 extern void load(void* result, Type t, int index);
 

@@ -2,6 +2,7 @@
 #define TRACE_H
 #include <stdio.h>
 #include "poly.h"
+#include <stdlib.h>
 
 void Trace_indent();
 
@@ -26,15 +27,29 @@ void Trace_addFunc(char* s);
     }while(0)                                           
 
 
-#define Trace_Stack(s, f, x, dox)                       \
+#define Trace_Stack(s, f, x, y, dox, r, dor)               \
     do {                                                \
         int exists = Trace_contains(s);                 \
         if (exists) {                                   \
-            dox x;                                      \
+            dox r;                                      \
         }                                               \
         f x;                                            \
         if (exists) {                                   \
-            dox x;                                      \
+            dox y;                                      \
+            exit(0);                                        \
+        }                                               \
+    }while(0)            
+
+#define Trace_Opc(s, f, dox, r, dor)                    \
+    do {                                                \
+        int exists = Trace_contains(s);                 \
+        if (exists) {                                   \
+            dox r;                                      \
+        }                                               \
+        f r;                                           \
+        if (exists) {                                   \
+            dox r;                                      \
+            exit(0);                                        \
         }                                               \
     }while(0)            
 

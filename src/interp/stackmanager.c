@@ -434,60 +434,65 @@ void store(void* value, Type t, int index)
     }
 }
 
-void pop(void* result, Type t)
+void seek(void* result, Type t)
+{
+    TODO("seek");
+}
+
+void pop(JF f, void* result, Type t)
 {
     switch (t)
     {
     case TYPE_INT:
-        *(int*)result = *(int*)current_frame->ostack;
-        *(int*)current_frame->ostack = 0;
-        current_frame->ostack--;
+        *(int*)result = *(int*)f->ostack;
+        *(int*)f->ostack = 0;
+        f->ostack--;
         ASSERT_STACK;
         break;
     case TYPE_FLOAT:
-        *(float*)result = *(float*)current_frame->ostack;
-        *(int*)current_frame->ostack = 0;
-        current_frame->ostack--;
+        *(float*)result = *(float*)f->ostack;
+        *(int*)f->ostack = 0;
+        f->ostack--;
         ASSERT_STACK;
         break;
     case TYPE_LONG:
-        current_frame->ostack--;
-        *(long long*)result = *(long long*)current_frame->ostack;
-        *(long long*)current_frame->ostack = 0;
+        f->ostack--;
+        *(long long*)result = *(long long*)f->ostack;
+        *(long long*)f->ostack = 0;
         //*(int*)current_frame->ostack = 0;
-        current_frame->ostack--;
+        f->ostack--;
         break;
     case TYPE_ULONG:
-        current_frame->ostack--;
-        *(unsigned long long*)result = *(unsigned long long*)current_frame->ostack;
-        *(long long*)current_frame->ostack = 0;
+        f->ostack--;
+        *(unsigned long long*)result = *(unsigned long long*)f->ostack;
+        *(long long*)f->ostack = 0;
         //*(int*)current_frame->ostack = 0;
-        current_frame->ostack--;
+        f->ostack--;
         break;
     case TYPE_DOUBLE:
-        current_frame->ostack--;
-        *(double*)result = *(double*)current_frame->ostack;
-        *(long long*)current_frame->ostack = 0;
+        f->ostack--;
+        *(double*)result = *(double*)f->ostack;
+        *(long long*)f->ostack = 0;
         //*(int*)current_frame->ostack = 0;
-        current_frame->ostack--;
+        f->ostack--;
         ASSERT_STACK;
         break;
     case TYPE_REFERENCE:
-        *(O*)result = *(O*)current_frame->ostack;
-        *(int*)current_frame->ostack = 0;
-        current_frame->ostack--;
+        *(O*)result = *(O*)f->ostack;
+        *(int*)f->ostack = 0;
+        f->ostack--;
         ASSERT_STACK;
         break;
     case TYPE_CHAR:
-        *(char*)result = *(char*)current_frame->ostack;
-        *(int*)current_frame->ostack = 0;
-        current_frame->ostack--;
+        *(char*)result = *(char*)f->ostack;
+        *(int*)f->ostack = 0;
+        f->ostack--;
         ASSERT_STACK;
         break;
     case TYPE_UINT:
-        *(unsigned int*)result = *(unsigned int*)current_frame->ostack;
-        *(int*)current_frame->ostack = 0;
-        current_frame->ostack--;
+        *(unsigned int*)result = *(unsigned int*)f->ostack;
+        *(int*)f->ostack = 0;
+        f->ostack--;
         ASSERT_STACK;
         break;
     default:
