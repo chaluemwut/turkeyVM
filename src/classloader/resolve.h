@@ -38,5 +38,7 @@ MethodBlock* resolveMethod(C class, u2 index);
 
 MethodBlock* resolveInterfaceMethod(C class, u2 index);
 
+u4 resolveConstant(C class, int cp_index);
+
 #undef C
 #endif

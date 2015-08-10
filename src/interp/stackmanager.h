@@ -41,7 +41,7 @@
         *(t*)(f->locals+i)=v;   \
     }while(0)
 
-typedef enum type {
+typedef enum ntype {
     TYPE_INT,
     TYPE_LONG,
     TYPE_ULONG,

@@ -10,7 +10,6 @@
 
 extern void initClass(C class);
 
-extern C loadClass_not_init(char* classname);
 
 extern C loadClass(char* classname);
 
@@ -27,6 +26,7 @@ extern char* getClassPath();
 extern void parseClassPath(char*);
 
 extern void parseFilename(char*);
+
 
 #undef C
 

@@ -38,8 +38,8 @@
 #define IS_PRIM(cb)      (cb->type_flags>=PRIM)
 
 #define INST_DATA(objectRef) ((u4*)(objectRef+1))
-#define OBJECT_DATA(obj, index, type) *((type*)(obj->data+index))
-#define ARRAY_DATA(obj, index, type) *((type*)obj->data+index)
+//#define OBJECT_DATA(obj, index, type) *((type*)(obj->data+index))
+//#define ARRAY_DATA(obj, index, type) *((type*)obj->data+index)
 
 /*op code*/
 #define OPC_NOP				0/*{{{*/

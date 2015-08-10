@@ -12,7 +12,7 @@
         ;                       \
         else{                   \
             fprintf(stderr,     \
-                        "\nassertion failed:%s:%d> %s\n",   \
+                        "\e[35m\e[1massertion failed:\e[0m%s:%d> %s\n",   \
                         __FILE__, __LINE__, #e);                    \
             exit(1);                                                \
         }                       \

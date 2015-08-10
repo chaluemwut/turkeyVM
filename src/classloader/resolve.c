@@ -23,6 +23,7 @@
 #include "../util/exception.h"
 #include "../interp/stackmanager.h"
 #include "../lib/error.h"
+#include "../lib/assert.h"
 
 #define C Class_t
 #define JF JFrame_t
@@ -422,6 +423,25 @@ MethodBlock* resolveVirtualMethod(C class, u2 index)
     printf("TODO\n");
     return NULL;
 }
+
+u4 resolveConstant(C class, int cp_index)
+{
+    Assert_ASSERT(class);
+    ClassBlock* cb = CLASS_CB(class);
+    ConstantPool* cp = &cb->constant_pool;
+
+    switch (CP_TYPE(cp, cp_index))
+    {
+        case CONSTANT_String:
+            TODO("String");
+            break;
+        default:
+            break;
+    }
+
+    return CP_INFO(cp, cp_index);
+}
+
 
 #undef C
 #undef JF

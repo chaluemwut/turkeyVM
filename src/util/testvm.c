@@ -371,31 +371,6 @@ void printString0(O obj)
 }
 
 
-void dumpClass(C class)
-{
-    ClassBlock* cb = CLASS_CB(class);
-    printf("\ndumpClass>%s\n", cb->this_classname);
-    printf("super class:%s\n", cb->super_classname);
-
-    printf("Fileds count:%d\n", cb->fields_count);
-    int i = 0;
-    for (; i<cb->fields_count; i++)
-    {
-        FieldBlock* fb = &cb->fields[i];
-        printf("%s|<%s>\n",fb->name, fb->type);
-    }
-
-    printf("Methods count:%d\n", cb->methods_count);
-    i = 0;
-    for (; i<cb->methods_count; i++)
-    {
-        MethodBlock* mb = &cb->methods[i];
-        printf("%s|%s\n", mb->name, mb->type);
-    }
-
-    printf("Object size:%d\n", cb->obj_size);
-}
-
 
 #undef C
 #undef O

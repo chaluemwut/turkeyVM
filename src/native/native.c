@@ -200,7 +200,7 @@ void forName(JF retFrame)
 
     //printString0(name);
 
-    char* classname = String2Char(name);
+    char* classname = Jstring2Char(name);
     //printf("%s\n", classname);
 
     int len = strlen(classname);
@@ -365,7 +365,7 @@ void nativeLoad()
     NF nframe = getNativeFrame();
 
     O string = *(O*)&nframe->locals[1];
-    char* s = String2Char(string);
+    char* s = Jstring2Char(string);
     int i = resolveDll(s);
     current_frame->ostack++;
     *(int*)current_frame->ostack = i;
@@ -378,8 +378,8 @@ void nativeGetLibname(JF retFrame)
 
     O pathname = *(O*)&nframe->locals[0];
     O libname = *(O*)&nframe->locals[1];
-    char* path = String2Char(pathname);
-    char* name = String2Char(libname);
+    char* path = Jstring2Char(pathname);
+    char* name = Jstring2Char(libname);
 
 
     char* lib = getDllName(path, name);
@@ -414,8 +414,8 @@ void setProperty(O this, char* key, char* value)
     JF current_frame = getCurrentFrame();
     O k = createString(key);
     O v = createString(value);
-    // char* s = String2Char(k);
-    // char* t = String2Char(v);
+    // char* s = Jstring2Char(k);
+    // char* t = Jstring2Char(v);
 
     MethodBlock* mb = (MethodBlock*)findMethod(this->class, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     if (mb == NULL)
@@ -430,17 +430,33 @@ void setProperty(O this, char* key, char* value)
     assert_stack = TRUE;
 }
 
-void arrayCopy()
+static int times;
+void arrayCopy(JF retFrame)
 {
     //printf("native arrayCopy----------------------------------------\n");
-    NF nframe = getNativeFrame();
+    //times++;
+    //printf("%d\n", times);
+    //if (times == 38)
+    //WARNING("arrayCopy");
+    NF nf = getNativeFrame();
 
     int size;
-    O src = *(O*)&nframe->locals[0];
-    int srcStart = nframe->locals[1];
-    O dest = *(O*)&nframe->locals[2];
-    int destStart = nframe->locals[3];
-    int length = nframe->locals[4];
+    O src;
+    int srcStart;
+    O dest;
+    int destStart;
+    int length;
+    LOAD(nf, src, O, 0);
+    LOAD(nf, srcStart, int, 1);
+    LOAD(nf, dest, O, 2);
+    LOAD(nf, destStart, int, 3);
+    LOAD(nf, length, int, 4);
+
+    Assert_ASSERT(src);
+    Assert_ASSERT(dest);
+    Assert_ASSERT(srcStart>=0);
+    Assert_ASSERT(destStart>=0);
+    Assert_ASSERT(length>=0);
 
     if ((src == NULL)||(dest == NULL))
         throwException("java/lang/NullPointerException");
@@ -707,7 +723,7 @@ void getPrimitiveClass(JF retFrame)
     /*In the frame is a String*/
     O obj = (O)nframe->locals[0];
     O array = String_getValue(obj);
-    char* ty = String2Char(obj);
+    char* ty = Jstring2Char(obj);
 
     //printf("getPrimitiveClass:%s\n", ty);
     char primtype = getPrimType(ty);

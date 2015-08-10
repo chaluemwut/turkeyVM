@@ -36,7 +36,6 @@ void Trace_addFunc(char* s);
         f x;                                            \
         if (exists) {                                   \
             dox y;                                      \
-            exit(0);                                    \
         }                                               \
     }while(0)            
 

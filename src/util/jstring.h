@@ -7,13 +7,15 @@
 #define O Object_t
 
 
-char* String2Char(O string);
+char* Jstring2Char(O string);
 
 O char2Char(char* s);
 
 O createString(char* s);
 
 O String_getValue(O);
+
+int Jstring_equals(O s1, O s2);
 
 void printStringObject(O obj);
 

@@ -74,7 +74,11 @@ O allocObject(C class)
 }
 
 /*
- *The Array's isArray is TRUE, and the length is arraylength.
+ * @parm class      array's class
+ * @parm size       array's length
+ * @parm el_size    slot size, also is the elements size
+ * @parm atype      element type
+ * @see allocTypeArray
  * @qcliu 2015/03/24
  */
 O allocArray(C class, int size, int el_size, int atype)

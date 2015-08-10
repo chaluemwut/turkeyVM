@@ -4,6 +4,7 @@
 #include "../lib/error.h"
 #include "../interp/stackmanager.h"
 #include "../lib/string.h"
+#include "../lib/mem.h"
 #include "../util/jstring.h"
 
 #define JF JFrame_t
@@ -45,7 +46,7 @@ void nativeOpen(JF retFrame)
 
     O path = (O)f->locals[1];
     int mode = (int)f->locals[2];
-    char* fpath = String2Char(path);
+    char* fpath = Jstring2Char(path);
     FILE* fp = NULL;
     long long r;
 
@@ -109,10 +110,26 @@ void nativeReadBuf(JF retFrame)
     LOAD(n, offset, int, 4);
     LOAD(n, len, int, 5);
 
-    printf("%lld\n", fd);
+    //printf("%lld\n", fd);
     FILE* fp = (FILE*)fd;
 
-    TODO("nativeReadBuf");
+    /* for test
+    fseek(fp, 0L, SEEK_END);
+    long flen = ftell(fp);
+    fseek(fp, 0L, SEEK_SET);
+    char* buff;
+
+    Mem_newSize(buff, flen+1);
+    fread(buff, sizeof(char*), flen, fp);
+    buff[flen] = '\0';
+    printf("%s\n", buff);
+    */
+    int r = fread(ARRAY_IDX(buf, offset, char), sizeof(char), len, fp);
+    //printf("%s\n", buf->data);
+    //printf("%lld\n", r);
+    push(retFrame, &r, TYPE_INT);
+
+    //TODO("nativeReadBuf");
 }
 
 

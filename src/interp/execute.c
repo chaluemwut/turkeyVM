@@ -76,6 +76,7 @@ int executeMethod0(MethodBlock* mb, va_list jargs)
         createFrame(mb, jargs, ret);
         JF currentF = getCurrentFrame();
         //executeJava
+        char* s = String_concat(getMethodClassName(mb), ":",mb->name, mb->type, NULL);
         Trace_Stack(mb->name, executeJava, (retFrame, currentF), (retFrame), printStack, (currentF), printStack);
         popFrame();
     }
@@ -88,10 +89,10 @@ void executeMethod(MethodBlock* mb, va_list jargs)
 {
     char* cName = getMethodClassName(mb);
     char* mName = mb->name;
-    char* info = String_concat(cName, ":", mName, NULL);
+    char* info = String_concat(cName, ":", mName, mb->type, NULL);
     int i;
 
-    Verbose_TRACE(info, executeMethod0, (mb, jargs), i, VERBOSE_DETAIL);
+    Verbose_TRACE(mb->name, executeMethod0, (mb, jargs), i, VERBOSE_DETAIL);
 }
 
 /*

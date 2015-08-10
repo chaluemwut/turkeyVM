@@ -177,6 +177,7 @@ static void exe_OPC_LDC(JF f)
         /*NOTE: possible???*/
     case RESOLVED:
     {
+        ERROR("impossible");
         push(f,&cp_info, TYPE_INT);
         break;
     }
@@ -1149,8 +1150,21 @@ static void exe_OPC_DUP2_X1(JF f)
 static void exe_OPC_DUP2_X2(JF f)
 {
 }
+
+static void Trace_exe_OPC_SWAP(JF f)
+{
+    int value1;
+    int value2;
+
+    pop(f, &value1, TYPE_INT);
+    pop(f, &value2, TYPE_INT);
+    push(f, &value1, TYPE_INT);
+    push(f, &value2, TYPE_INT);
+
+}
 static void exe_OPC_SWAP(JF f)
 {
+    Trace_Opc("opc_swap", Trace_exe_OPC_SWAP,(f), printStack, printStack);
 }
 
 static void exe_OPC_IADD(JF f)
@@ -2036,8 +2050,18 @@ static void exe_OPC_IF_ACMPEQ(JF f)
     O value1, value2;
     pop(f,&value2, TYPE_REFERENCE);
     pop(f,&value1, TYPE_REFERENCE);
+    int r;
+    if (value1->type == TYPE_STRING && 
+                value2->type == TYPE_STRING)
+    {
+        r = Jstring_equals(value1, value2);
+    }
+    else
+    {
+        r = (value1==value2);
+    }
 
-    if (value1 == value2)
+    if (r)
     {
         short offset;
         PCMOVE(1);
@@ -2056,8 +2080,18 @@ static void exe_OPC_IF_ACMPNE(JF f)
     O value1, value2;
     pop(f,&value2, TYPE_REFERENCE);
     pop(f,&value1, TYPE_REFERENCE);
+    int r;
+    if (value1->type == TYPE_STRING && 
+                value2->type == TYPE_STRING)
+    {
+        r = !Jstring_equals(value1, value2);
+    }
+    else
+    {
+        r = (value1 != value2);
+    }
 
-    if (value1 != value2)
+    if (r)
     {
         short offset;
         PCMOVE(1);
@@ -2264,8 +2298,7 @@ static void exe_OPC_GETSTATIC(JF f)
     PCMOVE(1);
     fb = resolveField(getCurrentClass(), fieldref_idx);
 
-    if (fb == NULL)
-        throwException("resolveField return NULL");
+    Assert_ASSERT(fb);
 
     if (0 == strcmp(fb->type, "D"))
     {
@@ -2302,6 +2335,7 @@ static void exe_OPC_PUTSTATIC(JF f)
     READ_IDX(fieldref_idx, getCurrentPC());
     PCMOVE(1);
     fb = resolveField(getCurrentClass(), fieldref_idx);
+    Assert_ASSERT(fb);
 
     if (0 == strcmp(fb->type, "D"))
     {
@@ -2486,7 +2520,9 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
         args_count = parseArgs(type);
         objref = *(O*)(f->ostack - args_count);
         class = objref->class;
-        ClassBlock* cb = CLASS_CB(class);
+        //char* cname = CLASSNAME(class);
+        //if (0 == strcmp(cname, "java/io/BufferedInputStream"))
+         // dumpObject(objref);
 
         method = (MethodBlock*)resolveMethod(class, methodref_idx);
 
@@ -3259,6 +3295,9 @@ int executeJava(JF retFrame, JF f)
             break;
         case OPC_DUP_X1://90
             exe_OPC_DUP_X1(f);
+            break;
+        case OPC_SWAP://95
+            exe_OPC_SWAP(f);
             break;
         case OPC_IADD://96
             exe_OPC_IADD(f);

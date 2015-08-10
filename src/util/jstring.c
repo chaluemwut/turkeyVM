@@ -68,7 +68,7 @@ O String_getValue(O obj)
  *
  * @return new char
  */
-char* String2Char(O string)
+char* Jstring2Char(O string)
 {
     O array = (O)(INST_DATA(string)[value_offset-1]);
     int len = INST_DATA(string)[count_offset-1];
@@ -160,6 +160,21 @@ void printStringObject(O obj)
     offset = fb->offset;
     char_obj = *(((O*)obj->data)+offset-1);
     printf("String:%s\n", (char*)char_obj->data);
+
+}
+
+int Jstring_equals(O s1, O s2)
+{
+    Assert_ASSERT(s1&&s1->type==TYPE_STRING);
+    Assert_ASSERT(s2&&s2->type==TYPE_STRING);
+    char* c1 = Jstring2Char(s1);
+    char* c2 = Jstring2Char(s2);
+
+    if (0 == strcmp(c1, c2))
+      return 1;
+    else 
+      return 0;
+
 
 }
 

@@ -25,15 +25,17 @@
 #include "../heapManager/alloc.h"
 #include "../main/turkey.h"
 #include "resolve.h"
-#include "../lib/list.h"
-#include "../lib/poly.h"
 #include "../util/exception.h"
 #include "class.h"
+#include "../debuger/dump.h"
 #include "../native/native.h"
 #include "../control/control.h"
+#include "../control/verbose.h"
 #include "../lib/error.h"
 #include "../lib/string.h"
-#include "../control/verbose.h"
+#include "../lib/assert.h"
+#include "../lib/list.h"
+#include "../lib/poly.h"
 #include "../lib/assert.h"
 
 #define MAX_PRIMITIVE 9
@@ -368,7 +370,8 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
     /*}}}*/
 
     /*--------------------------fields------------------------------------------*/
-    READ_U2(classblock->fields_count, ptr);/*{{{*/
+    /*{{{*/
+    READ_U2(classblock->fields_count, ptr);
     //printf("fields_count:%d\n", classblock->fields_count);
     fields = sysMalloc(classblock->fields_count * sizeof(FieldBlock));
     classblock->fields = fields;
@@ -400,6 +403,7 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
         {
             READ_U2(attr_name_idx, ptr);
             READ_U4(attr_length, ptr);
+            Assert_ASSERT(attr_length == 2);
             //printf("attr_length:%d\n", attr_length);
 
             char* attr_name = CP_UTF8(constantPool, attr_name_idx);
@@ -974,10 +978,12 @@ static C linkClass(C class)
 void initClass(C class)
 {
     /*{{{*/
+    Assert_ASSERT(class);
     if (!initable)
         return;
 
     ClassBlock* cb = CLASS_CB(class);
+    ConstantPool* cp = &cb->constant_pool;
 
     if (dis_testinfo)
         printf("initClass-------------%s\n", cb->this_classname);
@@ -986,8 +992,24 @@ void initClass(C class)
     {
         if (dis_testinfo)
             printf("\nalreay inited.\n\n");
-
         return;
+    }
+    int i;
+    FieldBlock* fb = cb->fields;
+    for (i=0; i<cb->fields_count; i++,fb++)
+    {
+        if ((fb->access_flags&ACC_STATIC)&&fb->constant)
+        {
+            if (fb->type[0] == 'J'||fb->type[0] == 'D')
+            {
+                *((u8*)&fb->static_value) = *(u8*)&CP_INFO(cp, fb->constant);
+            }
+            else
+            {
+                int r = resolveConstant(class, fb->constant);
+                fb->static_value = r;
+            }
+        }
     }
 
     MethodBlock* mb = findMethodinCurrent(class, "<clinit>", "()V");
@@ -1005,13 +1027,14 @@ void initClass(C class)
             printf("not find <clinit>\n");
     }
     cb->flags = INITED;
+    //dumpClass(stdout, NULL, class);
     /*}}}*/
 }
 
 
+/*
 C loadClass_not_init(char* classname)
 {
-    /*{{{*/
     C class = findClass(classname);
     ClassBlock* cb;
 
@@ -1029,10 +1052,8 @@ C loadClass_not_init(char* classname)
     else
         class = loadSystemClass(classname);
 
-    /*
      * This must before initClass().Otherwise, there will
      * be loop untill death.
-     **/
     //add class to the list
     //List_addLast(CList, class);
     cb = CLASS_CB(class);
@@ -1053,8 +1074,8 @@ C loadClass_not_init(char* classname)
     //  printList(head);
 
     return class;
-    /*}}}*/
 }
+*/
 
 static C Trace_loadClass0(char* classname)
 {
@@ -1353,6 +1374,10 @@ char* getClassPath()
 {
     return getenv("CLASSPATH");
 }
+
+
+
+
 
 #undef C
 #undef O

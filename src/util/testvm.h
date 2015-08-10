@@ -19,8 +19,6 @@ void printString0(O obj);
 
 void printChar0(O obj);
 
-void dumpClass(C class);
-
 #undef C
 #undef O
 #undef JF
