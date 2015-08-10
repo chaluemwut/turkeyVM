@@ -10,6 +10,7 @@
 #define JF JFrame_t
 #define NF NFrame_t
 #define O Object_t
+#define FD FileDescriptor_t
 
 extern char* PREFIX;
 
@@ -20,6 +21,28 @@ static const int EXCL = 8;
 static const int SYNC = 16;
 static const int DSYNC = 32;
 
+
+typedef struct FD *FD;
+
+struct FD
+{
+    FILE* fd;
+    int reachEOF;
+};
+
+//static int reachEOF = 0;
+
+
+static FD initNativeFile(FILE* fd, int e)
+{
+    FD fp;
+    Mem_new(fp);
+
+    fp->fd = fd;
+    fp->reachEOF = e;
+
+    return fp;
+}
 /**
  * Opens the specified file in the specified mode.  This can be done
  * in one of the specified modes:
@@ -70,10 +93,40 @@ void nativeOpen(JF retFrame)
     }
     else
       r = (long long)fp;
-    printf("%lld\n", r);
+    //printf("%lld\n", r);
+
+    FD fdp = initNativeFile(fp, 0);
+
+    r = (long long)fdp;
 
     push(retFrame, &r, TYPE_LONG);
 
+}
+
+/**
+ * Closes this specified file descriptor
+ *
+ * @parm fd The natice file descriptor to close
+ * @return The return code of the natice close command.
+ * @exception IOException If an error occurs
+ */
+//privete native long nativeClose(long fd) throws IOException;
+void nativeClose(JF retFrame)
+{
+    NF n = getNativeFrame();
+    O this;
+    long long fd;
+
+    LOAD(n, this, O, 0);
+    LOAD(n, fd, long long, 1);
+
+    FD fdp = (FD)fd;
+    int err = fclose(fdp->fd);
+    if (err)
+      ERROR("close file error");
+
+    long long r = fd;
+    push(retFrame, &r, TYPE_LONG);
 }
 
 
@@ -111,7 +164,13 @@ void nativeReadBuf(JF retFrame)
     LOAD(n, len, int, 5);
 
     //printf("%lld\n", fd);
-    FILE* fp = (FILE*)fd;
+    FD fdp = (FD)fd;
+    if (fdp->reachEOF == 1)
+    {
+      int rr = -1;
+      push(retFrame, &rr, TYPE_INT);
+      return;
+    }
 
     /* for test
     fseek(fp, 0L, SEEK_END);
@@ -124,12 +183,32 @@ void nativeReadBuf(JF retFrame)
     buff[flen] = '\0';
     printf("%s\n", buff);
     */
-    int r = fread(ARRAY_IDX(buf, offset, char), sizeof(char), len, fp);
-    //printf("%s\n", buf->data);
-    //printf("%lld\n", r);
+    int r = fread(ARRAY_IDX(buf, offset, char), sizeof(char), len, fdp->fd);
+    /*
+    fprintf(stdout, "this:%p\n", this);
+    fprintf(stdout, "fd:%lld\n", (long long)fdp->fd);
+    fprintf(stdout, "buf:%p\n", buf);
+    fprintf(stdout, "offset:%d\n", offset);
+    fprintf(stdout, "len:%d\n", len);
+    fprintf(stdout, "r:%d\n", r);
+    */
+    if (r < len)
+    {
+        //WARNING("r<len");
+        //fprintf(stdout, "EOF:%x\n", EOF);
+        ARRAY_DATA(buf, r+offset, char) = EOF;
+        //char c = ARRAY_DATA(buf, r+offset, char);
+        //int i = c;
+        //printf("%d\n", i);
+
+    }
+
+
     push(retFrame, &r, TYPE_INT);
 
-    //TODO("nativeReadBuf");
+    if (r < len)
+      fdp->reachEOF = 1;
+
 }
 
 

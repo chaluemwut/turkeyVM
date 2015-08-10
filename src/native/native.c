@@ -76,6 +76,7 @@ void nativeValid();
 /* Binding method name with function*/
 Binding nativeMethods[] =
 {
+    {"nativeClose", "(J)J", nativeClose},
     {"nativeReadBuf", "(J[BII)I", nativeReadBuf},
     {"nativeOpen", "(Ljava/lang/String;I)J", nativeOpen},
     {"getPrimitiveClass","(Ljava/lang/String;)Ljava/lang/Class;",getPrimitiveClass},
@@ -457,6 +458,9 @@ void arrayCopy(JF retFrame)
     Assert_ASSERT(srcStart>=0);
     Assert_ASSERT(destStart>=0);
     Assert_ASSERT(length>=0);
+    //printf("strStart:%d\n", srcStart);
+    //printf("destStart:%d\n", destStart);
+    //printf("length:%d\n", length);
 
     if ((src == NULL)||(dest == NULL))
         throwException("java/lang/NullPointerException");

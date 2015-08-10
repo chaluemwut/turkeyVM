@@ -7,9 +7,9 @@
 #define O Object_t
 
 
-#define OBJECT_DATA(obj, index, type) (*((type*)(obj->data+index)))
-#define ARRAY_DATA(obj, index, type) (*((type*)obj->data+index))
-#define ARRAY_IDX(obj, index, type) (((type*)obj->data)+index)
+#define OBJECT_DATA(obj, index, type) (*((type*)(obj->data+(index))))
+#define ARRAY_DATA(obj, index, type) (*((type*)obj->data+(index)))
+#define ARRAY_IDX(obj, index, type) (((type*)obj->data)+(index))
 
 typedef struct O *O;
 

@@ -684,7 +684,7 @@ static void exe_OPC_BALOAD(JF f)
 
     value = ARRAY_DATA(obj, index, char);
     int _value = (int)value;
-    push(f,&value, TYPE_INT);
+    push(f,&_value, TYPE_INT);
 
 }
 

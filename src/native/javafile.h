@@ -7,6 +7,7 @@
 
 extern void nativeOpen(JF retFrame);
 
+extern void nativeClose(JF retFrame);
 
 extern void nativeReadBuf(JF retFrame);
 
