@@ -667,6 +667,9 @@ static void exe_OPC_AALOAD(JF f)
 
 }
 
+/**
+ * byte is 8bit, but we treat it as 32bit inner vm.
+ */
 static void exe_OPC_BALOAD(JF f)
 {
     char value;
@@ -693,6 +696,7 @@ static void exe_OPC_CALOAD(JF f)
     int index;
     O obj;
     char value;
+    int value1;
 
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
@@ -704,8 +708,10 @@ static void exe_OPC_CALOAD(JF f)
         throwException("OutofArrayBound");
 
     /*NOTE: The element_size is 2*/
-    value = ARRAY_DATA(obj, index, u2);
-    push(f,&value, TYPE_CHAR);
+    //value = ARRAY_DATA(obj, index, short);
+    value1 = ARRAY_DATA(obj, index, short);
+    //push(f,&value1, TYPE_CHAR);
+    push(f,&value1, TYPE_INT);
 
 }
 
@@ -1073,14 +1079,14 @@ static void exe_OPC_CASTORE(JF f)
 {
     O objref;
     int index, value;
-    char _value;
+    //char _value;
 
     pop(f,&value, TYPE_INT);
     pop(f,&index, TYPE_INT);
     pop(f,&objref, TYPE_REFERENCE);
-    _value = (char)value;
+    //_value = (char)value;
 
-    ARRAY_DATA(objref, index, u2) = _value;
+    ARRAY_DATA(objref, index, u2) = value;
 
 }
 
@@ -2519,10 +2525,12 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
          */
         args_count = parseArgs(type);
         objref = *(O*)(f->ostack - args_count);
+        if (objref == 0)
+        {
+          printStack(f);
+        }
+        Assert_ASSERT(objref);
         class = objref->class;
-        //char* cname = CLASSNAME(class);
-        //if (0 == strcmp(cname, "java/io/BufferedInputStream"))
-         // dumpObject(objref);
 
         method = (MethodBlock*)resolveMethod(class, methodref_idx);
 
