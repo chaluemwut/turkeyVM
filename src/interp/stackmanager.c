@@ -20,6 +20,7 @@
 #include "../heapManager/alloc.h"
 #include "../control/control.h"
 #include "stackmanager.h"
+#include "../util/testvm.h"
 #include "../lib/stack.h"
 #include "../lib/error.h"
 #include "../lib/mem.h"
@@ -365,15 +366,27 @@ NF getNativeFrame()
 
 
 
-#define ASSERT_STACK                                    \
+#define ASSERT_STACK cheackStack()
+    /*
     do {                                                \
         if (assert_stack){                              \
             if (current_frame->ostack<bottom            \
                         ||current_frame->ostack>top)    \
-            ERROR("stack error");                       \
+            {                                           \
+                printStack(getCurrentFrame());          \
+                ERROR("stack error");                   \
+            }                                           \
         }                                               \
     }while(0)
 
+    */
+void cheackStack()
+{
+    if (current_frame->ostack<bottom || current_frame->ostack>top)
+    {
+        ERROR("stack error");
+    }
+}
 void load(void* result, Type t, int index)
 {
     switch (t)
