@@ -112,7 +112,7 @@ O char2Char(char* s)
 /*Create a new String
  *invoked by:OPC_LDC
  */
-O createString(char* s)
+O createJstring(char* s)
 {
     if (java_lang_String == NULL)
         java_lang_String = loadClass("java/lang/String");
@@ -142,7 +142,6 @@ O createString(char* s)
     string_obj->cb = cb;
     string_obj->el_size = sizeof(int);
 
-    //printString0(string_obj);
 
     return string_obj;
 

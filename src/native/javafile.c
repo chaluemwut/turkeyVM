@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "javafile.h"
-#include "../lib/error.h"
+#include "../util/jstring.h"
 #include "../interp/stackmanager.h"
+#include "../classloader/class.h"
+#include "../classloader/resolve.h"
+#include "../util/exception.h"
+#include "../interp/execute.h"
+#include "../lib/error.h"
 #include "../lib/string.h"
 #include "../lib/mem.h"
-#include "../util/jstring.h"
+#include "../lib/assert.h"
 
 #define JF JFrame_t
 #define NF NFrame_t
 #define O Object_t
+#define C Class_t
 #define FD FileDescriptor_t
 
 extern char* PREFIX;
@@ -20,6 +26,7 @@ static const int APPEND = 4;
 static const int EXCL = 8;
 static const int SYNC = 16;
 static const int DSYNC = 32;
+
 
 
 typedef struct FD *FD;
@@ -80,9 +87,12 @@ void nativeOpen(JF retFrame)
             fp = fopen(fpath, "r");
             break;
         case WRITE:
-            TODO("unimplements");
+            //printf("mode:%d\n", mode);
+            //TODO("unimplements");
+            fp = fopen(fpath, "a");
             break;
         defualt:
+            printf("mode:%d\n", mode);
             TODO("unimplements");
             break;
     }
@@ -130,7 +140,62 @@ void nativeClose(JF retFrame)
 }
 
 
+/**
+ * Writes a byte buffer to the file
+ *
+ * @param fd The native file descriptor to write to
+ * @param buf The byte buffer to write from
+ * @param int The offset into the buffer to start writing from
+ * @param len The number of bytes to write.
+ *
+ * @return The return code of the native write command
+ *
+ * @exception IOException If an error occurs
+ */
+//private native long nativeWriteBuf(long fd, byte[] buf, int offset, int len) 
+//throws IOException;
+/*FileDescriptor*/
+void nativeWriteBuf(JF retFrame)
+{
+    //JF current_frame = getCurrentFrame();
+    NF n = getNativeFrame();
 
+    O this;
+    long long fd;
+    O buf;
+    int _offset;
+    int len;
+    FD fdp;
+
+
+    LOAD(n, this, O, 0);
+    LOAD(n, fd, long long, 1);
+    LOAD(n, buf, O, 3);
+    LOAD(n, _offset, int, 4);
+    LOAD(n, len, int, 5);
+
+    Assert_ASSERT(fd);
+    if ((FILE*)fd == stdout)
+       fdp = initNativeFile(stdout, 0);
+    else
+       fdp = (FD)fd;
+    Assert_ASSERT(buf->type == TYPE_ARRAY);
+    int r = fwrite(ARRAY_IDX(buf, _offset, char), sizeof(char), len, fdp->fd);
+
+    //int r = fwrite(ARRAY_IDX(buf, _offset, char), sizeof(char), len, stdout);
+    //char* p = (char*)buf->data;
+    //int i;
+    //for (i=_offset; i<len; i++)
+    //{
+    //    printf("%c", *p);
+    //    p++;
+    //}
+
+    long long rr = (long long)r;
+    push(retFrame, &rr, TYPE_LONG);
+    //current_frame->ostack++;
+    //*(long long*)current_frame->ostack = 1;
+}
 
 
 /**
@@ -211,8 +276,49 @@ void nativeReadBuf(JF retFrame)
 
 }
 
+//java/io/FileDescriptor
+void nativeValid(JF retFrame)
+{
+    //JF current_frame = getCurrentFrame();
+    NF n = getNativeFrame();
+
+    int ret = TRUE;
+    long long nativeFd;
+    LOAD(n, nativeFd, long long, 1);
+    if (nativeFd >= 0)
+        ret = TRUE;
+    else
+        ret = FALSE;
+
+    push(retFrame, &ret, TYPE_INT);
+
+}
+
+
+void nativeInit(JF retFrame)
+{
+    C c = findClass("java/io/FileDescriptor");
+    FieldBlock* fb = (FieldBlock*)findField(c, "out", "Ljava/io/FileDescriptor;");
+    FieldBlock* fb_err = (FieldBlock*)findField(c, "err", "Ljava/io/FileDescriptor;");
+    O err = (O)fb_err->static_value;
+    O out = (O)fb->static_value;
+    Assert_ASSERT(err);
+    Assert_ASSERT(out);
+
+    MethodBlock* mb = (MethodBlock*)findMethod(out->class, "<init>", "(J)V");
+    if (mb == NULL)
+        throwException("no such method!");
+    /*hack*/
+    executeMethodArgs(out->class, mb, out, stdout);
+
+    MethodBlock* mb_err = (MethodBlock*)findMethod(err->class, "<init>", "(J)V");
+    if (mb_err == NULL)
+        throwException("no such method!");
+    executeMethodArgs(err->class, mb_err, err, stdout);
+}
 
 
 #undef JF
 #undef O
 #undef NF
+#undef C

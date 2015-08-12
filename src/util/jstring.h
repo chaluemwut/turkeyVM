@@ -11,7 +11,7 @@ char* Jstring2Char(O string);
 
 O char2Char(char* s);
 
-O createString(char* s);
+O createJstring(char* s);
 
 O String_getValue(O);
 

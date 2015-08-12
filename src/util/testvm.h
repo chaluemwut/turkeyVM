@@ -1,5 +1,6 @@
 #ifndef TEST_H
 #define TEST_H
+#include <stdio.h>
 #include "../main/turkey.h"
 #include "../heapManager/alloc.h"
 #include "../interp/stackmanager.h"
@@ -9,6 +10,8 @@
 #define JF JFrame_t
 
 void printStack(JF);
+
+void printStackLog(FILE* fd, JF);
 
 void printNativeStack();
 

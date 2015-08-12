@@ -3,6 +3,7 @@
 #include <string.h>
 #include "command-line.h"
 #include "control.h"
+#include "../debuger/log.h"
 #include "../lib/trace.h"
 #include "../lib/error.h"
 #include "../lib/assert.h"
@@ -42,6 +43,11 @@ static void arg_setTrace(char* func)
     Trace_addFunc(func);
 }
 
+static void arg_setLog(char* s)
+{
+    Log_add(s);
+}
+
 
 static void arg_setVerbose(int i)
 {
@@ -67,6 +73,7 @@ static void arg_setVerbose(int i)
 
 static Arg_t allArgs[] =
 {
+    {"log", ARGTYPE_STRING, "{name}", "log method", arg_setLog},
     {"verbose", ARGTYPE_INT, "{0|1|2|3}", "verbose turkey",  arg_setVerbose},
     {"trace", ARGTYPE_STRING, "{name}", "trace specific method", arg_setTrace},
     {"help", ARGTYPE_EMPTY,"<NULL>", "commandline list", actionArg_help},

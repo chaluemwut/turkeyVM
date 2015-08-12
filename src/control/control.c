@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------*//*{{{*/
+/*^_^*--------------------------------------------------------------*//*{{{*/
 /* Copyright (C) SSE-USTC, 2014-2015                                */
 /*                                                                  */
 /*  FILE NAME             :  control.c                              */
@@ -253,4 +253,10 @@ int Control_Verb_order(Verbose_t v1, Verbose_t v2)
 
 /*{{{ Debuge*/
 
+FILE* Log_file = NULL;
+
+void Control_setLogFile(FILE* fd)
+{
+    Log_file = fd;
+}
 /*}}}*/

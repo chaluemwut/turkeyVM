@@ -11,8 +11,13 @@ extern void nativeClose(JF retFrame);
 
 extern void nativeReadBuf(JF retFrame);
 
-extern void nativeClose();
+extern void nativeWriteBuf(JF retFrame);
 
+extern void nativeClose(JF retFrame);
+
+extern void nativeValid(JF retFrame);
+
+extern void nativeInit(JF retFrame);
 #undef JF
 
 #endif

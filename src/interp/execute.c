@@ -21,16 +21,17 @@
 #include "stackmanager.h"
 #include "../interp/interp.h"
 #include "../heapManager/alloc.h"
-#include "../lib/list.h"
+#include "../debuger/log.h"
 #include "../control/control.h"
 #include "../classloader/resolve.h"
 #include "../main/turkey.h"
 #include "../util/exception.h"
-#include "../lib/trace.h"
 #include "../util/testvm.h"
 #include "../control/verbose.h"
 #include "../lib/string.h"
 #include "../lib/assert.h"
+#include "../lib/list.h"
+#include "../lib/trace.h"
 
 #define C Class_t
 #define O Object_t
@@ -59,11 +60,19 @@ static int executeNativeMethod(MethodBlock* mb)
     return 0;
 }
 
+int Log_executeJava(JF retFrame, JF currentF)
+{
+    executeJava(retFrame, currentF);
+    popFrame();
+
+    return 0;
+}
+
 /*
  * Create a new Frame, and copy args form old stack to new locals.
  * Then, execute the new method.
  */
-int executeMethod0(MethodBlock* mb, va_list jargs)
+int Verbose_executeMethod(MethodBlock* mb, va_list jargs)
 {
     void* ret;/*{{{*/
     if (mb->native_invoker)
@@ -77,8 +86,10 @@ int executeMethod0(MethodBlock* mb, va_list jargs)
         JF currentF = getCurrentFrame();
         //executeJava
         char* s = String_concat(getMethodClassName(mb), ":",mb->name, mb->type, NULL);
-        Trace_Stack(s, executeJava, (retFrame, currentF), (retFrame), printStack, (currentF), printStack);
-        popFrame();
+        //Trace_Stack(s, executeJava, (retFrame, currentF), (retFrame), printStack, (currentF), printStack);
+        //executeJava0(retFrame, currentF);
+        int r;
+        Log_SingleMethod(s, Log_executeJava, (retFrame, currentF), r);
     }
 
     return 0;
@@ -92,7 +103,7 @@ void executeMethod(MethodBlock* mb, va_list jargs)
     char* info = String_concat(cName, ":", mName, mb->type, NULL);
     int i;
 
-    Verbose_TRACE(info, executeMethod0, (mb, jargs), i, VERBOSE_DETAIL);
+    Verbose_TRACE(info, Verbose_executeMethod, (mb, jargs), i, VERBOSE_DETAIL);
 }
 
 /*
@@ -103,7 +114,7 @@ void executeMethod(MethodBlock* mb, va_list jargs)
  *       can use executeMethod() instead of executeStaticMain().
  * @qcliu 2015/01/30
  */
-static int executeStaticMain0(MethodBlock* mb, O args)
+static int Verbose_executeStaticMain(MethodBlock* mb, O args)
 {
     unsigned short max_stack = mb->max_stack;/*{{{*/
     unsigned short max_locals = mb->max_locals;
@@ -114,8 +125,11 @@ static int executeStaticMain0(MethodBlock* mb, O args)
     if (dis_testinfo)
       printf("\nnew Frame: %d\n", getCurrentFrameId());
     //
-    executeJava(NULL, frame);
-    popFrame();
+    //executeJava(NULL, frame);
+    //popFrame();
+    int r;
+    //executeJava0(NULL, frame);
+    Log_SingleMethod("staticMain", Log_executeJava, (NULL, frame), r);
 
     return 0;
     /*}}}*/
@@ -124,10 +138,10 @@ static int executeStaticMain0(MethodBlock* mb, O args)
 void executeStaticMain(MethodBlock* mb, O args)
 {
     int i;
-    Verbose_TRACE("static Main", executeStaticMain0, (mb, args), i, VERBOSE_PASS);
+    Verbose_TRACE("static Main", Verbose_executeStaticMain, (mb, args), i, VERBOSE_PASS);
 }
 
-void executeMethodArgs(C class, MethodBlock* mb, ...)
+void executeMethodArgs(C class, MethodBlock* mb,...)
 {
     va_list jargs;
 
@@ -139,7 +153,7 @@ void executeMethodArgs(C class, MethodBlock* mb, ...)
 /**
  * @see native.c
  */
-void invoke(MethodBlock* mb, O args, O this)
+void invokeConstructNative(MethodBlock* mb, O args, O this)
 {
     /*{{{*/
     int args_count = mb->args_count;

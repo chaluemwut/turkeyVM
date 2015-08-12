@@ -189,7 +189,7 @@ int main(int argc, char** argv)
     int i;
     for (i = 0; i<args_array_size; i++)
     {
-        ARRAY_DATA(args, i, O) = createString(argv[i+2]);
+        ARRAY_DATA(args, i, O) = createJstring(argv[i+2]);
     }
 
     executeStaticMain(main, args);

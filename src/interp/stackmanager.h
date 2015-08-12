@@ -118,11 +118,11 @@ extern C getCurrentClass();
 
 extern void setCurrentFrame(JF f);
 
-extern void popFrame();
+extern JF popFrame();
 
 extern JF createFrame0(MethodBlock* mb);
 
-extern void createFrame(MethodBlock* mb, va_list jargs, void* ret);
+extern JF createFrame(MethodBlock* mb, va_list jargs, void* ret);
 
 extern void popNativeFrame();
 

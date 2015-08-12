@@ -221,7 +221,7 @@ JF createFrame0(MethodBlock* mb)
    @qcliu 2015/01/29
 
  */
-void createFrame(MethodBlock* mb, va_list jargs, void* ret)
+JF createFrame(MethodBlock* mb, va_list jargs, void* ret)
 {
     JF prev = getCurrentFrame();
     JF frame = createFrame0(mb);
@@ -252,8 +252,11 @@ void createFrame(MethodBlock* mb, va_list jargs, void* ret)
     {
         //printf("jarg not null\n");
         unsigned int* sp = frame->locals;
-        *sp = va_arg(jargs, u4);
-        sp++;
+        if (!(mb->access_flags & ACC_STATIC))//non-static
+        {
+            *sp = va_arg(jargs, u4);
+            sp++;
+        }
         char* sig = mb->type;
         SCAN_SIG(sig, VA_DOUBLE(jargs, sp), VA_SINGLE(jargs, sp));
     }
@@ -262,6 +265,8 @@ void createFrame(MethodBlock* mb, va_list jargs, void* ret)
     {
         printf("\n%dnew Frame:---- %d, name:%s\n",method_num, frame->id, frame->mb->name);
     }
+
+    return frame;
 }
 
 /*
@@ -271,7 +276,7 @@ void createFrame(MethodBlock* mb, va_list jargs, void* ret)
  * invoke by: executeJava() in interp.c
  * @qcliu 2015/01/28
  */
-void popFrame()
+JF popFrame()
 {
     JF temp = (JF)Stack_pop(methodF);
     //printf("pop frame:%s, size:%d\n", temp->mb->name, Stack_size(methodF));
@@ -293,6 +298,8 @@ void popFrame()
 
     bottom = current_frame->bottom;
     top = current_frame->top;
+
+    return f;
 
 }
 

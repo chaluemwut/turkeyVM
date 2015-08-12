@@ -49,6 +49,7 @@
 #define READ_BYTE(v,p) v=*p
 
 //vm.h
+extern FILE* Log_file;
 
 static int testnum;
 
@@ -215,7 +216,7 @@ static void exe_OPC_LDC(JF f)
         char* s = CP_UTF8(getCurrentCP(), cp_info);
 
         /**/
-        obj = (O)createString(s);
+        obj = (O)createJstring(s);
         if (obj == NULL)
             throwException("LDC error");
         push(f,&obj, TYPE_REFERENCE);
@@ -293,7 +294,7 @@ static void exe_OPC_LDC_W(JF f)
         char* s = CP_UTF8(getCurrentCP(), cp_info);
 
         /**/
-        obj = (O)createString(s);
+        obj = (O)createJstring(s);
         if (obj == NULL)
             throwException("LDC error");
         //printStringObject(obj);
@@ -2687,7 +2688,7 @@ static void exe_OPC_INVOKEINTERFACE(JF f)
     PCMOVE(1);
     int isZero = 0;
     READ_BYTE(isZero, getCurrentPC());
-    PCMOVE(1);
+    //PCMOVE(1);
     /* According to the Methodref_info, get the description of
      * the method. Then, get the args' count
      */
@@ -3022,12 +3023,12 @@ int executeJava(JF retFrame, JF f)
     {
         u4 c = *getCurrentPC();
 
-        if (dis_testinfo)
+        if (Log_file)
         {
-            printf("\nopcode: ---------%s\n", op_code[c]);//for test
-            printf("pc_offset:------------%d\n", getCurrentPCOffset());
-            printf("getCurrentPC():---------%d\n", (unsigned int)getCurrentPC());
-            printStack(f);
+            fprintf(Log_file,"\nopcode: ---------%s\n", op_code[c]);//for test
+            fprintf(Log_file,"pc_offset:------------%d\n", getCurrentPCOffset());
+            fprintf(Log_file,"getCurrentPC():---------%d\n", (unsigned int)getCurrentPC());
+            printStackLog(Log_file, f);
         }
         switch (c)
         {

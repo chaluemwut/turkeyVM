@@ -25,32 +25,32 @@
 
 /*packing the print operation*/
 /*{{{*/
-#define PRINT_DISTANCE(d)    \
+#define PRINT_DISTANCE(fd, d)    \
     if(distance>d)                 \
         throwException("IndentError");          \
     for(;distance < d;distance++)  \
     {                               \
-        printf(" ");                 \
+        fprintf(fd, "%s", " ");                 \
     }
 
-#define PRINT_SPACE             \
+#define PRINT_SPACE(fd)             \
         t = indentLevel;    \
         for(;t > 0;t--)          \
-          distance += printf(" ")
+          distance += fprintf(fd, "%s", " ")
 //"..."&...
-#define PRINT_D(d,s)        distance += printf(d"%d",s)
-#define PRINT_DS(d,s)       PRINT_SPACE;distance += printf(d"%d",s)
-#define PRINT_X(d,s)        distance += printf(d"%x",s)
-#define PRINT_XS(d,s)       PRINT_SPACE;distance += printf(d"%x",s)
-#define PRINT_S(d,s)        distance += printf(d"%s",s)
-#define PRINT_SS(d,s)       PRINT_SPACE;distance += printf(d"%s",s)
+#define PRINT_D(fd,d,s)        distance += fprintf(fd, d"%d",s)
+#define PRINT_DS(fd,d,s)       PRINT_SPACE;distance += fprintf(fd,d"%d",s)
+#define PRINT_X(fd,d,s)        distance += fprintf(fd,d"%x",s)
+#define PRINT_XS(fd,d,s)       PRINT_SPACE;distance += fprintf(fd,d"%x",s)
+#define PRINT_S(fd,d,s)        distance += fprintf(fd,d"%s",s)
+#define PRINT_SS(fd,d,s)       PRINT_SPACE;distance += fprintf(fd,d"%s",s)
 //"..."
-#define PRINT_TAB           distance = printf("    ")
-#define PRINT(s)            distance += printf(s)
-#define PRINT_SP(s)         PRINT_SPACE;distance += printf(s)
+#define PRINT_TAB(fd)           distance = fprintf(fd,"    ")
+#define PRINT(fd,s)            distance += fprintf(fd,s)
+#define PRINT_SP(fd,s)         PRINT_SPACE;distance += fprintf(fd,s)
 //clear the distance
-#define PRINTLN(s)          distance = 0;printf(s"\n")
-#define PRINTLN_S(s)        PRINT_SPACE;distance = 0;printf(s"\n")
+#define PRINTLN(fd,s)          distance = 0;fprintf(fd,s"\n")
+#define PRINTLN_S(fd,s)        PRINT_SPACE;distance = 0;fprintf(fd,s"\n")
 #define INDENT indentLevel+=2
 #define UNINDENT indentLevel-=2
 /*}}}*/
@@ -64,77 +64,9 @@ extern C java_lang_String;
 static int distance, t, indentLevel;
 
 
-/*
-void printList(LinkedList* head)
-{
-    void* temp = getFirst(head);
-    LNode* ptr = GETLINK(head)->next;
-
-    int size = getLength(head);
-    for (; ptr != NULL; ptr = ptr->next)
-    {
-        int i;
-        C class = (C)ptr->data;
-        ClassBlock* cb = CLASS_CB(class);
-        printf("classname: %s\n",cb->this_classname);
-    }
-
-    printf("loadedTable size: %d\n", size);
-}
-*/
 
 
 
-/*
- * Print the Vtable of the class that alreay be loaded.
- * @qcliu 2015/01/30
- */
-/*
-void printVtable(LinkedList* head)
-{
-    void* temp = getFirst(head);
-    LNode* ptr = GETLINK(head)->next;
-
-    for (; ptr != NULL; ptr = ptr->next)
-    {
-        int i;
-        C class = (C)ptr->data;
-        ClassBlock* cb = CLASS_CB(class);
-        int vtable_size = cb->methods_table_size;
-        MethodBlock** vtable  = cb->methods_table;
-        char* ele_name = "null";
-        printf("\nclassname: %s, vtable_size: %d, object_size: %d\n",cb->this_classname,vtable_size, cb->obj_size);
-        if (cb->element != NULL)
-        {
-            ClassBlock* ele_cb = CLASS_CB(cb->element);
-            ele_name = ele_cb->this_classname;
-        }
-        printf("element: %s, dim: %d\n", ele_name, cb->dim);
-
-        if(vtable == NULL)
-          continue;
-        PRINT("idx");
-        PRINT_DISTANCE(5);
-        PRINT("name");
-        PRINT_DISTANCE(35);
-        PRINT("type");
-        PRINTLN("");
-        for (i = 0; i<vtable_size; i++)
-        {
-            int distance = 0;
-            MethodBlock* mb = vtable[i];
-            int midx = mb->methods_table_idx;
-            PRINT_D("|",midx);
-            PRINT_DISTANCE(5);
-            PRINT_S("|",mb->name);
-            PRINT_DISTANCE(35);
-            PRINT_S("|",mb->type);
-            PRINTLN("");
-        }
-    }
-
-}
-*/
 
 /*
  * Print the current stack and locals.
@@ -159,6 +91,10 @@ void printNativeStack()
         printf("%d\n", nframe->locals[i]);
 
 }
+
+
+
+
 void printStack(JF current_frame)
 {
     //JF current_frame = getCurrentFrame();
@@ -172,49 +108,116 @@ void printStack(JF current_frame)
     max_locals = current_frame->mb->max_locals;
     postack = current_frame->locals + max_stack + max_locals - 1;
 
-    PRINTLN("");
-    PRINT_DISTANCE(10);
-    PRINTLN("stack");
+    PRINTLN(stdout,"");
+    PRINT_DISTANCE(stdout,10);
+    PRINTLN(stdout,"stack");
     for (; max_stack > 0; max_stack--)
     {
         if (postack == current_frame->ostack)
         {
-            PRINT_DISTANCE(5);
-            PRINT("top->");
+            PRINT_DISTANCE(stdout,5);
+            PRINT(stdout,"top->");
         }
-        PRINT_DISTANCE(10);
-        PRINTLN("----------------");
-        PRINT_DISTANCE(10);
-        PRINT_D("|", *(int*)postack);
-        PRINT_DISTANCE(25);
-        PRINTLN("|");
+        PRINT_DISTANCE(stdout,10);
+        PRINTLN(stdout,"----------------");
+        PRINT_DISTANCE(stdout,10);
+        PRINT_D(stdout,"|", *(int*)postack);
+        PRINT_DISTANCE(stdout,25);
+        PRINTLN(stdout,"|");
         postack--;
     }
 
-    PRINT_DISTANCE(4);
-    PRINT("bottom");
-    PRINTLN("----------------");
+    PRINT_DISTANCE(stdout,4);
+    PRINT(stdout,"bottom");
+    PRINTLN(stdout,"----------------");
 
     /*print locals*/
-    PRINTLN("");
-    PRINT_DISTANCE(10);
-    PRINTLN("locals");
+    PRINTLN(stdout,"");
+    PRINT_DISTANCE(stdout,10);
+    PRINTLN(stdout,"locals");
     postack = current_frame->locals;
     for (locals_idx = 0; max_locals > 0; max_locals--, locals_idx++)
     {
-        PRINT_DISTANCE(10);
-        PRINTLN("----------------");
-        PRINT_DISTANCE(7);
-        PRINT("[");
-        PRINT_D("", locals_idx);
-        PRINT("]");
-        PRINT_D("|", *(int*)postack);
-        PRINT_DISTANCE(25);
-        PRINTLN("|");
+        PRINT_DISTANCE(stdout,10);
+        PRINTLN(stdout,"----------------");
+        PRINT_DISTANCE(stdout,7);
+        PRINT(stdout,"[");
+        PRINT_D(stdout,"", locals_idx);
+        PRINT(stdout,"]");
+        PRINT_D(stdout,"|", *(int*)postack);
+        PRINT_DISTANCE(stdout,25);
+        PRINTLN(stdout,"|");
         postack++;
     }
-    PRINT_DISTANCE(10);
-    PRINTLN("----------------");
+    PRINT_DISTANCE(stdout,10);
+    PRINTLN(stdout,"----------------");
+    /*}}}*/
+}
+
+
+
+
+
+
+
+
+
+void printStackLog(FILE* fd, JF current_frame)
+{
+    //JF current_frame = getCurrentFrame();
+    unsigned int* postack;/*{{{*/
+    int max_stack;
+    int max_locals;
+    int locals_idx;
+
+    /*print statck*/
+    max_stack = current_frame->mb->max_stack;
+    max_locals = current_frame->mb->max_locals;
+    postack = current_frame->locals + max_stack + max_locals - 1;
+
+    PRINTLN(fd,"");
+    PRINT_DISTANCE(fd,10);
+    PRINTLN(fd,"stack");
+    for (; max_stack > 0; max_stack--)
+    {
+        if (postack == current_frame->ostack)
+        {
+            PRINT_DISTANCE(fd,5);
+            PRINT(fd,"top->");
+        }
+        PRINT_DISTANCE(fd,10);
+        PRINTLN(fd,"----------------");
+        PRINT_DISTANCE(fd,10);
+        PRINT_D(fd,"|", *(int*)postack);
+        PRINT_DISTANCE(fd,25);
+        PRINTLN(fd,"|");
+        postack--;
+    }
+
+    PRINT_DISTANCE(fd,4);
+    PRINT(fd,"bottom");
+    PRINTLN(fd,"----------------");
+
+    /*print locals*/
+    PRINTLN(fd,"");
+    PRINT_DISTANCE(fd,10);
+    PRINTLN(fd,"locals");
+    postack = current_frame->locals;
+    for (locals_idx = 0; max_locals > 0; max_locals--, locals_idx++)
+    {
+        PRINT_DISTANCE(fd,10);
+        PRINTLN(fd,"----------------");
+        PRINT_DISTANCE(fd,7);
+        PRINT(fd,"[");
+        PRINT_D(fd,"", locals_idx);
+        PRINT(fd,"]");
+        PRINT_D(fd,"|", *(int*)postack);
+        PRINT_DISTANCE(fd,25);
+        PRINTLN(fd,"|");
+        postack++;
+    }
+    PRINT_DISTANCE(fd,10);
+    PRINTLN(fd,"----------------");
     /*}}}*/
 }
 
@@ -295,32 +298,32 @@ void printObject(O objref)
     obj_size = cb->obj_size;
     classname = cb->this_classname;
 
-    PRINTLN("");
-    PRINT_DISTANCE(11);
-    PRINT_S("",classname);
-    PRINTLN("");
+    PRINTLN(stdout,"");
+    PRINT_DISTANCE(stdout,11);
+    PRINT_S(stdout,"",classname);
+    PRINTLN(stdout,"");
 
-    PRINT_DISTANCE(11);
+    PRINT_DISTANCE(stdout,11);
     for (i = 0; i < obj_size; i++)
     {
-        PRINT("-----------");
+        PRINT(stdout,"-----------");
     }
-    PRINTLN("");
+    PRINTLN(stdout,"");
 
-    PRINT_DISTANCE(11);
+    PRINT_DISTANCE(stdout,11);
     for (i = 0; i < obj_size; i++)
     {
-        PRINT_D("|", (int)objref->data[i]);
-        PRINT_DISTANCE(11*(i+2));
+        PRINT_D(stdout,"|", (int)objref->data[i]);
+        PRINT_DISTANCE(stdout,11*(i+2));
     }
-    PRINTLN("|");
+    PRINTLN(stdout,"|");
 
-    PRINT_DISTANCE(11);
+    PRINT_DISTANCE(stdout,11);
     for (i = 0; i < obj_size; i++)
     {
-        PRINT("-----------");
+        PRINT(stdout,"-----------");
     }
-    PRINTLN("");/*}}}*/
+    PRINTLN(stdout,"");/*}}}*/
 }
 
 void printChar0(O obj)
