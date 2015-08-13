@@ -117,7 +117,7 @@ T String_new(T x)
     if (String_equals(s, x))
       return s;
 
-    ERROR("unknow");
+    ERROR("string_new err!");
 }
 
 

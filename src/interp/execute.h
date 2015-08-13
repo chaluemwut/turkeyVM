@@ -15,8 +15,6 @@ extern void executeMethodArgs(C class, MethodBlock* mb,...);
 
 extern void invokeConstructNative(MethodBlock* mb, O args, O this);
 
-//extern JFrame_t popFrame();
-
 #undef C
 #undef O
 

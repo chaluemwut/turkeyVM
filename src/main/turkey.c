@@ -199,18 +199,11 @@ int main(int argc, char** argv)
     //exitVM();
 
 
-
-
-    if (dis_list)
-        ERROR("TODO");
-    //printList(head);
-    //  printVtable(head);
-
     end = clock();
 
     printf("\nVM run %f seconds\n", (double)(end-start)/CLOCKS_PER_SEC);
     //Hash_foreachKey(CMap, doKey);
-    //Hash_status(CMap);
+    Hash_status(CMap);
     return 0; /*}}}*/
 }
 

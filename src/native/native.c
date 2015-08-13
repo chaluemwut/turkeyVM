@@ -17,6 +17,7 @@
 #include <string.h>
 #include "../lib/assert.h"
 #include "../lib/error.h"
+#include "../lib/string.h"
 #include "../interp/execute.h"
 #include "../interp/interp.h"
 #include "../dll/dll.h"
@@ -129,14 +130,15 @@ void getName(JF retFrame)
 
     char* s = CLASSNAME(c);
     Assert_ASSERT(s);
+    char* ss = String_new(s);
     int i=0;
-    int len = strlen(s);
+    int len = strlen(ss);
     for (i=0; i<len; i++)
     {
-        if (s[i] == '/')
-          s[i] = '.';
+        if (ss[i] == '/')
+          ss[i] = '.';
     }
-    O js = createJstring(s);
+    O js = createJstring(ss);
     push(retFrame, &js, TYPE_REFERENCE);
 }
 

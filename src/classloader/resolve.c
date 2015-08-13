@@ -83,7 +83,7 @@ FieldBlock* resolveField(C class, u2 index)
     ConstantPool* current_cp;
 
     JF current_frame = getCurrentFrame();
-    current_cp = getCurrentCP();
+    current_cp = GET_CONSTANTPOOL(current_frame);
 
     switch (CP_TYPE(current_cp, index))
     {
@@ -97,7 +97,7 @@ FieldBlock* resolveField(C class, u2 index)
         symclass_idx = 0;
         cp_info = CP_INFO(current_cp, index);
         symclass_idx = cp_info;
-        sym_class = (C)resolveClass(getCurrentClass(), symclass_idx);
+        sym_class = (C)resolveClass(GET_CLASS(current_frame), symclass_idx);
         name_type_idx = cp_info >> 16;
         cp_info = CP_INFO(current_cp, name_type_idx);
         name_idx = cp_info;
@@ -237,7 +237,7 @@ MethodBlock* resolveInterfaceMethod(C class, u2 index)
 {
     MethodBlock* resolve_method = NULL;
     JF current_frame = getCurrentFrame();
-    ConstantPool* current_cp = getCurrentCP();
+    ConstantPool* current_cp = GET_CONSTANTPOOL(current_frame);
 
 
     switch (CP_TYPE(current_cp, index))
@@ -307,7 +307,7 @@ MethodBlock* resolveMethod(C class, u2 index)
 {
     MethodBlock* resolve_method = NULL;/*{{{*/
     JF current_frame = getCurrentFrame();
-    ConstantPool* current_cp = getCurrentCP();
+    ConstantPool* current_cp = GET_CONSTANTPOOL(current_frame);
 
 
     switch (CP_TYPE(current_cp, index))

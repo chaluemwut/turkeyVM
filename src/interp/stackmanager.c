@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------*//*{{{*/
+/*^_^*--------------------------------------------------------------*//*{{{*/
 /* Copyright (C) SSE-USTC, 2014-2015                                */
 /*                                                                  */
 /*  FILE NAME             :  stackmanager.c                         */
@@ -55,16 +55,6 @@ int getNewId()
 {
     method_num++;
     return frame_num++;
-}
-
-void print_Stack(JF frame)
-{
-    C class = getCurrentClass();
-    ClassBlock* cb = CLASS_CB(class);
-    printf("\n----------------\n");
-    printf("CurrentClass:%s\n", cb->this_classname);
-    printf("Current method:%s   ", getCurrentMethodName());
-    printf("%s\n", getCurrentMethodDesc());
 }
 
 /**
@@ -303,11 +293,6 @@ JF popFrame()
 
 }
 
-int getCurrentFrameId()
-{
-    return current_frame->id;
-}
-
 JF getCurrentFrame()
 {
     return current_frame;
@@ -319,20 +304,6 @@ void setCurrentFrame(JF f)
     current_frame = f;
 }
 
-ConstantPool* getCurrentCP()
-{
-    return current_frame->cp;
-}
-
-C getCurrentClass()
-{
-    return current_frame->class;
-}
-
-unsigned char* getCurrentPC()
-{
-    return current_frame->pc;
-}
 
 void PCIncrease(int x)
 {
@@ -346,26 +317,6 @@ void PCDecrease(int x)
     current_frame->pc_offset-=x;
 }
 
-char* getCurrentMethodName()
-{
-    return current_frame->mb->name;
-}
-
-char* getCurrentMethodDesc()
-{
-    return current_frame->mb->type;
-}
-
-unsigned int getCurrentPCOffset()
-{
-    return current_frame->pc_offset;
-}
-
-unsigned int getCurrentCodeLen()
-{
-    return current_frame->mb->code_length;
-}
-
 NF getNativeFrame()
 {
     return nframe;
@@ -373,27 +324,17 @@ NF getNativeFrame()
 
 
 
-#define ASSERT_STACK cheackStack()
-    /*
-    do {                                                \
-        if (assert_stack){                              \
-            if (current_frame->ostack<bottom            \
-                        ||current_frame->ostack>top)    \
-            {                                           \
-                printStack(getCurrentFrame());          \
-                ERROR("stack error");                   \
-            }                                           \
-        }                                               \
+#define ASSERT_STACK                                \
+    do {                                            \
+        if (current_frame->ostack<bottom            \
+                    ||current_frame->ostack>top)    \
+        {                                           \
+            printStack(getCurrentFrame());          \
+            ERROR("stack error");                   \
+        }                                           \
     }while(0)
 
-    */
-void cheackStack()
-{
-    if (current_frame->ostack<bottom || current_frame->ostack>top)
-    {
-        ERROR("stack error");
-    }
-}
+
 void load(void* result, Type t, int index)
 {
     switch (t)

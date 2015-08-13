@@ -13,18 +13,10 @@ typedef struct
 }Binding;
 
 
-
-
 extern Binding nativeMethods[];
 
-
-extern void getName0();
 extern void getClass();
 extern O getClass_name(char* classname);
-
-
-
-
 
 #undef O
 

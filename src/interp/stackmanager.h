@@ -41,6 +41,13 @@
         *(t*)(f->locals+i)=v;   \
     }while(0)
 
+
+#define GET_CONSTANTPOOL(f) (f->cp)
+#define GET_PC(f)   (f->pc)
+#define GET_CLASS(f)    (f->class)
+#define GET_OFFSET(f)   (f->pc_offset)
+
+
 typedef enum ntype {
     TYPE_INT,
     TYPE_LONG,
@@ -83,38 +90,17 @@ struct JF{
 };
 
 
-
-//extern NativeFrame* nframe;
-//extern Frame* current_frame;
-
 extern int getNewId();
 
 extern JF initFrame();
 
 extern void initNativeFrame();
 
-extern int getCurrentFrameId();
-
 extern JF getCurrentFrame();
-
-extern ConstantPool* getCurrentCP();
-
-extern unsigned  char* getCurrentPC();
-
-extern char* getCurrentMethodName();
-
-extern char* getCurrentMethodDesc();
-
-extern unsigned int getCurrentPCOffset();
-
 
 extern void PCIncrease(int x);
 
 extern void PCDecrease(int x);
-
-extern unsigned int getCurrentCodeLen();
-
-extern C getCurrentClass();
 
 extern void setCurrentFrame(JF f);
 
@@ -137,9 +123,6 @@ extern void push(JF f, void* value, Type t);
 extern void load(void* result, Type t, int index);
 
 extern void store(void* value, Type t, int index);
-
-
-void print_Stack(JF frame);
 
 
 #undef C

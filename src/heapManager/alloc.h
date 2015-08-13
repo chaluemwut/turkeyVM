@@ -20,6 +20,7 @@ typedef enum otype
     TYPE_STRING,
 }Object_type;
 
+//FIXME enhancement
 typedef enum atype
 {
     TODO

@@ -22,4 +22,5 @@ int Control_Verb_order(Verbose_t v1, Verbose_t v2);
 extern Verbose_t Control_verbose;
 
 extern void Control_setLogFile(FILE* fd);
+
 #endif

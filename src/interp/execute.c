@@ -123,7 +123,7 @@ static int Verbose_executeStaticMain(MethodBlock* mb, O args)
     *(O*)(frame->locals+0) = *(O*)&args;
 
     if (dis_testinfo)
-      printf("\nnew Frame: %d\n", getCurrentFrameId());
+      printf("\nnew Frame: %d\n", frame->id);
     //
     //executeJava(NULL, frame);
     //popFrame();

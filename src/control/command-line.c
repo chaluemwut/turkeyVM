@@ -11,7 +11,7 @@
 #define TRUE 1
 #define FALSE 0
 
-static const char* VERSION = "turkey v0.0.1";
+static const char* VERSION = "turkey v0.0.3";
 
 void actionArg_help();
 void actionArg_printVtable();
