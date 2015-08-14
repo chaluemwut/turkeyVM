@@ -21,17 +21,14 @@
  * Be used in vm.c.
  * @qcliu 2015/01/27
  */
-int dis_vtable = FALSE;
-int dis_list = FALSE;
-int dis_testinfo = FALSE;
 int assert_stack = TRUE;
+int dis_testinfo = FALSE;
 
 /*
  * To control weather print bytecode.
  * Be used in interp.c.
  * @qcliu 2015/01/27
  */
-int dis_bytecode = FALSE;
 char* op_code[] =
 {
     "nop",/*{{{*/

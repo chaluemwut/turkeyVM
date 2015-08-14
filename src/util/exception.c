@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "testvm.h"
 #include "../main/turkey.h"
 #include "../lib/hash.h"
@@ -8,11 +9,22 @@
 extern JFrame_t current_frame;
 
 void throwException(char* exception) {
-    //JFrame_t current_frame = getCurrentFrame();
     printf("\n\e[31m\e[1mException:\e[0m %s\n", exception);
-    //print_Stack(current_frame);
 
     Hash_status(CMap);
 
     exit(0);
+}
+
+void Exception(char* fmt, ...)
+{
+    fprintf(stderr, "\e[31m\e[1mException:\e[0m");
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+    fputc('\n', stderr);
+    fflush(stderr);
+
+    exit(1);
 }

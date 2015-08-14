@@ -89,7 +89,7 @@ void nativeOpen(JF retFrame)
         case WRITE:
             //printf("mode:%d\n", mode);
             //TODO("unimplements");
-            fp = fopen(fpath, "a");
+            fp = fopen(fpath, "wr");
             break;
         defualt:
             printf("mode:%d\n", mode);

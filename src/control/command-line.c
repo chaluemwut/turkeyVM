@@ -3,22 +3,28 @@
 #include <string.h>
 #include "command-line.h"
 #include "control.h"
+#include "../lib/string.h"
 #include "../debuger/log.h"
 #include "../lib/trace.h"
 #include "../lib/error.h"
 #include "../lib/assert.h"
+#include "../lib/mem.h"
+#include "../lib/triple.h"
+#include "../lib/poly.h"
+#include "../lib/trace.h"
 
 #define TRUE 1
 #define FALSE 0
 
-static const char* VERSION = "turkey v0.0.3";
+#define P Poly_t
 
-void actionArg_help();
-void actionArg_printVtable();
-void actionArg_printList();
-void actionArg_printBytecode();
-void actionArg_test();
+extern char* CLASS_SEARCH_PATH;
 
+static const char* VERSION = "turkey v0.0.4 linux/386";
+static const char* WEBSITE = "https://github.com/qc1iu/turkeyVM";
+
+static void actionArg_help();
+static void actionArg_test();
 
 typedef enum
 {
@@ -39,13 +45,18 @@ typedef struct
 
 static void arg_setTrace(char* func)
 {
-    //printf("set trace:%s\n", func);
     Trace_addFunc(func);
 }
 
 static void arg_setLog(char* s)
 {
     Log_add(s);
+}
+
+static void arg_setClassSearchPath(char* s)
+{
+    char* csp = String_concat(s, "/", NULL);
+    CLASS_SEARCH_PATH = csp;
 }
 
 
@@ -73,80 +84,64 @@ static void arg_setVerbose(int i)
 
 static Arg_t allArgs[] =
 {
+    {"cp", ARGTYPE_STRING, "{path}", "set class search path", arg_setClassSearchPath},
     {"log", ARGTYPE_STRING, "{name}", "log method", arg_setLog},
     {"verbose", ARGTYPE_INT, "{0|1|2|3}", "verbose turkey",  arg_setVerbose},
     {"trace", ARGTYPE_STRING, "{name}", "trace specific method", arg_setTrace},
     {"help", ARGTYPE_EMPTY,"<NULL>", "commandline list", actionArg_help},
-    {"disv", ARGTYPE_EMPTY, "<NULL>", "display vtable", actionArg_printVtable},
-    {"dish", ARGTYPE_EMPTY,  "<NULL>", "display list", actionArg_printList},
-    {"disb", ARGTYPE_EMPTY, "<NULL>", "display bytecode", actionArg_printBytecode},
     {"test", ARGTYPE_EMPTY, "<NULL>", "super test!!", actionArg_test},
     {NULL, 0, NULL, NULL, NULL}
 };
-
-void actionArg_test()
-{
-    dis_testinfo = TRUE;
-}
-
-void actionArg_printBytecode()
-{
-    dis_bytecode = TRUE;
-}
-
-void actionArg_printList()
-{
-    dis_list = TRUE;
-}
-
-void actionArg_printVtable()
-{
-    dis_vtable = TRUE;
-}
 
 static int printSpace(int i, int indent)
 {
     Assert_ASSERT(i<=indent);
     while(i < indent)
     {
-        i += printf(" ");
+        i += fprintf(stdout, " ");
     }
 
     return i;
 }
 
-void printAllarg()
+static void actionArg_test()
+{
+    dis_testinfo = TRUE;
+}
+
+static void printAllarg()
 {
     int i = 0;
     for(; allArgs[i].action; i++)
     {
         int k=0;
-        k += printf("  -%s", allArgs[i].name);
+        k += fprintf(stdout, "  -%s", allArgs[i].name);
         k = printSpace(k, 15);
-        k += printf("%s", allArgs[i].arg);
+        k += fprintf(stdout, "%s", allArgs[i].arg);
         k = printSpace(k, 30);
-        k += printf("%s", allArgs[i].desc);
-        printf("\n");
+        k += fprintf(stdout, "%s", allArgs[i].desc);
+        fprintf(stdout, "\n");
     }
 }
 
-void actionArg_help()
-{
-    printAllarg();
-    exit(0);
-}
-
-
 static int printUsage()
 {
-    printf("Turkey is a Java virtual mechine for GNU Classpath0.0.6\n\n");
-    printf("Usage:\n\n");
-    printf("\tcommand [arguments]\n\n");
-    printf("The commands are:\n\n");
+    fprintf(stdout, "Turkey is a Java virtual mechine for GNU Classpath0.0.6\n\n");
+    fprintf(stdout, "Usage:\n\n");
+    fprintf(stdout, "\tcommand [arguments]\n\n");
+    fprintf(stdout, "The commands are:\n\n");
     printAllarg();
-    printf("\n");
-    printf("%s\n", VERSION);
+    fprintf(stdout, "\n");
+    fprintf(stdout, "%s\n", VERSION);
+    fprintf(stdout, "See %s for more details.\n", WEBSITE);
+    fflush(stdout);
     return 0;
+}
+
+static void actionArg_help()
+{
+    printUsage();
+    exit(0);
 }
 
 static void argException(char* s)
@@ -155,66 +150,112 @@ static void argException(char* s)
     exit(0);
 }
 
-static int doTurkeyArgs(int argc, char** argv)
+
+/**
+ * create a char**[] whitch contains all args of input file.
+ * @parm index
+ * @parm args
+ */
+static int createTurkeyArgs(int argc, char** argv, int index, char** args)
 {
-    int i = 1;
-    int argCount = 0;
-    char* file = NULL;
-    for (; i<argc; i++)
+    int i;
+    int j=0;
+    for (i=index; i<argc; i++, j++)
     {
-        if (file == NULL)
-        {
-            file = argv[i];
-            if (file[0] == '-')
-              argException("invailid file name");
-
-            continue;
-        }
-
-        if (argv[i][0] != '-')
-        {
-            argCount++;
-        }
-        else
-        {
-            return argCount;
-        }
+        args[j] = String_new(argv[i]);
     }
+    args[j] = NULL;
 
-    return argCount;
-
+    return 0;
 }
-int commandline_doarg(int argc,char** argv)
+
+/**
+ * figure up the arg count of input file.
+ * @parm index the first arg's subscript of argv
+ * @return input file's args count
+ */
+static int turkeyArgsCount(int argc, char** argv, int index)
 {
+    int i=index;
+    int count = 0;
+    while (i <argc)
+    {
+        count++;
+        i++;
+    }
+    return count;
+}
+
+/**
+ * print the triple for test.
+ */
+static void Trace_dor(Triple_t t)
+{
+    Assert_ASSERT(t);
+    char* filename = (char*)Triple_first(t);
+    char** args = (char**)Triple_second(t);
+    int count = (int)Triple_third(t);
+
+    fprintf(stdout, "filename:%s\n", filename);
+    int i=0;
+    fprintf(stdout, "args:");
+    for (i=0; i<count; i++)
+        fprintf(stdout, "%s ", args[i]);
+    fprintf(stdout, "\n");
+    fprintf(stdout, "args.lenth:%d\n", count);
+
+    return;
+}
+
+Triple_t commandline_doarg(int argc,char** argv)
+{
+    char* filename = NULL;
+    char** args = NULL;
+    Triple_t t = NULL;
+    int count;
+    int index;
+
     if (argc == 1)
     {
         printUsage();
         exit(0);
     }
-    if(argc == 2)
+    count = 0;
+    index = 1;
+    for(; index < argc;index++)
     {
-        dis_vtable = FALSE;
-        dis_list = FALSE;
-        dis_bytecode = FALSE;
-        dis_testinfo = FALSE;
-    }
-    int count = doTurkeyArgs(argc, argv);
-    int index = 1;
-    for(; index < argc; index++)
-    {
-        char* inputName = argv[index];
-
         int i = 0;
-        if(inputName[0] != '-')
+        if (argv[index][0] != '-')
         {
-            //filename[j++] = argv[index];
-            //file_length++;
-            continue;
+            if (filename == NULL)
+            {
+                /*
+                 * If find a file, we treat all arg behind filename as 
+                 * inputfile's args.
+                 */
+                filename = String_new(argv[index]);
+                index++;
+
+                count  = turkeyArgsCount(argc, argv, index);
+                Mem_newSize(args, count+1);
+                createTurkeyArgs(argc, argv, index, args);
+                t = Triple_new(filename, args, (P)count);
+
+                //for test
+                //Trace_dor(t);
+
+                return t;
+            }
+            else
+            {
+                ERROR("impossible");
+                argException("only one file");
+            }
         }
 
         for(; allArgs[i].action; i++)
         {
-            if(strcmp(allArgs[i].name,inputName+1) != 0)
+            if(strcmp(allArgs[i].name,argv[index]+1) != 0)
             {
                 continue;
             }
@@ -228,18 +269,20 @@ int commandline_doarg(int argc,char** argv)
                     }
                 case ARGTYPE_INT:
                     {
-                        //FIXME need bound check
                         index++;
-                        char* arg = argv[index++];
+                        if (index >= argc)
+                            argException("expect <INT> arg");
+                        char* arg = argv[index];
                         int n = atoi(arg);
                         allArgs[i].action(n);
                         break;
                     }
                 case ARGTYPE_STRING:
                     {
-                        //FIXME need bound check
                         index++;
-                        char* arg = argv[index++];
+                        if (index>=argc)
+                            argException("expect <STRING> arg");
+                        char* arg = argv[index];
                         allArgs[i].action(arg);
                         break;
                     }
@@ -252,8 +295,15 @@ int commandline_doarg(int argc,char** argv)
         {
             ERROR("no arg match!!\n");
         }
-
     }
 
-    return count;
+    if (t == NULL)
+      argException("expect a file");
+
+    return NULL;
 }
+
+
+
+
+#undef P

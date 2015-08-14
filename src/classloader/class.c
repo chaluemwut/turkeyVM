@@ -56,6 +56,7 @@ C primClass[MAX_PRIMITIVE];
 static char** CLASSPATH = NULL;
 static int MAX_PATH_LEN = 0;
 char* PREFIX = NULL;
+char* CLASS_SEARCH_PATH = NULL;
 
 //method
 static C loadArrayClass(char* classname);
@@ -664,7 +665,7 @@ static C loadSystemClass(char* classname)
 
     if (cfd == NULL)
     {
-        char* fullName = String_concat(PREFIX, filename, NULL);
+        char* fullName = String_concat(CLASS_SEARCH_PATH, filename, NULL);
         cfd = fopen(fullName, "r");
     }
     if (dis_testinfo)
@@ -672,9 +673,7 @@ static C loadSystemClass(char* classname)
 
     if (cfd == NULL)
     {
-        //printf("\n%s\n", buff);
-        //printf("\n%s\n", classname);
-        throwException("NoFileInput");
+        Exception("Could not find or load main class %s", filename);
     }
 
     fseek(cfd, 0L, SEEK_END);
@@ -684,8 +683,7 @@ static C loadSystemClass(char* classname)
     data = (char*)sysMalloc(file_len);
     if (fread(data, sizeof(char), file_len, cfd) != file_len)
     {
-        printf("\n%s\n", classname);
-        throwException("NoFileInput");
+        ERROR("fread error");
     }
     else
     {
@@ -1373,6 +1371,11 @@ C findPrimitiveClass(char primtype)
 char* getClassPath()
 {
     return getenv("CLASSPATH");
+}
+
+void setClassSearchPath(char* s)
+{
+    CLASS_SEARCH_PATH = s;
 }
 
 

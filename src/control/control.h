@@ -2,9 +2,6 @@
 #define CONTROL_H
 #include <stdio.h>
 
-extern int dis_list;
-extern int dis_vtable;
-extern int dis_bytecode;
 extern int dis_testinfo;
 extern int assert_stack;
 
@@ -17,7 +14,7 @@ typedef enum {
     VERBOSE_DETAIL
 }Verbose_t;
 
-int Control_Verb_order(Verbose_t v1, Verbose_t v2);
+extern int Control_Verb_order(Verbose_t v1, Verbose_t v2);
 
 extern Verbose_t Control_verbose;
 

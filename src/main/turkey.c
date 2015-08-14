@@ -34,6 +34,7 @@
 #include "../lib/poly.h"
 #include "../lib/error.h"
 #include "../lib/assert.h"
+#include "../lib/triple.h"
 #include "../control/verbose.h"
 #include <time.h>
 #define TRUE 1
@@ -164,47 +165,56 @@ static int initVM()
 
 int main(int argc, char** argv)
 {
-    clock_t start, end;/*{{{*/
+    /*{{{*/
+    clock_t start, end;
+    Triple_t t;
+    char* filename;
+    char** _args;
+    C main_class;
+    C stringArray;
+    MethodBlock* main_mehtod;
+    O args;
+    int args_size;
+    
     start = clock();
-    int args_array_size = commandline_doarg(argc, argv);
+    t = commandline_doarg(argc, argv);
+    Assert_ASSERT(t);
+    filename = (char*)Triple_first(t);
+    _args = (char**)Triple_second(t);
+    args_size = (int)Triple_third(t);
 
-    C class=NULL;
     int r;
     Verbose_TRACE("initVM", initVM, (), r, VERBOSE_PASS);
 
-    //class = loadClass("[[[[LHello;");
-    parseFilename(argv[1]);
-    class = loadClass(argv[1]);
+    main_class = loadClass(filename);
+    Assert_ASSERT(main_class);
 
     //find access main method!
-    MethodBlock* main = findMethod(class, "main", "([Ljava/lang/String;)V");
+    main_mehtod = findMethod(main_class, "main", "([Ljava/lang/String;)V");
 
-    if ((!main)||!(main->access_flags & ACC_STATIC))
+    if ((!main_mehtod)||!(main_mehtod->access_flags & ACC_STATIC))
         throwException("Not find static main");
 
-    C stringArray= NULL;
+    stringArray= NULL;
     stringArray = findArrayClass("[Ljava/lang/String;");
     Assert_ASSERT(stringArray);
-    O args = allocArray(stringArray, args_array_size, sizeof(O), TYPE_REFERENCE);
+    args = allocArray(stringArray, args_size, sizeof(O), TYPE_REFERENCE);
     int i;
-    for (i = 0; i<args_array_size; i++)
+    for (i = 0; i<args_size; i++)
     {
-        ARRAY_DATA(args, i, O) = createJstring(argv[i+2]);
+        ARRAY_DATA(args, i, O) = createJstring(_args[i]);
     }
 
-    executeStaticMain(main, args);
-
-    if (dis_testinfo)
-        printf("vmsize : %d B\n", vmsize);
-    //exitVM();
-
+    executeStaticMain(main_mehtod, args);
 
     end = clock();
 
     printf("\nVM run %f seconds\n", (double)(end-start)/CLOCKS_PER_SEC);
     //Hash_foreachKey(CMap, doKey);
     Hash_status(CMap);
-    return 0; /*}}}*/
+    return 0; 
+    
+    /*}}}*/
 }
 
 

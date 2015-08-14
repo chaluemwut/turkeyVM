@@ -324,14 +324,17 @@ NF getNativeFrame()
 
 
 
-#define ASSERT_STACK                                \
-    do {                                            \
-        if (current_frame->ostack<bottom            \
-                    ||current_frame->ostack>top)    \
-        {                                           \
-            printStack(getCurrentFrame());          \
-            ERROR("stack error");                   \
-        }                                           \
+#define ASSERT_STACK(f)                                 \
+    do {                                                \
+        if (assert_stack)                               \
+        {                                               \
+            if (f->ostack<f->bottom                     \
+                        ||f->ostack>f->top)             \
+            {                                           \
+                printStack(f);                          \
+                    ERROR("stack error");               \
+            }                                           \
+        }                                               \
     }while(0)
 
 
@@ -408,13 +411,13 @@ void pop(JF f, void* result, Type t)
         *(int*)result = *(int*)f->ostack;
         *(int*)f->ostack = 0;
         f->ostack--;
-        ASSERT_STACK;
+        ASSERT_STACK(f);
         break;
     case TYPE_FLOAT:
         *(float*)result = *(float*)f->ostack;
         *(int*)f->ostack = 0;
         f->ostack--;
-        ASSERT_STACK;
+        ASSERT_STACK(f);
         break;
     case TYPE_LONG:
         f->ostack--;
@@ -436,25 +439,25 @@ void pop(JF f, void* result, Type t)
         *(long long*)f->ostack = 0;
         //*(int*)current_frame->ostack = 0;
         f->ostack--;
-        ASSERT_STACK;
+        ASSERT_STACK(f);
         break;
     case TYPE_REFERENCE:
         *(O*)result = *(O*)f->ostack;
         *(int*)f->ostack = 0;
         f->ostack--;
-        ASSERT_STACK;
+        ASSERT_STACK(f);
         break;
     case TYPE_CHAR:
         *(char*)result = *(char*)f->ostack;
         *(int*)f->ostack = 0;
         f->ostack--;
-        ASSERT_STACK;
+        ASSERT_STACK(f);
         break;
     case TYPE_UINT:
         *(unsigned int*)result = *(unsigned int*)f->ostack;
         *(int*)f->ostack = 0;
         f->ostack--;
-        ASSERT_STACK;
+        ASSERT_STACK(f);
         break;
     default:
         ERROR("wrong type");
@@ -472,7 +475,7 @@ void pop(JF f, void* result, Type t)
 void push(JF frame, void* value, Type type)
 {
     frame->ostack++;
-    ASSERT_STACK;
+    ASSERT_STACK(frame);
     switch (type)
     {
     case TYPE_INT:

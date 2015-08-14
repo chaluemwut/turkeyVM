@@ -1,9 +1,7 @@
 TURKEY VM
 =================
 
-Turkey is a Java virtual mechine. 
-
-Turkey is base on [GNU classpath 0.0.6](http://savannah.gnu.org/forum/forum.php?forum_id=2466).
+Turkey is a Java Virtual Mechine for [GNU classpath 0.0.6](http://savannah.gnu.org/forum/forum.php?forum_id=2466).
 
 **need: 32bit linux**
 
@@ -27,7 +25,7 @@ This will retrieve the library and compile the turkey into src/.
 
 We supply some file in `test/` for test.
 
-	./turkey ../test/bin/Test
+	./turkey -cp ../test/bin/ Test
 
 will get the result like this
 
@@ -43,20 +41,22 @@ will get the result like this
 
 also, you can give static main args 
 
-	./turkey ../test/bin/Test arg1 arg2 arg3
+	./turkey -cp ../test/bin/ Test arg1 arg2 arg3
 
 
 you can find all source of test case in `test/`. All test case(except Test.java) are in miniJava lanuage, and they can compile by [tiger-comp](https://github.com/qc1iu/tiger-comp#tiger)**^_^**
+
+##More About Turkey
+
+Besides run this simple test case, turkey now can run  [tiger0.0.6](https://github.com/qc1iu/tiger0.0.6).
+
 	
 
 ##Command-line
 
+	-cp          {path}         set class search path
+	-log         {name}         log method
 	-verbose     {0|1|2|3}      verbose turkey
-  	-trace       {name}         trace specific method
-  	-help        <NULL>         commandline list
-  	-disv        <NULL>         display vtable
-  	-dish        <NULL>         display list
-  	-disb        <NULL>         display bytecode
-  	-test        <NULL>         super test!!
-
-
+	-trace       {name}         trace specific method
+	-help        <NULL>         commandline list
+ 	-test        <NULL>         super test!!
