@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "execute.h"
+#include "stackmanager.h"
+#include "opcode.h"
 #include "../heapManager/alloc.h"
 #include "../native/cast.h"
 #include "../classloader/class.h"
@@ -30,7 +32,6 @@
 #include "../util/jstring.h"
 #include "../native/reflect.h"
 #include "../lib/list.h"
-#include "stackmanager.h"
 #include "../lib/error.h"
 #include "../lib/mem.h"
 #include "../lib/trace.h"
@@ -240,7 +241,7 @@ static void exe_OPC_LDC(JF f)
         break;
     }
     default:
-        throwException("LDC error");
+        ERROR("opc_ldc error");
 
     }
 }
@@ -560,10 +561,7 @@ static void exe_OPC_IALOAD(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
 
-    Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(obj, index);
 
     value = ARRAY_DATA(obj, index, int);
 
@@ -595,11 +593,7 @@ static void exe_OPC_FALOAD(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
 
-    if (obj == NULL)
-        throwException("NullPointerException");
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(obj, index);
 
     value = ARRAY_DATA(obj, index, float);
     push(f,&value, TYPE_FLOAT);
@@ -615,11 +609,7 @@ static void exe_OPC_DALOAD(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
 
-    if (obj == NULL)
-        throwException("NullPointerException");
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(obj, index);
 
     value = ARRAY_DATA(obj, index, double);
     push(f,&value, TYPE_DOUBLE);
@@ -634,16 +624,10 @@ static void exe_OPC_AALOAD(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&arrayref, TYPE_REFERENCE);
 
-    if (arrayref == NULL)
-        throwException("NullPointerException");
-    Assert_ASSERT(arrayref->type == TYPE_ARRAY);
-    if (index < 0 || index >= arrayref->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(arrayref, index);
 
     C class = arrayref->class;
     ClassBlock* cb = CLASS_CB(class);
-
-    //printObjectWrapper(arrayref);
 
     value = ARRAY_DATA(arrayref, index, O);
     push(f,&value, TYPE_REFERENCE);
@@ -662,11 +646,7 @@ static void exe_OPC_BALOAD(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
 
-    if (obj == NULL)
-        throwException("NullPointerException");
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(obj, index);
 
     value = ARRAY_DATA(obj, index, char);
     int _value = (int)value;
@@ -684,16 +664,10 @@ static void exe_OPC_CALOAD(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
 
-    if (obj == NULL)
-        throwException("NullPointerException");
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(obj, index);
 
     /*NOTE: The element_size is 2*/
-    //value = ARRAY_DATA(obj, index, short);
     value1 = ARRAY_DATA(obj, index, short);
-    //push(f,&value1, TYPE_CHAR);
     push(f,&value1, TYPE_INT);
 
 }
@@ -707,12 +681,7 @@ static void exe_OPC_SALOAD(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
 
-    if (obj == NULL)
-        throwException("NullPointerException");
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
-
+    CHECK_ARRAY(obj, index);
 
     value = ARRAY_DATA(obj, index, short);
     int _value = (int)value;
@@ -925,18 +894,16 @@ static void exe_OPC_ASTORE_3(JF f)
 static void exe_OPC_IASTORE(JF f)
 {
     O obj;
-    int value, index;
+    int value;
+    int index;
 
     pop(f,&value, TYPE_INT);
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
-    Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+
+    CHECK_ARRAY(obj, index);
 
     ARRAY_DATA(obj, index, int) = value;
-
 }
 
 static void exe_OPC_LASTORE(JF f)
@@ -948,10 +915,8 @@ static void exe_OPC_LASTORE(JF f)
     pop(f,&value, TYPE_LONG);
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
-    Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+
+    CHECK_ARRAY(obj, index);
 
     ARRAY_DATA(obj, index, long long) = value;
 }
@@ -966,10 +931,7 @@ static void exe_OPC_FASTORE(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
 
-    Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(obj, index);
 
     /*NOTE: the type if float*/
     ARRAY_DATA(obj, index, float) = value;
@@ -985,10 +947,7 @@ static void exe_OPC_DASTORE(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
 
-    Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(obj, index);
 
     ARRAY_DATA(obj, index, double) = value;
 }
@@ -1003,10 +962,7 @@ static void exe_OPC_AASTORE(JF f)
     pop(f,&index, TYPE_INT);
     pop(f,&arrayref, TYPE_REFERENCE);
 
-    Assert_ASSERT(arrayref);
-    Assert_ASSERT(arrayref->type == TYPE_ARRAY);
-    if (index < 0 || index >= arrayref->length )
-        throwException("OutofArrayBount");
+    CHECK_ARRAY(arrayref, index);
 
     ARRAY_DATA(arrayref, index, O) = value;
 
@@ -1014,7 +970,8 @@ static void exe_OPC_AASTORE(JF f)
 
 static void exe_OPC_BASTORE(JF f)
 {
-    int index, value;
+    int index;
+    int value;
     char _value;
     O obj;
 
@@ -1023,10 +980,7 @@ static void exe_OPC_BASTORE(JF f)
     pop(f,&obj, TYPE_REFERENCE);
     _value = (char)value;
 
-    Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+    CHECK_ARRAY(obj, index);
 
     ARRAY_DATA(obj, index, char) = _value;
 
@@ -1042,10 +996,8 @@ static void exe_OPC_CASTORE(JF f)
     pop(f,&value, TYPE_INT);
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
-    Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+
+    CHECK_ARRAY(obj, index);
     //_value = (char)value;
 
     ARRAY_DATA(obj, index, u2) = value;
@@ -1061,10 +1013,8 @@ static void exe_OPC_SASTORE(JF f)
     pop(f,&value, TYPE_INT);
     pop(f,&index, TYPE_INT);
     pop(f,&obj, TYPE_REFERENCE);
-    Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
-    if (index < 0 || index >= obj->length)
-        throwException("OutofArrayBound");
+
+    CHECK_ARRAY(obj, index);
 
     short _value = (short)value;
     ARRAY_DATA(obj, index, short) = _value;
@@ -2116,8 +2066,8 @@ static void exe_OPC_IF_ACMPEQ(JF f)
     pop(f,&value2, TYPE_REFERENCE);
     pop(f,&value1, TYPE_REFERENCE);
     int r;
-    if (value1->type == TYPE_STRING && 
-                value2->type == TYPE_STRING)
+    if (value1->type == OBJECT_STRING && 
+                value2->type == OBJECT_STRING)
     {
         r = Jstring_equals(value1, value2);
     }
@@ -2148,8 +2098,8 @@ static void exe_OPC_IF_ACMPNE(JF f)
     pop(f,&value2, TYPE_REFERENCE);
     pop(f,&value1, TYPE_REFERENCE);
     int r;
-    if (value1->type == TYPE_STRING && 
-                value2->type == TYPE_STRING)
+    if (value1->type == OBJECT_STRING && 
+                value2->type == OBJECT_STRING)
     {
         r = !Jstring_equals(value1, value2);
     }
@@ -2885,7 +2835,7 @@ static void exe_OPC_ARRAYLENGTH(JF f)
 
     pop(f,&arrayref, TYPE_REFERENCE);
     Assert_ASSERT(arrayref);
-    Assert_ASSERT(arrayref->type == TYPE_ARRAY);
+    Assert_ASSERT(arrayref->type == OBJECT_ARRAY);
 
     len = arrayref->length;
     push(f,&len, TYPE_INT);
@@ -3054,9 +3004,10 @@ int executeJava(JF retFrame, JF f)
      * note: pc_offset must move along with the current_pc. So use
      *       the PCMOVE() as much as possible.
      */
+    /* main loop of interpreter */
     while (GET_OFFSET(f) < code_length)
     {
-        u4 c = *GET_PC(f);
+        OPCODE c = *GET_PC(f);
 
         if (Log_file)
         {

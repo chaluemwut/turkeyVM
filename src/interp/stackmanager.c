@@ -338,7 +338,7 @@ NF getNativeFrame()
     }while(0)
 
 
-void load(void* result, Type t, int index)
+void load(void* result, Operand_Type t, int index)
 {
     switch (t)
     {
@@ -368,7 +368,7 @@ void load(void* result, Type t, int index)
     }
 }
 
-void store(void* value, Type t, int index)
+void store(void* value, Operand_Type t, int index)
 {
     switch (t)
     {
@@ -398,12 +398,12 @@ void store(void* value, Type t, int index)
     }
 }
 
-void seek(void* result, Type t)
+void seek(void* result, Operand_Type t)
 {
     TODO("seek");
 }
 
-void pop(JF f, void* result, Type t)
+void pop(JF f, void* result, Operand_Type t)
 {
     switch (t)
     {
@@ -472,7 +472,7 @@ void pop(JF f, void* result, Type t)
  *      the frame push value to.
  *
  */
-void push(JF frame, void* value, Type type)
+void push(JF frame, void* value, Operand_Type type)
 {
     frame->ostack++;
     ASSERT_STACK(frame);

@@ -60,7 +60,7 @@ FILE* Log_open(char* s)
         return 0;
     }
 
-    char* ss = String_concat("log_", "s", NULL);
+    char* ss = String_concat("log_", s, ".txt", NULL);
     fd = fopen(ss, "a");
     temp = fd;
     f = getCurrentFrame();

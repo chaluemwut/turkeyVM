@@ -179,7 +179,7 @@ void nativeWriteBuf(JF retFrame)
        fdp = initNativeFile(stdout, 0);
     else
        fdp = (FD)fd;
-    Assert_ASSERT(buf->type == TYPE_ARRAY);
+    Assert_ASSERT(buf->type == OBJECT_ARRAY);
     int r = fwrite(ARRAY_IDX(buf, _offset, char), sizeof(char), len, fdp->fd);
 
     //int r = fwrite(ARRAY_IDX(buf, _offset, char), sizeof(char), len, stdout);

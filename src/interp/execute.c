@@ -32,6 +32,7 @@
 #include "../lib/assert.h"
 #include "../lib/list.h"
 #include "../lib/trace.h"
+#include "../lib/error.h"
 
 #define C Class_t
 #define O Object_t
@@ -85,9 +86,8 @@ int Verbose_executeMethod(MethodBlock* mb, va_list jargs)
         createFrame(mb, jargs, ret);
         JF currentF = getCurrentFrame();
         //executeJava
+        
         char* s = String_concat(getMethodClassName(mb), ":",mb->name, mb->type, NULL);
-        //Trace_Stack(s, executeJava, (retFrame, currentF), (retFrame), printStack, (currentF), printStack);
-        //executeJava0(retFrame, currentF);
         int r;
         Log_SingleMethod(s, Log_executeJava, (retFrame, currentF), r);
     }
@@ -124,11 +124,7 @@ static int Verbose_executeStaticMain(MethodBlock* mb, O args)
 
     if (dis_testinfo)
       printf("\nnew Frame: %d\n", frame->id);
-    //
-    //executeJava(NULL, frame);
-    //popFrame();
     int r;
-    //executeJava0(NULL, frame);
     Log_SingleMethod("staticMain", Log_executeJava, (NULL, frame), r);
 
     return 0;
@@ -174,7 +170,7 @@ void invokeConstructNative(MethodBlock* mb, O args, O this)
      * @qcliu 2015/01/29
      */
 
-    Assert_ASSERT(args->type == TYPE_ARRAY);
+    Assert_ASSERT(args->type == OBJECT_ARRAY);
     //copyArgs(Frame* frame, MethodBlock* mb)
     if (!(mb->access_flags & ACC_STATIC))//non-static
       locals_idx = args_count;

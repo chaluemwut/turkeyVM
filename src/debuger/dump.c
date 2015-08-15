@@ -79,14 +79,14 @@ void dumpClass(FILE* fp, char* classname, C class)
 void dumpObject(O obj)
 {
     Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type != TYPE_ARRAY);
+    Assert_ASSERT(obj->type != OBJECT_ARRAY);
 
     switch (obj->type)
     {
-        case TYPE_OBJECT:
+        case OBJECT_OBJECT:
             printObject(obj);
             break;
-        case TYPE_STRING:
+        case OBJECT_STRING:
             dumpJstring(obj);
             break;
         default:

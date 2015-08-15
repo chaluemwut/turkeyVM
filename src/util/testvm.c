@@ -276,7 +276,7 @@ void printObjectWrapper(O objref)
     if (objref == NULL)
         throwException("printObjectWrapper: arg is NULL");
 
-    if (objref->type == TYPE_ARRAY)
+    if (objref->type == OBJECT_ARRAY)
         printArray(objref);
     else
         printObject(objref);
@@ -329,7 +329,7 @@ void printObject(O objref)
 void printChar0(O obj)
 {
     Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
+    Assert_ASSERT(obj->type == OBJECT_ARRAY);
     short* p = (short*)obj->data;
     int i;
     for (i = 0; i < obj->length; i++)

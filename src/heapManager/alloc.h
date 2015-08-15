@@ -11,17 +11,26 @@
 #define ARRAY_DATA(obj, index, type) (*((type*)obj->data+(index)))
 #define ARRAY_IDX(obj, index, type) (((type*)obj->data)+(index))
 
+
+#define CHECK_ARRAY(array, index)                   \
+    do{                                             \
+        Assert_ASSERT(array);                       \
+        Assert_ASSERT(array->type == OBJECT_ARRAY);   \
+        if (index < 0 || index >= array->length)    \
+            throwException("OutofArrayBound");      \
+    }while(0)
+
 typedef struct O *O;
 
-typedef enum otype
+typedef enum
 {
-    TYPE_OBJECT,
-    TYPE_ARRAY,
-    TYPE_STRING,
+    OBJECT_OBJECT,
+    OBJECT_ARRAY,
+    OBJECT_STRING,
 }Object_type;
 
 //FIXME enhancement
-typedef enum atype
+typedef enum
 {
     TODO
 }Array_type;

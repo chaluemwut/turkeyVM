@@ -174,7 +174,7 @@ void constructNative(JF retFrame)
     LOAD(nframe, declaringClass, O, 2);
     LOAD(nframe, slot, int , 3);
 
-    Assert_ASSERT(args->type == TYPE_ARRAY);
+    Assert_ASSERT(args->type == OBJECT_ARRAY);
 
     C declclass = declaringClass->binding;
     ClassBlock* cb = CLASS_CB(declclass);

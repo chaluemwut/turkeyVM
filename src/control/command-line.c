@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "command-line.h"
 #include "control.h"
 #include "../lib/string.h"
@@ -144,10 +145,16 @@ static void actionArg_help()
     exit(0);
 }
 
-static void argException(char* s)
+static void argException(char* fmt, ...)
 {
-    printf("\e[31m\e[1mArgs error: \e[0m%s\n", s);
-    exit(0);
+    fprintf(stderr, "\e[31m\e[1mArgs error: \e[0m");
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+    fputc('\n', stderr);
+    fflush(stderr);
+    exit(1);
 }
 
 
@@ -293,7 +300,7 @@ Triple_t commandline_doarg(int argc,char** argv)
         }
         if(!allArgs[i].action)
         {
-            ERROR("no arg match!!\n");
+            argException("Unrecognized option: %s", argv[index]);
         }
     }
 

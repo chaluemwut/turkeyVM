@@ -1,4 +1,5 @@
 *.swp
+*.lua
 *.bak
 *.taghl
 tags

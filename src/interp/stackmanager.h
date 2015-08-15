@@ -31,15 +31,22 @@
 #define VA_DOUBLE(args, sp) *(u8*)sp = va_arg(args, u8);sp+=2
 #define VA_SINGLE(args, sp) *sp = va_arg(args, u4);sp+=1
 
-#define LOAD(f, v, t, i)        \
-    do{                         \
-        v = *(t*)(f->locals+i);  \
+/**
+ * @f current frame
+ * @v the value we want load to
+ * @t type
+ * @i index of frame's locals
+ */
+#define LOAD(f, v, t, i)            \
+    do{                             \
+        v = *(t*)(f->locals+i);     \
     }while(0)
 
-#define STORE(f, v, t, i)       \
-    do{                         \
-        *(t*)(f->locals+i)=v;   \
+#define STORE(f, v, t, i)           \
+    do{                             \
+        *(t*)(f->locals+i)=v;       \
     }while(0)
+
 
 
 #define GET_CONSTANTPOOL(f) (f->cp)
@@ -48,7 +55,7 @@
 #define GET_OFFSET(f)   (f->pc_offset)
 
 
-typedef enum ntype {
+typedef enum{
     TYPE_INT,
     TYPE_LONG,
     TYPE_ULONG,
@@ -57,7 +64,7 @@ typedef enum ntype {
     TYPE_UINT,
     TYPE_REFERENCE,
     TYPE_FLOAT
-}Type;
+}Operand_Type;
 
 typedef struct NF *NF;
 typedef struct JF *JF;
@@ -116,13 +123,13 @@ extern void createNativeFrame(MethodBlock* mb);
 
 extern NF getNativeFrame();
 
-extern void pop(JF f, void* result, Type t);
+extern void pop(JF f, void* result, Operand_Type t);
 
-extern void push(JF f, void* value, Type t);
+extern void push(JF f, void* value, Operand_Type t);
 
-extern void load(void* result, Type t, int index);
+extern void load(void* result, Operand_Type t, int index);
 
-extern void store(void* value, Type t, int index);
+extern void store(void* value, Operand_Type t, int index);
 
 
 #undef C

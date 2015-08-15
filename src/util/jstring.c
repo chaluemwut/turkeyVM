@@ -134,7 +134,7 @@ O createJstring(char* s)
     convertUtf8(ss, data);
 
     string_obj = allocObject(java_lang_String);
-    string_obj->type = TYPE_STRING;
+    string_obj->type = OBJECT_STRING;
     OBJECT_DATA(string_obj, value_offset-1, O) = char_obj;
     OBJECT_DATA(string_obj, count_offset-1, int) = length;
     //*(((Object**)string_obj->data)+offset-1) = char_obj;
@@ -164,8 +164,8 @@ void printStringObject(O obj)
 
 int Jstring_equals(O s1, O s2)
 {
-    Assert_ASSERT(s1&&s1->type==TYPE_STRING);
-    Assert_ASSERT(s2&&s2->type==TYPE_STRING);
+    Assert_ASSERT(s1&&s1->type==OBJECT_STRING);
+    Assert_ASSERT(s2&&s2->type==OBJECT_STRING);
     char* c1 = Jstring2Char(s1);
     char* c2 = Jstring2Char(s2);
 
@@ -186,7 +186,7 @@ void dumpChar(O obj)
 {
 
     Assert_ASSERT(obj);
-    Assert_ASSERT(obj->type == TYPE_ARRAY);
+    Assert_ASSERT(obj->type == OBJECT_ARRAY);
     short* p = (short*)obj->data;
     int i;
     for (i = 0; i < obj->length; i++)
