@@ -2,15 +2,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
+#include "dll.h"
 #include "../heapManager/alloc.h"
 #include "../main/turkey.h"
 #include "../lib/list.h"
-#include "dll.h"
 #include "../lib/poly.h"
 #include "../lib/hash.h"
+#include "../lib/string.h"
+#include "../lib/error.h"
 
 #define P Poly_t
 #define D Dll_t
+
+static Hash_t DMap;
 
 static int equals(P x, P y)
 {
@@ -24,7 +28,6 @@ static int equals(P x, P y)
 
 D findDllInTable(char* dllname)
 {
-    //D dll = (D)List_contains(DList, dllname, equals);
     D dll = (D)Hash_get(DMap, dllname);
 
     return dll;
@@ -50,7 +53,6 @@ int resolveDll(char* dllname)
     dll->name = dllname;
     dll->handle = handle;
 
-    //List_addLast(DList, dll);
     Hash_put(DMap, dll->name, dll);
 
     return 1;
@@ -63,6 +65,18 @@ char* getDllName(char* path, char* name)
     sprintf(buf, "%s/lib%s.so", path, name);
 
     return buf;
+}
+
+static void keyDup(P x, P y)
+{
+    ERROR("dup key");
+}
+
+void initDllHash()
+{
+    DMap = Hash_new((long(*)(P))String_hashCode
+                    ,(Poly_tyEquals)String_equals
+                    ,keyDup);
 }
 
 #undef P

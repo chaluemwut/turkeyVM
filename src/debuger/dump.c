@@ -1,3 +1,18 @@
+/*^_^*--------------------------------------------------------------*//*{{{*/
+/* Copyright (C) SSE-USTC, 2014-2015                                */
+/*                                                                  */
+/*  FILE NAME             :  dump.c                                 */
+/*  LANGUAGE              :  C                                      */
+/*  TARGET ENVIRONMENT    :  ANY                                    */
+/*  DATE OF FIRST RELEASE :  2015/08/08                             */
+/*  DESCRIPTION           :                                         */
+/*------------------------------------------------------------------*/
+
+/*
+ * Revision log:
+ *
+ *//*}}}*/
+
 #include <stdio.h>
 #include <stdio.h>
 #include "dump.h"

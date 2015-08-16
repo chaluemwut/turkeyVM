@@ -27,7 +27,7 @@
 #define C Class_t
 #define O Object_t
 
-extern C java_lang_String;
+static C java_lang_String;
 static int count_offset;
 static int value_offset;
 static int offset_offset;

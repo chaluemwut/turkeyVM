@@ -1,3 +1,19 @@
+/*^_^*--------------------------------------------------------------*//*{{{*/
+/* Copyright (C) SSE-USTC, 2014-2015                                */
+/*                                                                  */
+/*  FILE NAME             :  javafile.c                             */
+/*  LANGUAGE              :  C                                      */
+/*  TARGET ENVIRONMENT    :  ANY                                    */
+/*  DATE OF FIRST RELEASE :  2015/08/08                             */
+/*  DESCRIPTION           :  java/io/FileDescriptor's native        */
+/*                           method                                 */
+/*------------------------------------------------------------------*/
+
+/*
+ * Revision log:
+ *
+ *//*}}}*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "javafile.h"
@@ -18,7 +34,6 @@
 #define C Class_t
 #define FD FileDescriptor_t
 
-extern char* PREFIX;
 
 static const int READ = 1;
 static const int WRITE = 2;
@@ -37,7 +52,6 @@ struct FD
     int reachEOF;
 };
 
-//static int reachEOF = 0;
 
 
 static FD initNativeFile(FILE* fd, int e)
@@ -279,7 +293,6 @@ void nativeReadBuf(JF retFrame)
 //java/io/FileDescriptor
 void nativeValid(JF retFrame)
 {
-    //JF current_frame = getCurrentFrame();
     NF n = getNativeFrame();
 
     int ret = TRUE;
@@ -322,3 +335,4 @@ void nativeInit(JF retFrame)
 #undef O
 #undef NF
 #undef C
+#undef FD

@@ -2580,6 +2580,7 @@ static void exe_OPC_INVOKESPECIAL(JF f)
     }
     case CONSTANT_Methodref:
     {
+        /* omit high16bit*/
         class_idx = cp_info;
 
         /*get the symbolic Class*/

@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------*//*{{{*/
+/*^_^*---------------------------------------------------------------*//*{{{*/
 /* Copyright (C) SSE-USTC, 2014-2015                                */
 /*                                                                  */
 /*  FILE NAME             :  vm.c                                   */
@@ -28,6 +28,7 @@
 #include "../control/control.h"
 #include "../classloader/class.h"
 #include "../interp/stackmanager.h"
+#include "../dll/dll.h"
 #include "../lib/list.h"
 #include "../lib/hash.h"
 #include "../lib/string.h"
@@ -37,38 +38,18 @@
 #include "../lib/triple.h"
 #include "../control/verbose.h"
 #include <time.h>
+
 #define TRUE 1
 #define FALSE 0
 #define C Class_t
 #define O Object_t
 #define P Poly_t
 
-// global linkedlist that record the class already loaded
 
-//List_t CList = NULL;
-//List_t DList = NULL;
-Hash_t CMap = NULL;
-Hash_t DMap = NULL;
 int vmsize = 0;
 
-C java_lang_Class;
-C java_lang_String;
-C java_lang_VMClass;
 
-int initable = FALSE;
 
-static char prim[] =
-{
-    'B',
-    'S',
-    'I',
-    'J',
-    'C',
-    'F',
-    'D',
-    'Z',
-    ' '
-};
 
 void doKey(P key)
 {
@@ -83,10 +64,6 @@ void doValue(P v)
     printf("%s\n", cb->this_classname);
 }
 
-static void keyDup(P x, P y)
-{
-    ERROR("dup key");
-}
 
 
 void exitVM()
@@ -98,65 +75,21 @@ void exitVM()
 static void initClassPath()
 {
     char* classpath = getClassPath();
-    //printf("%s\n", classpath);
     parseClassPath(classpath);
 }
 
-static void initSystemClass()
+
+static void initHashMap()
 {
-    //init primClass
-    int i;
-    for (i=0; prim[i]!= ' '; i++)
-        findPrimitiveClass(prim[i]);
-
-    java_lang_VMClass = loadClass("java/lang/VMClass");
-    java_lang_Class = loadClass("java/lang/Class");
-    C system = loadClass("java/lang/System");
-    C object = loadClass("java/lang/Object");
-    //java_lang_String = loadClass("java/lang/String");
-
-    initable = TRUE;
-
-    initClass(object);
-    initClass(system);
-    initClass(java_lang_Class);
-    initClass(java_lang_VMClass);
-
-
-
-
-    if (java_lang_VMClass)
-    {
-        O obj = allocObject(java_lang_VMClass);
-
-        obj->binding = object;
-        object->class = obj;
-
-        obj = allocObject(java_lang_VMClass);
-        obj->binding = java_lang_Class;
-        java_lang_VMClass->class = obj;
-    }
-
-
-}
-
-static void initList()
-{
-    //CList = List_new();
-    //DList = List_new();
-    CMap = Hash_new((long(*)(P))String_hashCode
-                    ,(Poly_tyEquals)String_equals
-                    ,keyDup);
-    DMap = Hash_new((long(*)(P))String_hashCode
-                    ,(Poly_tyEquals)String_equals
-                    ,keyDup);
+    initDllHash();
+    initClassHash();
 }
 
 
 static int initVM()
 {
     initClassPath();
-    initList();
+    initHashMap();
     initFrame();
     initNativeFrame();
     initSystemClass();
@@ -212,7 +145,7 @@ int main(int argc, char** argv)
 
     printf("\nVM run %f seconds\n", (double)(end-start)/CLOCKS_PER_SEC);
     //Hash_foreachKey(CMap, doKey);
-    Hash_status(CMap);
+    classHashStatus();
     return 0; 
     
     /*}}}*/
@@ -231,3 +164,5 @@ char* getMethodClassName(MethodBlock* mb)
 #undef C
 #undef O
 #undef P
+#undef TRUE
+#undef FALSE

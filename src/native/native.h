@@ -5,18 +5,12 @@
 #define O Object_t
 
 
-typedef struct
-{
-    char* method_name;
-    char* desc;
-    void (*action)();
-}Binding;
-
-
-extern Binding nativeMethods[];
 
 extern void getClass();
+
 extern O getClass_name(char* classname);
+
+extern void*  findNativeInvoker(char* name, char* desc);
 
 #undef O
 

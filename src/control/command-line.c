@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include "command-line.h"
 #include "control.h"
+#include "../classloader/class.h"
 #include "../lib/string.h"
 #include "../debuger/log.h"
 #include "../lib/trace.h"
@@ -19,9 +20,8 @@
 
 #define P Poly_t
 
-extern char* CLASS_SEARCH_PATH;
 
-static const char* VERSION = "turkey v0.0.4 linux/386";
+static const char* VERSION = "turkey v0.0.5 linux/386";
 static const char* WEBSITE = "https://github.com/qc1iu/turkeyVM";
 
 static void actionArg_help();
@@ -57,7 +57,7 @@ static void arg_setLog(char* s)
 static void arg_setClassSearchPath(char* s)
 {
     char* csp = String_concat(s, "/", NULL);
-    CLASS_SEARCH_PATH = csp;
+    setClassSearchPath(csp);
 }
 
 

@@ -53,7 +53,7 @@ static int executeNativeMethod(MethodBlock* mb)
     createNativeFrame(mb);
     JF retFrame = getCurrentFrame();
     //TODO According to the method->type, need change the return type.@qcliu 2015/03/06
-    ((void (*)(void*))mb->native_invoker)(retFrame);
+    ((void (*)(JF))mb->native_invoker)(retFrame);
 
     popNativeFrame();
     //printf("pop Native method:%s\n", mb->name);

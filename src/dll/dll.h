@@ -19,6 +19,7 @@ extern D findDllInTable(char* dllname);
 extern char* getDllName(char* path, char* name);
 extern int resolveDll(char* dllname);
 extern char* getDllPath();
+extern void initDllHash();
 
 #undef D
 

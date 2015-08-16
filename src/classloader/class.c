@@ -21,12 +21,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "class.h"
+#include "resolve.h"
 #include "../interp/execute.h"
 #include "../heapManager/alloc.h"
 #include "../main/turkey.h"
-#include "resolve.h"
 #include "../util/exception.h"
-#include "class.h"
 #include "../debuger/dump.h"
 #include "../native/native.h"
 #include "../control/control.h"
@@ -43,7 +43,27 @@
 #define O Object_t
 #define P Poly_t
 
+static int initable = FALSE;
 
+static const char prim[] =
+{
+    'B',
+    'S',
+    'I',
+    'J',
+    'C',
+    'F',
+    'D',
+    'Z',
+    ' '
+};
+
+
+static Hash_t CMap;
+
+/**
+ * Every class has a classObj header before ClassBlock.
+ */
 static const int ClassHeaderSize = sizeof(struct C);
 
 /* This ia an talbe for primitiveClass, like
@@ -51,12 +71,33 @@ static const int ClassHeaderSize = sizeof(struct C);
  * When load primitiveClass, search this table.
  * @qcliu 2015/03/22
  */
-C primClass[MAX_PRIMITIVE];
+static C primClass[MAX_PRIMITIVE];
 
+/**
+ * The env classpath. When loadClass, travers
+ * all the classpath until find.
+ * @see parseClassPath()
+ */
 static char** CLASSPATH = NULL;
+
+/**
+ * The max length of all the classpath.
+ * @see parseClassPath()
+ */
 static int MAX_PATH_LEN = 0;
-char* PREFIX = NULL;
-char* CLASS_SEARCH_PATH = NULL;
+
+/**
+ * Set through commandline `-cp`, specific the path
+ * to search classfile.
+ * Turkey first find `.class` in classpath, if not found,
+ * then find in CLASS_SEARCH_PATH.
+ * @see loadClass()
+ */
+static char* CLASS_SEARCH_PATH = NULL;
+
+static C java_lang_Class;
+
+static C java_lang_VMClass;
 
 //method
 static C loadArrayClass(char* classname);
@@ -65,8 +106,44 @@ C findArrayClass(char* classname);
 //extern
 extern int initable;
 
-static u2* for_test;
 
+/**
+ *  Add classObj header to the specific class given by arg.
+ *
+ *  java/lang/Class has a field `vmClass`, we should also 
+ *  init this field with a java/lang/VMClass object.
+ *
+ *  In Turkey, every object has a `binding` field, normally,
+ *  this field is NULL, but when the object is an instance of
+ *  java/lang/Class or java/lang/VMClass, the binding refer to
+ *  the relevant class. vmClass's binding point to java/lang/Class
+ *  object, java/lang/Class object's binding point to the Method 
+ *  Aare which is the object represented.
+ *
+ *  In this way, we can implements some reflect in Java.
+ *  @see native.c getName().
+ *
+ *
+ *
+ *
+ *
+ *  Class in Method Aare   |         Class Object
+ *  +-----------+------------------> +----------+
+ *  |Header     |          |         |binding   |<--
+ *  +-----------+ <----------------- +----------+  |
+ *  |           |          |                       |
+ *  |           |          |                       |
+ *  |           |          |         VMClass Obj   |
+ *  |ClassBlock |          |         +----------+  |
+ *  |           |          |         |binding   |---
+ *  |           |          |         +----------+
+ *  |           |          |
+ *  +-----------+          |
+ *                         |
+ *    Method Aare          |        Java Heap
+ *
+ * qc1iu @2015/08/16
+ */
 void addClassHeader(C class)
 {
     if (java_lang_Class)
@@ -89,38 +166,22 @@ void addClassHeader(C class)
     }
 }
 
-//static char* test;
 
+/**
+ * Finding Class_t in HashMap.
+ * @return Class_t if found, otherwise return NULL.
+ *
+ */
 C findClass(char* classname)
 {
     C c = (C)Hash_get(CMap, classname);
     return c;
 }
 
-void parseFilename(char* s)
-{
-    /*{{{*/
-    char* p = s;
-    int i = 0;
-    int k = 0;
-    while (*p)
-    {
-        if (*p == '/')
-          k = i;
-
-        p++;
-        i++;
-    }
-
-    if (k == 0)
-      return;
-
-    PREFIX = (char*)malloc(k+2);
-    strncpy(PREFIX, s, k+1);
-    PREFIX[k+1] = '\0';
-    /*}}}*/
-}
-
+/**
+ * Initial the CLASSPATH.
+ * Calulated the maxlen of CLASSPATH.
+ */
 void parseClassPath(char* c)
 {
     /*{{{*/
@@ -478,6 +539,7 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
          */
         if (methods->access_flags & ACC_NATIVE)
         {
+            /*
             int j;
             for (j = 0; nativeMethods[j].action; j++)
             {
@@ -488,6 +550,8 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
                     break;
                 }
             }
+            */
+            methods->native_invoker = findNativeInvoker(methods->name, methods->type);
         }
         //====================================================================
 
@@ -1030,51 +1094,6 @@ void initClass(C class)
 }
 
 
-/*
-C loadClass_not_init(char* classname)
-{
-    C class = findClass(classname);
-    ClassBlock* cb;
-
-    if (class != NULL)
-    {
-        ClassBlock* cb = CLASS_CB(class);
-
-        if (dis_testinfo)
-            printf("%s have already in the table!!!!!!!!!!!!!!!\n",cb->this_classname);
-
-        return class;
-    }
-    else if (classname[0] == '[')
-        class = loadArrayClass(classname);
-    else
-        class = loadSystemClass(classname);
-
-     * This must before initClass().Otherwise, there will
-     * be loop untill death.
-    //add class to the list
-    //List_addLast(CList, class);
-    cb = CLASS_CB(class);
-    String_t s = String_new(cb->this_classname);
-    Hash_put(CMap, s, class);
-
-
-    //prepareClass
-    prepareClass(class);
-
-    //linkClass
-    class = linkClass(class);
-
-    // If the class is not interface, initClass
-    cb = CLASS_CB(class);
-
-    //if (dis_testinfo)
-    //  printList(head);
-
-    return class;
-}
-*/
-
 static C Trace_loadClass0(char* classname)
 {
     C class = NULL;
@@ -1161,12 +1180,15 @@ C loadClass(char* classname)
 static C loadArrayClass(char* classname)
 {
     /*{{{*/
-    //printf("%s, %d\n", classname, strlen(classname));
-    int len = strlen(classname);
-    int size = ClassHeaderSize+sizeof(ClassBlock);
-    //C class = (C)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
-    C class = (C)sysMalloc(size);
-    ClassBlock* cb = CLASS_CB(class);
+    int len;
+    int size;
+    C class;
+    ClassBlock* cb;
+
+    len  = strlen(classname);
+    size =  ClassHeaderSize+sizeof(ClassBlock);
+    class = (C)sysMalloc(size);
+    cb = CLASS_CB(class);
 
     cb->flags = 0;
     cb->access_flags = 0;
@@ -1269,11 +1291,15 @@ C findArrayClass(char* classname)
 static C loadPrimitiveClass(char* classname, int index)
 {
     /*{{{*/
-    int len = strlen(classname);
-    int size = ClassHeaderSize+sizeof(ClassBlock);
-    //C class = (C)sysMalloc(sizeof(Class) + sizeof(ClassBlock));
-    C class = (C)sysMalloc(size);
-    ClassBlock* cb = CLASS_CB(class);
+    int len;
+    int size;
+    C class;
+    ClassBlock* cb;
+
+    len = strlen(classname);
+    size = ClassHeaderSize+sizeof(ClassBlock);
+    class = (C)sysMalloc(size);
+    cb = CLASS_CB(class);
 
     cb->flags = 0;
     cb->access_flags = 0;
@@ -1295,7 +1321,6 @@ static C loadPrimitiveClass(char* classname, int index)
     cb->element = NULL;
     cb->dim = 0;
 
-    //List_addLast(CList, class);
     String_t s = String_new(cb->this_classname);
     Hash_put(CMap, s, class);
     //prepareClass
@@ -1303,9 +1328,11 @@ static C loadPrimitiveClass(char* classname, int index)
     //linkClass
     class = linkClass(class);
 
-    cb->flags = PRIM;
+    cb->type_flags = PRIM;
 
     addClassHeader(class);
+    class->class = (O)(index+1);
+    
 
     primClass[index] = class;
     return class;
@@ -1322,6 +1349,7 @@ C findPrimitiveClass(char primtype)
     int index;
     C primclass;
     char* classname;
+
     switch (primtype)
     {
     case 'B':
@@ -1368,16 +1396,71 @@ C findPrimitiveClass(char primtype)
     /*}}}*/
 }
 
+int initSystemClass()
+{
+    //init primClass
+    int i;
+    for (i=0; prim[i]!= ' '; i++)
+        findPrimitiveClass(prim[i]);
+
+    java_lang_VMClass = loadClass("java/lang/VMClass");
+    java_lang_Class = loadClass("java/lang/Class");
+    C system = loadClass("java/lang/System");
+    C object = loadClass("java/lang/Object");
+    //java_lang_String = loadClass("java/lang/String");
+
+    initable = TRUE;
+
+    initClass(object);
+    initClass(system);
+    initClass(java_lang_Class);
+    initClass(java_lang_VMClass);
+
+    if (java_lang_VMClass)
+    {
+        O obj = allocObject(java_lang_VMClass);
+
+        obj->binding = object;
+        object->class = obj;
+
+        obj = allocObject(java_lang_VMClass);
+        obj->binding = java_lang_Class;
+        java_lang_VMClass->class = obj;
+    }
+
+    return 0;
+
+}
+
+
 char* getClassPath()
 {
     return getenv("CLASSPATH");
 }
 
-void setClassSearchPath(char* s)
+int setClassSearchPath(char* s)
 {
     CLASS_SEARCH_PATH = s;
+
+    return 0;
 }
 
+void classHashStatus()
+{
+    Hash_status(CMap);
+}
+
+static void keyDup(P x, P y)
+{
+    ERROR("dup key");
+}
+
+void initClassHash()
+{
+    CMap = Hash_new((long(*)(P))String_hashCode
+                    ,(Poly_tyEquals)String_equals
+                    ,keyDup);
+}
 
 
 

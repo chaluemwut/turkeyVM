@@ -196,10 +196,6 @@ struct classblock
     int dim;//if it's a array, mark the division
 };
 
-extern C java_lang_Class;
-extern C java_lang_VMClass;
-extern Hash_t CMap;
-extern Hash_t DMap;
 /*--------------------------Function prototypes---------------*/
 
 extern void doKey(void*);

@@ -339,40 +339,7 @@ void printChar0(O obj)
         p++;
     }
     printf("\n");
-
-
 }
-
-/**
-  * print String Object.
-  * for test
-  */
-void printString0(O obj)
-{
-    int value_offset;
-    if (obj == NULL)
-    {
-        printf("obj is NULL!!!!");
-        return;
-    }
-
-    //if (obj->isArray != 2)
-    //throwException("not String");
-
-    ClassBlock* cb = CLASS_CB(obj->class);
-    FieldBlock* fb = (FieldBlock*)findField(java_lang_String, "value", "[C");
-
-    if (fb == NULL)
-        throwException("fb is null");
-
-    value_offset = fb->offset;
-
-    O c = OBJECT_DATA(obj, value_offset-1, O);
-
-    printChar0(c);
-
-}
-
 
 
 #undef C

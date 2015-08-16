@@ -21,11 +21,18 @@ extern int parseArgs(char* type);
 
 extern C findClass(char* classname);
 
+extern int setClassSearchPath(char*);
+
 extern char* getClassPath();
 
 extern void parseClassPath(char*);
 
-extern void parseFilename(char*);
+extern void initClassHash();
+
+extern void classHashStatus();
+
+extern int initSystemClass();
+
 
 
 #undef C
