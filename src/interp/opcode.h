@@ -207,8 +207,10 @@ typedef enum
     OPC_GOTO_W,
     OPC_JSR_W,
     OPC_NUMBER   /*the number of opcode*/
-}OPCODE;
+}Opcode_e;
 
+
+extern char* dumpOpcode(Opcode_e);
 
 
 #endif

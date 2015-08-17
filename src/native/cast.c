@@ -25,7 +25,7 @@
 #define C Class_t
 
 int implements(C class, C test) {
-    ClassBlock *test_cb = CLASS_CB(test);
+    ClassBlock_t *test_cb = CLASS_CB(test);
     int i;
 
     for(i = 0; i < test_cb->interface_count; i++)
@@ -44,7 +44,7 @@ int isSubClassOf(C class, C test) {
 
       while ((test != NULL)&&(test != class))
       {
-          ClassBlock* cb = CLASS_CB(test);
+          ClassBlock_t* cb = CLASS_CB(test);
           test = cb->super;
       }
     return test != NULL;
@@ -54,8 +54,8 @@ int isInstOfArray(C class, C test) {
     if(isSubClassOf(class, test))
         return TRUE;
     else {
-        ClassBlock *class_cb = CLASS_CB(class);
-        ClassBlock *test_cb = CLASS_CB(test);
+        ClassBlock_t *class_cb = CLASS_CB(class);
+        ClassBlock_t *test_cb = CLASS_CB(test);
 
         if(IS_ARRAY(class_cb) && (test_cb->element != NULL) &&
                    (class_cb->element != NULL) && (class_cb->dim == test_cb->dim))
@@ -70,8 +70,8 @@ int isInstanceOf(C class, C test) {
     if(class == test)
         return TRUE;
 
-    ClassBlock* cb = CLASS_CB(class);
-    ClassBlock* testcb = CLASS_CB(test);
+    ClassBlock_t* cb = CLASS_CB(class);
+    ClassBlock_t* testcb = CLASS_CB(test);
     if(IS_INTERFACE(cb))
         return implements(class, test);
     else

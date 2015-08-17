@@ -27,7 +27,7 @@ typedef enum
     OBJECT_OBJECT,
     OBJECT_ARRAY,
     OBJECT_STRING,
-}Object_type;
+}Object_e;
 
 //FIXME enhancement
 typedef enum
@@ -41,7 +41,7 @@ struct O
     struct classblock* cb;
     unsigned int* data;
     //-------------------------
-    Object_type type;
+    Object_e type;
     int length;//If it's array, it the arraylength, otherwise, it's 0.
     int atype;//array type
     //----------------------------------------------

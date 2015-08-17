@@ -94,7 +94,7 @@ void initNativeFrame()
  *      no need prev field.
  * @qcliu 2015/03/06
  */
-void createNativeFrame(MethodBlock* mb)
+void createNativeFrame(MethodBlock_t* mb)
 {
     //TODO args_count??? constrcutNative 3 or 4??
     //printf("Native method:%s\n", mb->name);
@@ -114,7 +114,7 @@ void createNativeFrame(MethodBlock* mb)
     nframe->class = mb->class;
     //set 0
     memset(nframe->locals, 0, sizeof(int) * n_locals);
-    //copyArgs(Frame* frame, MethodBlock* mb)
+    //copyArgs(Frame* frame, MethodBlock_t* mb)
     if (!(mb->access_flags & ACC_STATIC))//non-static
         n_locals_idx = n_locals-1;
     else
@@ -149,7 +149,7 @@ void popNativeFrame()
  *      no need to copy args. just change methodF and
  *      current_frame.
  */
-JF createFrame0(MethodBlock* mb)
+JF createFrame0(MethodBlock_t* mb)
 {
     unsigned short max_stack = mb->max_stack;
     unsigned short max_locals = mb->max_locals;
@@ -157,7 +157,7 @@ JF createFrame0(MethodBlock* mb)
     int args_count = mb->args_count;
     int locals_idx = 0;
     C class = mb->class;
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
 
     JF frame = (JF)sysMalloc(sizeof(struct JF));
     frame->mb = mb;
@@ -211,7 +211,7 @@ JF createFrame0(MethodBlock* mb)
    @qcliu 2015/01/29
 
  */
-JF createFrame(MethodBlock* mb, va_list jargs, void* ret)
+JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
 {
     JF prev = getCurrentFrame();
     JF frame = createFrame0(mb);
@@ -223,7 +223,7 @@ JF createFrame(MethodBlock* mb, va_list jargs, void* ret)
     //XXX copy args
     if (jargs == NULL)
     {
-        //copyArgs(Frame* frame, MethodBlock* mb)
+        //copyArgs(Frame* frame, MethodBlock_t* mb)
         if (!(mb->access_flags & ACC_STATIC))//non-static
             locals_idx = args_count;
         else
@@ -338,7 +338,7 @@ NF getNativeFrame()
     }while(0)
 
 
-void load(void* result, Operand_Type t, int index)
+void load(void* result, Operand_e t, int index)
 {
     switch (t)
     {
@@ -368,7 +368,7 @@ void load(void* result, Operand_Type t, int index)
     }
 }
 
-void store(void* value, Operand_Type t, int index)
+void store(void* value, Operand_e t, int index)
 {
     switch (t)
     {
@@ -398,12 +398,12 @@ void store(void* value, Operand_Type t, int index)
     }
 }
 
-void seek(void* result, Operand_Type t)
+void seek(void* result, Operand_e t)
 {
     TODO("seek");
 }
 
-void pop(JF f, void* result, Operand_Type t)
+void pop(JF f, void* result, Operand_e t)
 {
     switch (t)
     {
@@ -472,7 +472,7 @@ void pop(JF f, void* result, Operand_Type t)
  *      the frame push value to.
  *
  */
-void push(JF frame, void* value, Operand_Type type)
+void push(JF frame, void* value, Operand_e type)
 {
     frame->ostack++;
     ASSERT_STACK(frame);

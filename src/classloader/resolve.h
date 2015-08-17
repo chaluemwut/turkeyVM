@@ -23,20 +23,20 @@
 
 C resolveClass(C class, u2 index);
 
-MethodBlock* findMethod(C class, char* name, char* type);
+MethodBlock_t* findMethod(C class, char* name, char* type);
 
-MethodBlock* findMethodinCurrent(C class, char* name, char* type);
+MethodBlock_t* findMethodinCurrent(C class, char* name, char* type);
 
 //int findField(C class, char* name, char* type);
 
 //int findFieldinCurrent(C class, char* name, char* type);
-FieldBlock* resolveField(C class, u2 index);
+FieldBlock_t* resolveField(C class, u2 index);
 
-FieldBlock* findField(C class, char* name, char* type);
+FieldBlock_t* findField(C class, char* name, char* type);
 
-MethodBlock* resolveMethod(C class, u2 index);
+MethodBlock_t* resolveMethod(C class, u2 index);
 
-MethodBlock* resolveInterfaceMethod(C class, u2 index);
+MethodBlock_t* resolveInterfaceMethod(C class, u2 index);
 
 u4 resolveConstant(C class, int cp_index);
 

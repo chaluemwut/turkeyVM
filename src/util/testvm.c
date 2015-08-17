@@ -83,7 +83,7 @@ void printNativeStack()
 {
     NF nframe = getNativeFrame();
     printf("Native locals\n");
-    MethodBlock* nmb = nframe->mb;
+    MethodBlock_t* nmb = nframe->mb;
     int count = nmb->max_locals;
     int i;
 
@@ -224,7 +224,7 @@ void printStackLog(FILE* fd, JF current_frame)
 void printArray(O arrayref)
 {
     C class;
-    ClassBlock* cb;
+    ClassBlock_t* cb;
     int i;
     int el_size;
 
@@ -288,7 +288,7 @@ void printObjectWrapper(O objref)
 void printObject(O objref)
 {
     C class;/*{{{*/
-    ClassBlock* cb;
+    ClassBlock_t* cb;
     int obj_size;
     char* classname;
     int i;

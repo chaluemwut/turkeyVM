@@ -200,8 +200,8 @@ void constructNative(JF retFrame)
     Assert_ASSERT(args->type == OBJECT_ARRAY);
 
     C declclass = declaringClass->binding;
-    ClassBlock* cb = CLASS_CB(declclass);
-    MethodBlock* mb = &cb->methods[slot];
+    ClassBlock_t* cb = CLASS_CB(declclass);
+    MethodBlock_t* mb = &cb->methods[slot];
 
     O newobj = (O)allocObject(declclass);
 
@@ -255,7 +255,7 @@ void forName(JF retFrame)
     }
 
     C class = (C)loadClass(classname);
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
 
     if (class == NULL)
         throwException("NoSuchClass");
@@ -282,7 +282,7 @@ O getClass_name(char* classname)
     }
 
     C class = (C)loadClass(classname);
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
     if (class == NULL)
         throwException("NoSuchClass");
 
@@ -396,9 +396,9 @@ void setProperty(O this, char* key, char* value)
     JF current_frame = getCurrentFrame();
     O k = createJstring(key);
     O v = createJstring(value);
-    MethodBlock* mb;
+    MethodBlock_t* mb;
 
-    mb = (MethodBlock*)findMethod(this->class, "put", 
+    mb = (MethodBlock_t*)findMethod(this->class, "put", 
                 "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     if (mb == NULL)
         throwException("no such method");
@@ -440,8 +440,8 @@ void arrayCopy(JF retFrame)
         throwException("java/lang/NullPointerException");
     else
     {
-        ClassBlock* scb = CLASS_CB(src->class);
-        ClassBlock* dcb = CLASS_CB(dest->class);
+        ClassBlock_t* scb = CLASS_CB(src->class);
+        ClassBlock_t* dcb = CLASS_CB(dest->class);
 
         unsigned int* sdata = src->data;
         unsigned int* ddata = dest->data;
@@ -559,7 +559,7 @@ void getClass(JF retFrame)
 void registerNatives(JF retFrame)
 {
     JF current_frame = getCurrentFrame();
-    ClassBlock* cb = CLASS_CB(current_frame->class);
+    ClassBlock_t* cb = CLASS_CB(current_frame->class);
 }
 
 static char getPrimType(char* s)

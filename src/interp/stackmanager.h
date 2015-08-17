@@ -64,14 +64,14 @@ typedef enum{
     TYPE_UINT,
     TYPE_REFERENCE,
     TYPE_FLOAT
-}Operand_Type;
+}Operand_e;
 
 typedef struct NF *NF;
 typedef struct JF *JF;
 
 struct NF
 {
-    MethodBlock* mb;
+    MethodBlock_t* mb;
     C class;
     unsigned int* locals;
     //NF prev;
@@ -79,9 +79,9 @@ struct NF
 
 
 struct JF{
-    MethodBlock* mb;//current_method
+    MethodBlock_t* mb;//current_method
     unsigned char* pc;
-    ConstantPool* cp;//current_cp
+    ConstantPool_t* cp;//current_cp
     C class;//current_class
     //ostack, local
     unsigned int* ostack;
@@ -113,23 +113,23 @@ extern void setCurrentFrame(JF f);
 
 extern JF popFrame();
 
-extern JF createFrame0(MethodBlock* mb);
+extern JF createFrame0(MethodBlock_t* mb);
 
-extern JF createFrame(MethodBlock* mb, va_list jargs, void* ret);
+extern JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret);
 
 extern void popNativeFrame();
 
-extern void createNativeFrame(MethodBlock* mb);
+extern void createNativeFrame(MethodBlock_t* mb);
 
 extern NF getNativeFrame();
 
-extern void pop(JF f, void* result, Operand_Type t);
+extern void pop(JF f, void* result, Operand_e t);
 
-extern void push(JF f, void* value, Operand_Type t);
+extern void push(JF f, void* value, Operand_e t);
 
-extern void load(void* result, Operand_Type t, int index);
+extern void load(void* result, Operand_e t, int index);
 
-extern void store(void* value, Operand_Type t, int index);
+extern void store(void* value, Operand_e t, int index);
 
 
 #undef C

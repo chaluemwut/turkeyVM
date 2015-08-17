@@ -52,7 +52,6 @@
 //vm.h
 extern FILE* Log_file;
 
-static int testnum;
 
 static void exe_OPC_NOP(JF f)
 {
@@ -627,7 +626,7 @@ static void exe_OPC_AALOAD(JF f)
     CHECK_ARRAY(arrayref, index);
 
     C class = arrayref->class;
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
 
     value = ARRAY_DATA(arrayref, index, O);
     push(f,&value, TYPE_REFERENCE);
@@ -2310,7 +2309,7 @@ static void exe_OPC_RETURN(JF f)
 static void exe_OPC_GETSTATIC(JF f)
 {
     u2 fieldref_idx;
-    FieldBlock* fb;
+    FieldBlock_t* fb;
 
     PCMOVE(1);
     READ_IDX(fieldref_idx, GET_PC(f));
@@ -2349,7 +2348,7 @@ static void exe_OPC_GETSTATIC(JF f)
 static void exe_OPC_PUTSTATIC(JF f)
 {
     u2 fieldref_idx;
-    FieldBlock* fb;
+    FieldBlock_t* fb;
 
     PCMOVE(1);
     READ_IDX(fieldref_idx, GET_PC(f));
@@ -2396,7 +2395,7 @@ static void exe_OPC_GETFIELD(JF f)
     READ_IDX(fieldref_idx, GET_PC(f));
     PCMOVE(1);
 
-    FieldBlock* fb = resolveField(GET_CLASS(f), fieldref_idx);
+    FieldBlock_t* fb = resolveField(GET_CLASS(f), fieldref_idx);
 
     Assert_ASSERT(fb);
     offset = fb->offset;
@@ -2434,7 +2433,7 @@ static void exe_OPC_PUTFIELD(JF f)
     int value, offset;
     C class;
     u2 fieldref_idx;
-    FieldBlock* fb;
+    FieldBlock_t* fb;
 
     PCMOVE(1);
     READ_IDX(fieldref_idx, GET_PC(f));
@@ -2486,7 +2485,7 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
     u2 methodref_idx;
     u2 name_type_idx;
     u2 type_idx;
-    MethodBlock* method;
+    MethodBlock_t* method;
     O objref;
     C class;
     u4 cp_info;
@@ -2509,7 +2508,7 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
     {
     case RESOLVED:
     {
-        method = (MethodBlock*)cp_info;
+        method = (MethodBlock_t*)cp_info;
         break;
     }
     case CONSTANT_Methodref:
@@ -2533,7 +2532,7 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
         Assert_ASSERT(objref);
         class = objref->class;
 
-        method = (MethodBlock*)resolveMethod(class, methodref_idx);
+        method = (MethodBlock_t*)resolveMethod(class, methodref_idx);
 
         break;
     }
@@ -2558,8 +2557,8 @@ static void exe_OPC_INVOKESPECIAL(JF f)
     u4 cp_info;
     C class;
     C sym_class;
-    ClassBlock* current_cb;
-    MethodBlock* method;
+    ClassBlock_t* current_cb;
+    MethodBlock_t* method;
     char *sym_classname;
     char *name;
     char *type;
@@ -2575,7 +2574,7 @@ static void exe_OPC_INVOKESPECIAL(JF f)
     {
     case RESOLVED:
     {
-        method = (MethodBlock*)cp_info;
+        method = (MethodBlock_t*)cp_info;
         break;
     }
     case CONSTANT_Methodref:
@@ -2624,7 +2623,7 @@ static void exe_OPC_INVOKESTATIC(JF f)
     u4 cp_info;
     u2 class_idx;
     char* classname;
-    MethodBlock* method;
+    MethodBlock_t* method;
 
     PCMOVE(1);
     READ_IDX(methodref_idx, GET_PC(f));
@@ -2638,7 +2637,7 @@ static void exe_OPC_INVOKESTATIC(JF f)
     {
     case RESOLVED:
     {
-        method = (MethodBlock*)cp_info;
+        method = (MethodBlock_t*)cp_info;
         break;
     }
     case CONSTANT_Methodref:
@@ -2659,7 +2658,7 @@ static void exe_OPC_INVOKESTATIC(JF f)
          */
         //C class = (C)loadClass(classname);
         C class = (C)resolveClass(GET_CLASS(f), class_idx);
-        method = (MethodBlock*)resolveMethod(class, methodref_idx);
+        method = (MethodBlock_t*)resolveMethod(class, methodref_idx);
 
         break;
 
@@ -2680,7 +2679,7 @@ static void exe_OPC_INVOKEINTERFACE(JF f)
     u2 methodref_idx;
     u2 name_type_idx;
     u2 type_idx;
-    MethodBlock* method;
+    MethodBlock_t* method;
     O objref;
     C class;
     u4 cp_info;
@@ -2724,10 +2723,10 @@ static void exe_OPC_INVOKEINTERFACE(JF f)
         args_count = parseArgs(type);
         objref = *(O*)(f->ostack - args_count);
         class = objref->class;
-        ClassBlock* cb = CLASS_CB(class);
+        ClassBlock_t* cb = CLASS_CB(class);
 
         /*NOTE: resolveInterfaceMethod()*/
-        method = (MethodBlock*)resolveInterfaceMethod(class, methodref_idx);
+        method = (MethodBlock_t*)resolveInterfaceMethod(class, methodref_idx);
 
         break;
     }
@@ -2796,7 +2795,7 @@ static void exe_OPC_ANEWARRAY(JF f)
     case RESOLVED:
     {
         C class = (C)CP_INFO(GET_CONSTANTPOOL(f), index);
-        ClassBlock* cb = CLASS_CB(class);
+        ClassBlock_t* cb = CLASS_CB(class);
         classname = cb->this_classname;
         break;
     }
@@ -2846,7 +2845,7 @@ static void exe_OPC_ARRAYLENGTH(JF f)
 static void exe_OPC_ATHROW(JF f)
 {
     //TODO
-    ClassBlock* cb = CLASS_CB(GET_CLASS(f));
+    ClassBlock_t* cb = CLASS_CB(GET_CLASS(f));
     printf("current_class:%s, current_method:%s,%s",
            cb->this_classname, f->mb->name, f->mb->type);
 
@@ -2995,7 +2994,7 @@ int executeJava(JF retFrame, JF f)
     if (0 == code_length)
     {
         printf("code_length == 0    ");
-        ClassBlock* cb = CLASS_CB(GET_CLASS(f));
+        ClassBlock_t* cb = CLASS_CB(GET_CLASS(f));
         printf("method name:%s,type:%s, class:%s\n", f->mb->name,f->mb->type, cb->this_classname);
 
         exit(0);
@@ -3008,16 +3007,16 @@ int executeJava(JF retFrame, JF f)
     /* main loop of interpreter */
     while (GET_OFFSET(f) < code_length)
     {
-        OPCODE c = *GET_PC(f);
+        Opcode_e opcode = *GET_PC(f);
 
         if (Log_file)
         {
-            fprintf(Log_file,"\nopcode: ---------%s\n", op_code[c]);//for test
+            fprintf(Log_file,"\nopcode: ---------%s\n", dumpOpcode(opcode));//for test
             fprintf(Log_file,"pc_offset:------------%d\n", GET_OFFSET(f));
             fprintf(Log_file,"GET_PC(f):---------%d\n", (unsigned int)GET_PC(f));
             printStackLog(Log_file, f);
         }
-        switch (c)
+        switch (opcode)
         {
         case OPC_NOP://0
             break;
@@ -3611,7 +3610,7 @@ int executeJava(JF retFrame, JF f)
             break;
         default:
             printStack(f);
-            printf("\nwrong opcode!!%s\n", op_code[c]);
+            printf("\nwrong opcode!!%s\n", dumpOpcode(opcode));
             exit(0);
         }
         PCMOVE(1);

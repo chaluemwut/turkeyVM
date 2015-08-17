@@ -45,7 +45,7 @@
 
 static int initable = FALSE;
 
-static const char prim[] =
+static const char PRIM_CLASS_NAME[] =
 {
     'B',
     'S',
@@ -64,14 +64,14 @@ static Hash_t CMap;
 /**
  * Every class has a classObj header before ClassBlock.
  */
-static const int ClassHeaderSize = sizeof(struct C);
+static const int CLASS_HEADER_SIZE = sizeof(struct C);
 
 /* This ia an talbe for primitiveClass, like
  * int, long, double, float, boolean, short, char...
  * When load primitiveClass, search this table.
  * @qcliu 2015/03/22
  */
-static C primClass[MAX_PRIMITIVE];
+static C PRIM_CLASS[MAX_PRIMITIVE];
 
 /**
  * The env classpath. When loadClass, travers
@@ -158,7 +158,7 @@ void addClassHeader(C class)
         vmobj->binding = (C)obj;
 
         /* Every Class obj need a VMClass obj.*/
-        FieldBlock* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
+        FieldBlock_t* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
         OBJECT_DATA(obj, fb->offset-1, O) = vmobj;
 
         obj->binding = class;//Class obj's binding refer to the method area.
@@ -284,19 +284,19 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
     u2 fieldsCount;
     u2 attrCount;
     int i;
-    ClassBlock* classblock;
+    ClassBlock_t* classblock;
     C class;//this is the return class
-    ConstantPool* constantPool;
+    ConstantPool_t* constantPool;
     u2* interfaces_idx;
-    FieldBlock* fields;
-    MethodBlock* methods;
+    FieldBlock_t* fields;
+    MethodBlock_t* methods;
 
     READ_U4(magic, ptr);
     if (magic != 0xcafebabe)
         throwException("NoClassDefFound");
     READ_U2(minor_v, ptr);
     READ_U2(major_v , ptr);
-    class = sysMalloc(ClassHeaderSize+sizeof(ClassBlock));
+    class = sysMalloc(CLASS_HEADER_SIZE+sizeof(ClassBlock_t));
     classblock = CLASS_CB(class);
 
     //init
@@ -319,8 +319,8 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
 
     constantPool = &classblock->constant_pool;
     constantPool->type = (volatile u1*)sysMalloc(cp_count);
-    constantPool->info = (ConstantPoolEntry*)
-                          sysMalloc(cp_count * sizeof(ConstantPoolEntry));
+    constantPool->info = (ConstantPoolEntry_t*)
+                          sysMalloc(cp_count * sizeof(ConstantPoolEntry_t));
 
     for (i=1; i<cp_count; i++)
     {
@@ -435,7 +435,7 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
     /*{{{*/
     READ_U2(classblock->fields_count, ptr);
     //printf("fields_count:%d\n", classblock->fields_count);
-    fields = sysMalloc(classblock->fields_count * sizeof(FieldBlock));
+    fields = sysMalloc(classblock->fields_count * sizeof(FieldBlock_t));
     classblock->fields = fields;
 
     for (i = 0; i<classblock->fields_count; i++)
@@ -491,7 +491,7 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
     READ_U2(methodsCount, ptr);/*{{{*/
     //printf("methods_count:%d\n", methods_count);
     classblock->methods_count = methodsCount;
-    methods = (MethodBlock*)sysMalloc(methodsCount * sizeof(MethodBlock));
+    methods = (MethodBlock_t*)sysMalloc(methodsCount * sizeof(MethodBlock_t));
     classblock->methods = methods;
 
     for (i = 0; i < methodsCount; i++)
@@ -556,7 +556,7 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
         //====================================================================
 
         methods->class = class;
-        //ClassBlock* testcb = CLASS_CB(class);
+        //ClassBlock_t* testcb = CLASS_CB(class);
         //printf("%s\n", testcb->this_classname);
         //printf("method_name:%s\n", methods->name);
         //printf("method_type:%s\n", methods->type);
@@ -575,7 +575,7 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
                 u4 code_length, j;
                 u1* code;
                 u2 exception_table_length;
-                CodeException* exception;
+                CodeException_t* exception;
                 u2 code_attr_count;
 
                 READ_U2(methods->max_stack, ptr) ;
@@ -599,8 +599,8 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
                 //printf("\n");
 
                 READ_U2(exception_table_length, ptr);
-                exception = (CodeException*)sysMalloc(exception_table_length
-                                                      * sizeof(CodeException));
+                exception = (CodeException_t*)sysMalloc(exception_table_length
+                                                      * sizeof(CodeException_t));
                 for (j = 0; j < exception_table_length; j++)
                 {
                     READ_U2(exception[j].start_pc, ptr);
@@ -698,7 +698,7 @@ static C loadSystemClass(char* classname)
     C class = findClass(classname);
     if (class != NULL)
     {
-        ClassBlock* cb = CLASS_CB(class);
+        ClassBlock_t* cb = CLASS_CB(class);
 
         if (dis_testinfo)
             printf("%s have already in table!!!!!!!!!!!!!!!!!!!!\n",cb->this_classname);
@@ -774,7 +774,7 @@ static C loadSystemClass(char* classname)
 static int Trace_prepareClass(C class)
 {
     /*{{{*/
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
     u2 this_methodstable_size = 0;
     u2 super_methodstable_size = 0;
     int obj_size = 0;
@@ -798,7 +798,7 @@ static int Trace_prepareClass(C class)
     {
         int i = 0;
         u2 idx = 0;
-        ClassBlock* super_cb = CLASS_CB(cb->super);
+        ClassBlock_t* super_cb = CLASS_CB(cb->super);
         super_methodstable_size = super_cb->methods_table_size;
         /*
          * Extends super's filed, for prepare field.
@@ -813,7 +813,7 @@ static int Trace_prepareClass(C class)
         //table driven approache
         for (i = 0; i<cb->methods_count; i++)
         {
-            MethodBlock* mb = &cb->methods[i];
+            MethodBlock_t* mb = &cb->methods[i];
 
             //omit static,private,clinit,init
             if ((mb->access_flags & ACC_STATIC) || (mb->access_flags & ACC_PRIVATE) ||
@@ -822,7 +822,7 @@ static int Trace_prepareClass(C class)
 
             /*the findMethod() is return the same method which is as elder as
              *possible in super classes*/
-            MethodBlock* super_mb = findMethod(cb->super, mb->name, mb->type);
+            MethodBlock_t* super_mb = findMethod(cb->super, mb->name, mb->type);
             if (super_mb)
             {
                 //override
@@ -858,7 +858,7 @@ static int Trace_prepareClass(C class)
 
         for (i = 0; i<cb->methods_count; i++)
         {
-            MethodBlock* mb = &cb->methods[i];
+            MethodBlock_t* mb = &cb->methods[i];
             /* omit <init>,<clinit>,static,private */
             if ((strcmp(mb->name, "<init>") == 0) || (strcmp(mb->name, "<clinit>") == 0) ||
                     (mb->access_flags & ACC_STATIC) || (mb->access_flags & ACC_PRIVATE))
@@ -879,7 +879,7 @@ static int Trace_prepareClass(C class)
     for(loop = 0; loop<cb->fields_count; loop++)
     {
         int i = loop;
-        FieldBlock* fb = &cb->fields[i];
+        FieldBlock_t* fb = &cb->fields[i];
 
         //static field
         if (fb->access_flags & ACC_STATIC)
@@ -935,7 +935,7 @@ static void prepareClass(C class)
 static C Trace_linkClass(C class)
 {
     /*{{{*/
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
 
     if(cb->access_flags & ACC_INTERFACE)
         return class;
@@ -952,15 +952,15 @@ static C Trace_linkClass(C class)
     if (cb->super != NULL)  //has super
     {
         int i;
-        ClassBlock* super_cb = CLASS_CB(cb->super);
+        ClassBlock_t* super_cb = CLASS_CB(cb->super);
         super_methodstable_size = super_cb->methods_table_size;
-        cb->methods_table = (MethodBlock**)sysMalloc(sizeof(MethodBlock*)*
+        cb->methods_table = (MethodBlock_t**)sysMalloc(sizeof(MethodBlock_t*)*
                             this_methodstable_size);
-        memcpy(cb->methods_table, super_cb->methods_table, super_methodstable_size * (sizeof(MethodBlock*)));
+        memcpy(cb->methods_table, super_cb->methods_table, super_methodstable_size * (sizeof(MethodBlock_t*)));
 
         for (i = 0; i<cb->methods_count; i++)
         {
-            MethodBlock* mb = &cb->methods[i];
+            MethodBlock_t* mb = &cb->methods[i];
 
 
             if ((strcmp(mb->name, "<clinit>") == 0) || (strcmp(mb->name, "<init>") == 0) ||
@@ -975,11 +975,11 @@ static C Trace_linkClass(C class)
     {
         int i = 0;
 
-        cb->methods_table = (MethodBlock**)sysMalloc(sizeof(MethodBlock*) * this_methodstable_size);
+        cb->methods_table = (MethodBlock_t**)sysMalloc(sizeof(MethodBlock_t*) * this_methodstable_size);
 
         for (i = 0; i<cb->methods_count; i++)
         {
-            MethodBlock* mb = &cb->methods[i];
+            MethodBlock_t* mb = &cb->methods[i];
             if ((strcmp(mb->name, "<clinit>") == 0) || (strcmp(mb->name, "<init>") == 0) ||
                     (mb->access_flags & ACC_STATIC) || (mb->access_flags & ACC_PRIVATE))
                 continue;
@@ -993,27 +993,7 @@ static C Trace_linkClass(C class)
 
 
     addClassHeader(class);
-    /*
-    if (java_lang_Class)
-    {
-        O obj = allocObject(java_lang_Class);
-
-        if (java_lang_VMClass == NULL)
-            java_lang_VMClass = loadClass("java/lang/VMClass");
-
-        O vmobj = allocObject(java_lang_VMClass);
-        //NOTE: vmClass obj can also known which class he belong to
-        vmobj->binding = (C)obj;
-
-        // Every Class obj need a VMClass obj.
-        FieldBlock* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
-        OBJECT_DATA(obj, fb->offset-1, O) = vmobj;
-
-        obj->binding = class;//Class obj's binding refer to the method area.
-        class->class = obj;
-    }
-    */
-
+    
     cb->flags = LINKED;
 
     return class;
@@ -1044,8 +1024,8 @@ void initClass(C class)
     if (!initable)
         return;
 
-    ClassBlock* cb = CLASS_CB(class);
-    ConstantPool* cp = &cb->constant_pool;
+    ClassBlock_t* cb = CLASS_CB(class);
+    ConstantPool_t* cp = &cb->constant_pool;
 
     if (dis_testinfo)
         printf("initClass-------------%s\n", cb->this_classname);
@@ -1057,7 +1037,7 @@ void initClass(C class)
         return;
     }
     int i;
-    FieldBlock* fb = cb->fields;
+    FieldBlock_t* fb = cb->fields;
     for (i=0; i<cb->fields_count; i++,fb++)
     {
         if ((fb->access_flags&ACC_STATIC)&&fb->constant)
@@ -1074,7 +1054,7 @@ void initClass(C class)
         }
     }
 
-    MethodBlock* mb = findMethodinCurrent(class, "<clinit>", "()V");
+    MethodBlock_t* mb = findMethodinCurrent(class, "<clinit>", "()V");
     /*
      * The <clinit> is a static method, it's dosen't refer to
      * args copy. So, although the staticmain has not executed,
@@ -1097,7 +1077,7 @@ void initClass(C class)
 static C Trace_loadClass0(char* classname)
 {
     C class = NULL;
-    ClassBlock* cb = NULL;
+    ClassBlock_t* cb = NULL;
     if (classname[0] == '[')
         class = loadArrayClass(classname);
     else
@@ -1152,11 +1132,11 @@ C loadClass(char* classname)
 {
     /*{{{*/
     C class = findClass(classname);
-    ClassBlock* cb;
+    ClassBlock_t* cb;
 
     if (class != NULL)
     {
-        ClassBlock* cb = CLASS_CB(class);
+        ClassBlock_t* cb = CLASS_CB(class);
 
         if (dis_testinfo)
             printf("%s have already in the table!!!!!!!!!!!!!!!\n",cb->this_classname);
@@ -1183,10 +1163,10 @@ static C loadArrayClass(char* classname)
     int len;
     int size;
     C class;
-    ClassBlock* cb;
+    ClassBlock_t* cb;
 
     len  = strlen(classname);
-    size =  ClassHeaderSize+sizeof(ClassBlock);
+    size =  CLASS_HEADER_SIZE+sizeof(ClassBlock_t);
     class = (C)sysMalloc(size);
     cb = CLASS_CB(class);
 
@@ -1221,7 +1201,7 @@ static C loadArrayClass(char* classname)
     {
         cb->element = loadClass(classname + 1);
 
-        ClassBlock* temp = CLASS_CB(cb->element);
+        ClassBlock_t* temp = CLASS_CB(cb->element);
         cb->dim = temp->dim + 1;
     }
     else  //reaching the last dim
@@ -1272,7 +1252,7 @@ C findArrayClass(char* classname)
     else
         class = loadClass(classname);
 
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
     cb->type_flags = ARRAY;
 
 
@@ -1294,10 +1274,10 @@ static C loadPrimitiveClass(char* classname, int index)
     int len;
     int size;
     C class;
-    ClassBlock* cb;
+    ClassBlock_t* cb;
 
     len = strlen(classname);
-    size = ClassHeaderSize+sizeof(ClassBlock);
+    size = CLASS_HEADER_SIZE+sizeof(ClassBlock_t);
     class = (C)sysMalloc(size);
     cb = CLASS_CB(class);
 
@@ -1334,7 +1314,7 @@ static C loadPrimitiveClass(char* classname, int index)
     class->class = (O)(index+1);
     
 
-    primClass[index] = class;
+    PRIM_CLASS[index] = class;
     return class;
 
     /*}}}*/
@@ -1389,8 +1369,8 @@ C findPrimitiveClass(char primtype)
     }
 
 
-    if(primClass[index] != NULL)
-        return primClass[index];
+    if(PRIM_CLASS[index] != NULL)
+        return PRIM_CLASS[index];
     else
         return loadPrimitiveClass(classname, index);
     /*}}}*/
@@ -1400,8 +1380,8 @@ int initSystemClass()
 {
     //init primClass
     int i;
-    for (i=0; prim[i]!= ' '; i++)
-        findPrimitiveClass(prim[i]);
+    for (i=0; PRIM_CLASS_NAME[i]!= ' '; i++)
+        findPrimitiveClass(PRIM_CLASS_NAME[i]);
 
     java_lang_VMClass = loadClass("java/lang/VMClass");
     java_lang_Class = loadClass("java/lang/Class");

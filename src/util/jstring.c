@@ -37,13 +37,13 @@ void initString()
 {
     if (java_lang_String == NULL)
         java_lang_String = loadClass("java/lang/String");
-    FieldBlock* count;
-    FieldBlock* value;
-    FieldBlock* offset;
+    FieldBlock_t* count;
+    FieldBlock_t* value;
+    FieldBlock_t* offset;
 
-    count = (FieldBlock*)findField(java_lang_String, "count", "I");
-    value = (FieldBlock*)findField(java_lang_String, "value", "[C");
-    offset =(FieldBlock*)findField(java_lang_String, "offset", "I");
+    count = (FieldBlock_t*)findField(java_lang_String, "count", "I");
+    value = (FieldBlock_t*)findField(java_lang_String, "value", "[C");
+    offset =(FieldBlock_t*)findField(java_lang_String, "offset", "I");
 
     if ((count == NULL)||(value == NULL)||(offset == NULL))
         throwException("initString error");
@@ -117,13 +117,13 @@ O createJstring(char* s)
     if (java_lang_String == NULL)
         java_lang_String = loadClass("java/lang/String");
 
-    ClassBlock* cb = CLASS_CB(java_lang_String);
+    ClassBlock_t* cb = CLASS_CB(java_lang_String);
 
     if (!inited)
         initString();
 
     O char_obj, string_obj;
-    FieldBlock* fb;
+    FieldBlock_t* fb;
     int length, offset;
 
     length = strlen(s);
@@ -155,7 +155,7 @@ void printStringObject(O obj)
 
     int offset;
     O char_obj;
-    FieldBlock* fb = (FieldBlock*)findField(java_lang_String, "value", "[C");
+    FieldBlock_t* fb = (FieldBlock_t*)findField(java_lang_String, "value", "[C");
     offset = fb->offset;
     char_obj = *(((O*)obj->data)+offset-1);
     printf("String:%s\n", (char*)char_obj->data);

@@ -28,7 +28,7 @@
 #define READ_U4(v,p) v=(p[0]<<24)|(p[1]<<16)|(p[2]<<8)|p[3];p+=4
 #define READ_U2(v,p) v=(p[0]<<8)|p[1];p+=2
 #define READ_U1(v,p) v=p[0];p++
-#define CLASS_CB(classref) (ClassBlock*)(classref+1)
+#define CLASS_CB(classref) (ClassBlock_t*)(classref+1)
 #define CP_TYPE(cp,i) cp->type[i]
 #define CP_INFO(cp,i) cp->info[i]
 #define READ_INDEX(v,p) READ_U2(v,p)
@@ -98,7 +98,7 @@ typedef unsigned char u1;
 typedef unsigned short u2;
 typedef unsigned int u4;
 typedef unsigned long long  u8;
-typedef struct classblock ClassBlock;
+typedef struct classblock ClassBlock_t;
 
 
 /* Every Class has a head, whitch is an java/lang/Class's 
@@ -115,14 +115,14 @@ struct C
 
 
 
-typedef u4 ConstantPoolEntry;
+typedef u4 ConstantPoolEntry_t;
 
 typedef struct constant_pool
 {
     volatile u1* type;
-    ConstantPoolEntry* info;
+    ConstantPoolEntry_t* info;
 
-}ConstantPool;
+}ConstantPool_t;
 
 typedef struct fieldblock
 {
@@ -132,7 +132,7 @@ typedef struct fieldblock
     u2 constant;//static final
     int static_value;//static
     int offset;//if not static, it has a offset to mark the allocation in object
-}FieldBlock;
+}FieldBlock_t;
 
 typedef struct code_exception
 {
@@ -140,7 +140,7 @@ typedef struct code_exception
     u2 end_pc;
     u2 handler_pc;
     u2 catch_type;
-}CodeException;
+}CodeException_t;
 
 typedef struct methodblock
 {
@@ -153,7 +153,7 @@ typedef struct methodblock
     u4 code_length;
     u1* code;
     u2 exception_table_length;
-    CodeException* code_exception;
+    CodeException_t* code_exception;
     u2 code_attr_count;
     //attr_exception
     u2 number_of_exceptions;
@@ -166,7 +166,7 @@ typedef struct methodblock
 
     void* native_invoker;//it's need bingding to the nativemethod.
 
-}MethodBlock;
+}MethodBlock_t;
 
 struct classblock
 {
@@ -174,18 +174,18 @@ struct classblock
     u2 minor_version;
     u2 major_version;
     u2 constant_pool_count;
-    ConstantPool constant_pool;
+    ConstantPool_t constant_pool;
     u2 access_flags;
     char* this_classname;
     char* super_classname;
     u2 interface_count;
     C* interfaces;//interface_table
     u2 fields_count;
-    FieldBlock* fields;
+    FieldBlock_t* fields;
     u2 methods_count;
-    MethodBlock* methods;
+    MethodBlock_t* methods;
     C super;//the superclass address
-    MethodBlock** methods_table;
+    MethodBlock_t** methods_table;
     int methods_table_size;
     u2 flags;//loaded, prepared, linked, inited...
     u2 type_flags;//array, interface
@@ -204,7 +204,7 @@ extern void doValue(void* v);
 
 extern void exitVM();
 
-extern char* getMethodClassName(MethodBlock* mb);
+extern char* getMethodClassName(MethodBlock_t* mb);
 
 #undef C
 #undef O

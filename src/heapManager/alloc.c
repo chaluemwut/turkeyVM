@@ -26,7 +26,7 @@
 extern int vmsize;
 extern C primClass[];
 
-static const int ObjHeaderSize = sizeof(struct O);
+static const int OBJ_HEADER_SIZE = sizeof(struct O);
 
 void* sysMalloc(int n)
 {
@@ -52,9 +52,9 @@ void* sysMalloc(int n)
  */
 O allocObject(C class)
 {
-    ClassBlock* cblock = CLASS_CB(class);
+    ClassBlock_t* cblock = CLASS_CB(class);
     int obj_size = cblock->obj_size;
-    O obj = (O)sysMalloc(ObjHeaderSize + sizeof(int)*obj_size);
+    O obj = (O)sysMalloc(OBJ_HEADER_SIZE + sizeof(int)*obj_size);
     //---------------------------------
     obj->type = OBJECT_OBJECT;
     obj->length = 0;
@@ -67,7 +67,7 @@ O allocObject(C class)
 
     obj->cb = cblock;
     obj->el_size = sizeof(int);
-    obj->copy_size = ObjHeaderSize+ sizeof(int)*obj_size;
+    obj->copy_size = OBJ_HEADER_SIZE+ sizeof(int)*obj_size;
 
     return obj;
 
@@ -84,8 +84,8 @@ O allocObject(C class)
 O allocArray(C class, int size, int el_size, int atype)
 {
     O obj;
-    ClassBlock* cb = CLASS_CB(class);
-    obj = (O)sysMalloc(ObjHeaderSize+ size*el_size);
+    ClassBlock_t* cb = CLASS_CB(class);
+    obj = (O)sysMalloc(OBJ_HEADER_SIZE+ size*el_size);
     //------------------------
     obj->type = OBJECT_ARRAY;
     obj->length = size;
@@ -99,7 +99,7 @@ O allocArray(C class, int size, int el_size, int atype)
 
     /*NOTE: this is used when visited the array*/
     obj->el_size = el_size;
-    obj->copy_size = ObjHeaderSize+size*el_size;
+    obj->copy_size = OBJ_HEADER_SIZE+size*el_size;
     return obj;
 }
 

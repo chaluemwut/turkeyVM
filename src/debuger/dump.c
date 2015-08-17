@@ -26,7 +26,7 @@
 
 
 
-void dumpField(FILE* fp, FieldBlock* fb)
+void dumpField(FILE* fp, FieldBlock_t* fb)
 {
     fprintf(fp, "%s ", fb->type);
     fprintf(fp, "%s = ", fb->name);
@@ -61,14 +61,14 @@ void dumpClass(FILE* fp, char* classname, C class)
         class  = findClass(classname);
     if (class == NULL)
       return;
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
     fprintf(fp, "\ndumpClass>%s\n", cb->this_classname);
     fprintf(fp, "super class:%s\n", cb->super_classname);
 
     int i = 0;
     for (; i<cb->fields_count; i++)
     {
-        FieldBlock* fb = &cb->fields[i];
+        FieldBlock_t* fb = &cb->fields[i];
         if (fb->access_flags&ACC_STATIC)
         {
             INDENT(2);
@@ -81,7 +81,7 @@ void dumpClass(FILE* fp, char* classname, C class)
     for (; i<cb->methods_count; i++)
     {
         INDENT(2);
-        MethodBlock* mb = &cb->methods[i];
+        MethodBlock_t* mb = &cb->methods[i];
         fprintf(fp, "%s|%s\n", mb->name, mb->type);
     }
 

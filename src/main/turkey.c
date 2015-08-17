@@ -60,7 +60,7 @@ void doValue(P v)
 {
     Assert_ASSERT(v);
     C c = (C)v;
-    ClassBlock* cb = CLASS_CB(c);
+    ClassBlock_t* cb = CLASS_CB(c);
     printf("%s\n", cb->this_classname);
 }
 
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
     char** _args;
     C main_class;
     C stringArray;
-    MethodBlock* main_mehtod;
+    MethodBlock_t* main_mehtod;
     O args;
     int args_size;
     
@@ -153,10 +153,10 @@ int main(int argc, char** argv)
 
 
 
-char* getMethodClassName(MethodBlock* mb)
+char* getMethodClassName(MethodBlock_t* mb)
 {
     Assert_ASSERT(mb);
-    ClassBlock* cb = CLASS_CB(mb->class);
+    ClassBlock_t* cb = CLASS_CB(mb->class);
     return cb->this_classname;
 }
 

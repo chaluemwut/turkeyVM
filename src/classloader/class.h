@@ -4,7 +4,7 @@
 
 #define C Class_t
 
-#define CLASSNAME(c) (((ClassBlock*)(c+1))->this_classname)
+#define CLASSNAME(c) (((ClassBlock_t*)(c+1))->this_classname)
 
 
 

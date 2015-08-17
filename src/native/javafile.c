@@ -311,20 +311,20 @@ void nativeValid(JF retFrame)
 void nativeInit(JF retFrame)
 {
     C c = findClass("java/io/FileDescriptor");
-    FieldBlock* fb = (FieldBlock*)findField(c, "out", "Ljava/io/FileDescriptor;");
-    FieldBlock* fb_err = (FieldBlock*)findField(c, "err", "Ljava/io/FileDescriptor;");
+    FieldBlock_t* fb = (FieldBlock_t*)findField(c, "out", "Ljava/io/FileDescriptor;");
+    FieldBlock_t* fb_err = (FieldBlock_t*)findField(c, "err", "Ljava/io/FileDescriptor;");
     O err = (O)fb_err->static_value;
     O out = (O)fb->static_value;
     Assert_ASSERT(err);
     Assert_ASSERT(out);
 
-    MethodBlock* mb = (MethodBlock*)findMethod(out->class, "<init>", "(J)V");
+    MethodBlock_t* mb = (MethodBlock_t*)findMethod(out->class, "<init>", "(J)V");
     if (mb == NULL)
         throwException("no such method!");
     /*hack*/
     executeMethodArgs(out->class, mb, out, stdout);
 
-    MethodBlock* mb_err = (MethodBlock*)findMethod(err->class, "<init>", "(J)V");
+    MethodBlock_t* mb_err = (MethodBlock_t*)findMethod(err->class, "<init>", "(J)V");
     if (mb_err == NULL)
         throwException("no such method!");
     executeMethodArgs(err->class, mb_err, err, stdout);

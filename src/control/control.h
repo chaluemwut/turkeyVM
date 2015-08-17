@@ -5,7 +5,6 @@
 extern int dis_testinfo;
 extern int assert_stack;
 
-extern char* op_code[];
 
 typedef enum {
     VERBOSE_SILENT,

@@ -43,7 +43,7 @@ extern List_t CList;
 
 
 
-static int executeNativeMethod(MethodBlock* mb)
+static int executeNativeMethod(MethodBlock_t* mb)
 {
     if (dis_testinfo)
     {
@@ -73,7 +73,7 @@ int Log_executeJava(JF retFrame, JF currentF)
  * Create a new Frame, and copy args form old stack to new locals.
  * Then, execute the new method.
  */
-int Verbose_executeMethod(MethodBlock* mb, va_list jargs)
+int Verbose_executeMethod(MethodBlock_t* mb, va_list jargs)
 {
     void* ret;/*{{{*/
     if (mb->native_invoker)
@@ -96,7 +96,7 @@ int Verbose_executeMethod(MethodBlock* mb, va_list jargs)
     /*}}}*/
 }
 
-void executeMethod(MethodBlock* mb, va_list jargs)
+void executeMethod(MethodBlock_t* mb, va_list jargs)
 {
     char* cName = getMethodClassName(mb);
     char* mName = mb->name;
@@ -114,7 +114,7 @@ void executeMethod(MethodBlock* mb, va_list jargs)
  *       can use executeMethod() instead of executeStaticMain().
  * @qcliu 2015/01/30
  */
-static int Verbose_executeStaticMain(MethodBlock* mb, O args)
+static int Verbose_executeStaticMain(MethodBlock_t* mb, O args)
 {
     unsigned short max_stack = mb->max_stack;/*{{{*/
     unsigned short max_locals = mb->max_locals;
@@ -131,13 +131,13 @@ static int Verbose_executeStaticMain(MethodBlock* mb, O args)
     /*}}}*/
 }
 
-void executeStaticMain(MethodBlock* mb, O args)
+void executeStaticMain(MethodBlock_t* mb, O args)
 {
     int i;
     Verbose_TRACE("static Main", Verbose_executeStaticMain, (mb, args), i, VERBOSE_PASS);
 }
 
-void executeMethodArgs(C class, MethodBlock* mb,...)
+void executeMethodArgs(C class, MethodBlock_t* mb,...)
 {
     va_list jargs;
 
@@ -149,7 +149,7 @@ void executeMethodArgs(C class, MethodBlock* mb,...)
 /**
  * @see native.c
  */
-void invokeConstructNative(MethodBlock* mb, O args, O this)
+void invokeConstructNative(MethodBlock_t* mb, O args, O this)
 {
     /*{{{*/
     int args_count = mb->args_count;
@@ -171,7 +171,7 @@ void invokeConstructNative(MethodBlock* mb, O args, O this)
      */
 
     Assert_ASSERT(args->type == OBJECT_ARRAY);
-    //copyArgs(Frame* frame, MethodBlock* mb)
+    //copyArgs(Frame* frame, MethodBlock_t* mb)
     if (!(mb->access_flags & ACC_STATIC))//non-static
       locals_idx = args_count;
     else

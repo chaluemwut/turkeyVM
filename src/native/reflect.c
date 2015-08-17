@@ -248,10 +248,10 @@ O getClassConstructors(O vmClass, int isPublic)
     /**/
     O c = (O)vmClass->binding;
 
-    ClassBlock *cb = CLASS_CB(c->binding);
+    ClassBlock_t *cb = CLASS_CB(c->binding);
 
     O array, *cons;
-    MethodBlock *init_mb;
+    MethodBlock_t *init_mb;
     int count = 0;
     int i, j;
 
@@ -268,7 +268,7 @@ O getClassConstructors(O vmClass, int isPublic)
     // setp1 sum the count of constrctor for objclass
     for(i = 0; i < cb->methods_count; i++)
     {
-        MethodBlock *mb = &cb->methods[i];
+        MethodBlock_t *mb = &cb->methods[i];
         if((strcmp(mb->name, "<init>") == 0) && (!isPublic || (mb->access_flags & ACC_PUBLIC)))
             count++;
     }
@@ -281,7 +281,7 @@ O getClassConstructors(O vmClass, int isPublic)
 
     for(i = 0, j = 0; j < count; i++)
     {
-        MethodBlock *mb = &cb->methods[i];
+        MethodBlock_t *mb = &cb->methods[i];
 
         if((strcmp(mb->name, "<init>") == 0))
         {
@@ -292,9 +292,9 @@ O getClassConstructors(O vmClass, int isPublic)
                 /**
                  * @see java.lang.reflect.Constructor
                  */
-                FieldBlock* paramType = findField(reflect_class, "parameterTypes", "[Ljava/lang/Class;");
-                FieldBlock* clazz = findField(reflect_class, "clazz", "Ljava/lang/Class;");
-                FieldBlock* slot = findField(reflect_class, "slot", "I");
+                FieldBlock_t* paramType = findField(reflect_class, "parameterTypes", "[Ljava/lang/Class;");
+                FieldBlock_t* clazz = findField(reflect_class, "clazz", "Ljava/lang/Class;");
+                FieldBlock_t* slot = findField(reflect_class, "slot", "I");
 
                 int argcount = getArgsCount(mb->type);
                 C class = loadClass("[Ljava/lang/Class;");
@@ -333,7 +333,7 @@ O getClassConstructors(O vmClass, int isPublic)
 char* getObjectClassName(O obj)
 {
     C class = obj->class;
-    ClassBlock* cb = CLASS_CB(class);
+    ClassBlock_t* cb = CLASS_CB(class);
     return cb->this_classname;
 }
 
@@ -347,8 +347,8 @@ int instanceOf(O obj, C class)
     //obj must non-null.
     int result;
     char* t_name;
-    ClassBlock* obj_cb;
-    ClassBlock* cb;
+    ClassBlock_t* obj_cb;
+    ClassBlock_t* cb;
 
 
     cb = CLASS_CB(class);

@@ -7,13 +7,13 @@
 #define O Object_t
 
 /*execute*/
-extern void executeMethod(MethodBlock* mb, va_list jargs);
+extern void executeMethod(MethodBlock_t* mb, va_list jargs);
 
-extern void executeStaticMain(MethodBlock* mb, O args);
+extern void executeStaticMain(MethodBlock_t* mb, O args);
 
-extern void executeMethodArgs(C class, MethodBlock* mb,...);
+extern void executeMethodArgs(C class, MethodBlock_t* mb,...);
 
-extern void invokeConstructNative(MethodBlock* mb, O args, O this);
+extern void invokeConstructNative(MethodBlock_t* mb, O args, O this);
 
 #undef C
 #undef O
