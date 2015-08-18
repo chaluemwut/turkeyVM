@@ -15,7 +15,7 @@
 #define CHECK_ARRAY(array, index)                   \
     do{                                             \
         Assert_ASSERT(array);                       \
-        Assert_ASSERT(array->type == OBJECT_ARRAY);   \
+        Assert_ASSERT(array->type == OBJECT_ARRAY); \
         if (index < 0 || index >= array->length)    \
             throwException("OutofArrayBound");      \
     }while(0)
@@ -29,11 +29,6 @@ typedef enum
     OBJECT_STRING,
 }Object_e;
 
-//FIXME enhancement
-typedef enum
-{
-    TODO
-}Array_type;
 
 struct O
 {
@@ -56,7 +51,7 @@ struct O
     struct C* binding;
 
     int el_size;//normal object's el_size is 4B
-    int copy_size;//for turkeyCopy(), assign in alloc.c
+    //int copy_size;//for turkeyCopy(), assign in alloc.c
 };
 
 
@@ -66,9 +61,11 @@ extern void* sysMalloc(int n);
 
 extern O allocObject(struct C* class);
 
-extern O allocTypeArray(int type, int size, char* element_name);
+extern O allocTypeArray(int array_type, int size, char* element_name);
 
 extern O allocArray(struct C* class, int size, int el_size, int atype);
+
+extern int objectSize(O);
 
 extern void dumpObject(O);
 

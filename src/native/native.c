@@ -322,10 +322,15 @@ void turkeyCopy(JF retFrame)
 {
     //JF current_frame = getCurrentFrame();
     NF nframe = getNativeFrame();
+    O cloneable;
+    int copy_size;
+    O obj;
 
-    O cloneable = *(O*)&nframe->locals[0];
-    int copy_size = cloneable->copy_size;
-    O obj = (O)sysMalloc(copy_size);
+    LOAD(nframe, cloneable, O, 0);
+    copy_size = objectSize(cloneable);
+    Assert_ASSERT(copy_size);
+    obj = (O)sysMalloc(copy_size);
+
     memset(obj, 0, copy_size);
     memcpy(obj, cloneable, copy_size);
 

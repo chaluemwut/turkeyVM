@@ -2759,14 +2759,14 @@ static void exe_OPC_NEW(JF f)
 static void exe_OPC_NEWARRAY(JF f)
 {
     int count;
-    int atype;
+    int array_type;
     O obj;
 
     PCMOVE(1);
-    READ_BYTE(atype, GET_PC(f));
+    READ_BYTE(array_type, GET_PC(f));
     pop(f,&count, TYPE_INT);
 
-    obj = (O)allocTypeArray(atype, count, NULL);
+    obj = (O)allocTypeArray(array_type, count, NULL);
     if (obj == NULL)
         throwException("newarray obj == NULL!");
 

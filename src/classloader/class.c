@@ -45,6 +45,8 @@
 
 static int initable = FALSE;
 
+//static const int MAX_PRIMITIVE = 9;
+
 static const char PRIM_CLASS_NAME[] =
 {
     'B',
@@ -293,7 +295,7 @@ static C Trace_defineClass(char* classname, char* data, int file_len)
 
     READ_U4(magic, ptr);
     if (magic != 0xcafebabe)
-        throwException("NoClassDefFound");
+        Exception("%s", "NoClassDefFound");
     READ_U2(minor_v, ptr);
     READ_U2(major_v , ptr);
     class = sysMalloc(CLASS_HEADER_SIZE+sizeof(ClassBlock_t));
@@ -816,8 +818,10 @@ static int Trace_prepareClass(C class)
             MethodBlock_t* mb = &cb->methods[i];
 
             //omit static,private,clinit,init
-            if ((mb->access_flags & ACC_STATIC) || (mb->access_flags & ACC_PRIVATE) ||
-                    (strcmp(mb->name, "<init>") == 0) || (strcmp(mb->name, "<clinit>") == 0))
+            if ((mb->access_flags & ACC_STATIC) ||
+                        (mb->access_flags & ACC_PRIVATE) ||
+                        (strcmp(mb->name, "<init>") == 0) ||
+                        (strcmp(mb->name, "<clinit>") == 0))
                 continue;
 
             /*the findMethod() is return the same method which is as elder as
@@ -860,8 +864,10 @@ static int Trace_prepareClass(C class)
         {
             MethodBlock_t* mb = &cb->methods[i];
             /* omit <init>,<clinit>,static,private */
-            if ((strcmp(mb->name, "<init>") == 0) || (strcmp(mb->name, "<clinit>") == 0) ||
-                    (mb->access_flags & ACC_STATIC) || (mb->access_flags & ACC_PRIVATE))
+            if ((strcmp(mb->name, "<init>") == 0) ||
+                        (strcmp(mb->name, "<clinit>") == 0) ||
+                        (mb->access_flags & ACC_STATIC) ||
+                        (mb->access_flags & ACC_PRIVATE))
                 continue;
             this_methodstable_size++;
             /*determine the final index*/

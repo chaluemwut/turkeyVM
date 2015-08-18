@@ -19,6 +19,7 @@
 #include "../util/exception.h"
 #include "../main/turkey.h"
 #include "../lib/error.h"
+#include "../lib/assert.h"
 
 #define C Class_t
 #define O Object_t
@@ -52,12 +53,16 @@ void* sysMalloc(int n)
  */
 O allocObject(C class)
 {
-    ClassBlock_t* cblock = CLASS_CB(class);
-    int obj_size = cblock->obj_size;
-    O obj = (O)sysMalloc(OBJ_HEADER_SIZE + sizeof(int)*obj_size);
+    ClassBlock_t* cb;
+    O obj;
+    int obj_size;
+
+    cb = CLASS_CB(class);
+    obj_size = cb->obj_size;
+    obj = (O)sysMalloc(OBJ_HEADER_SIZE + sizeof(int)*obj_size);
     //---------------------------------
     obj->type = OBJECT_OBJECT;
-    obj->length = 0;
+    obj->length = obj_size;
     obj->atype = 0;
     //--------------------------
     obj->class = class;
@@ -65,9 +70,9 @@ O allocObject(C class)
     obj->data = (unsigned int*)(obj+1);
     memset(obj+1, 0, sizeof(int) * obj_size);
 
-    obj->cb = cblock;
+    obj->cb = cb;
     obj->el_size = sizeof(int);
-    obj->copy_size = OBJ_HEADER_SIZE+ sizeof(int)*obj_size;
+    //obj->copy_size = OBJ_HEADER_SIZE+ sizeof(int)*obj_size;
 
     return obj;
 
@@ -84,7 +89,9 @@ O allocObject(C class)
 O allocArray(C class, int size, int el_size, int atype)
 {
     O obj;
-    ClassBlock_t* cb = CLASS_CB(class);
+    ClassBlock_t* cb;
+
+    cb = CLASS_CB(class);
     obj = (O)sysMalloc(OBJ_HEADER_SIZE+ size*el_size);
     //------------------------
     obj->type = OBJECT_ARRAY;
@@ -99,10 +106,25 @@ O allocArray(C class, int size, int el_size, int atype)
 
     /*NOTE: this is used when visited the array*/
     obj->el_size = el_size;
-    obj->copy_size = OBJ_HEADER_SIZE+size*el_size;
+    //obj->copy_size = OBJ_HEADER_SIZE+size*el_size;
     return obj;
 }
 
+int objectSize(O obj)
+{
+    Assert_ASSERT(obj);
+    switch (obj->type)
+    {
+        case OBJECT_ARRAY:
+        case OBJECT_OBJECT:
+        case OBJECT_STRING:
+            return OBJ_HEADER_SIZE+obj->length*obj->el_size;
+        default:
+            ERROR("impossible");
+    }
+
+    return 0;
+}
 /*
  * The opcode newarray has a atype, according to the type,
  * determining the el_size.

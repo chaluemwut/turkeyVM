@@ -53,7 +53,6 @@ void initString()
     offset_offset = offset->offset;
 
     inited = TRUE;
-
 }
 
 O String_getValue(O obj)
