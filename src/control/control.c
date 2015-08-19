@@ -46,3 +46,7 @@ void Control_setLogFile(FILE* fd)
     Log_file = fd;
 }
 /*}}}*/
+
+/*{{{opcode*/
+int Control_opcode = FALSE;
+/*}}}*/

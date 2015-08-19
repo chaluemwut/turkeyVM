@@ -179,20 +179,21 @@ void identityHashCode(JF retFrame)
 
 
 /**
- * @see java/lang/Constructor.class
+ * Create a new instance by invoking the constructor. Arguments are
+ * automatically unwrapped and widened, if needed.<p>
  *
+ * @see java/lang/Constructor.class
  */
 void constructNative(JF retFrame)
 {
-    //JF current_frame = getCurrentFrame();
     NF nframe = getNativeFrame();
 
-    O this;
+    O constructor;
     O args;//array
     O declaringClass;
     int slot;
 
-    LOAD(nframe, this, O, 0);
+    LOAD(nframe, constructor, O, 0);
     LOAD(nframe, args, O, 1);
     LOAD(nframe, declaringClass, O, 2);
     LOAD(nframe, slot, int , 3);
@@ -202,6 +203,7 @@ void constructNative(JF retFrame)
     C declclass = declaringClass->binding;
     ClassBlock_t* cb = CLASS_CB(declclass);
     MethodBlock_t* mb = &cb->methods[slot];
+    Assert_ASSERT(mb);
 
     O newobj = (O)allocObject(declclass);
 
@@ -210,8 +212,6 @@ void constructNative(JF retFrame)
     //XXX foucus
     invokeConstructNative(mb, args, newobj);
     push(retFrame, &newobj, TYPE_REFERENCE);
-    //current_frame->ostack++;
-    //*(O*)current_frame->ostack = newobj;
 
 
 
@@ -219,7 +219,6 @@ void constructNative(JF retFrame)
 
 void getDeclaredConstructors(JF retFrame)
 {
-    //JF current_frame = getCurrentFrame();
     NF nframe = getNativeFrame();
 
     O vmClass; 
@@ -233,6 +232,14 @@ void getDeclaredConstructors(JF retFrame)
 }
 
 //lang/lang/VMClass.class
+/**
+ * Use the classloader of the current class to load, link,and
+ * initialize a class. This equivalent to your code calling 
+ * Class.forName(name, ture, getClass().getClassLoader()).
+ *
+ * @parm name the name of the class to find.
+ * @return the Class object representing the class.
+ */
 void forName(JF retFrame)
 {
     //JF current_frame = getCurrentFrame();
@@ -308,7 +315,6 @@ void testObject()
     }
     else
     {
-        //printString0(obj);
         throwException("hash success");
     }
 
@@ -320,7 +326,6 @@ void testObject()
 //(Ljava/lang/Cloneable;)Ljava/lang/Object;   VMObject
 void turkeyCopy(JF retFrame)
 {
-    //JF current_frame = getCurrentFrame();
     NF nframe = getNativeFrame();
     O cloneable;
     int copy_size;

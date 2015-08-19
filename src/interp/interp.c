@@ -42,12 +42,35 @@
 #define JF JFrame_t
 
 // to contral the pc move
-#define PCMOVE(x) PCIncrease(x);
-#define PCBACK(x) PCDecrease(x);
-#define READ_INT(v, p) v=(p[0]<<24|p[1]<<16|p[2]<<8|p[3])
-#define READ_IDX(v,p) v=(p[0]<<8)|p[1]
-#define READ_SHORT(v,p) READ_IDX(v,p);
-#define READ_BYTE(v,p) v=*p
+
+#define PC_MOVE(x,f)            \
+    do{                         \
+        GET_PC(f)+=x;           \
+        GET_OFFSET(f)+=x;       \
+    }while(0)
+
+#define INTERP_U4(v, p, f)       \
+    do{                         \
+        READ_U4(v, p);          \
+        GET_OFFSET(f)+=4;       \
+    }while(0)
+
+#define INTERP_U2(v, p, f)       \
+    do{                         \
+        READ_U2(v, p);          \
+        GET_OFFSET(f)+=2;       \
+    }while(0)
+
+#define INTERP_INDEX(v ,p , f)    INTERP_U2(v, p, f)
+
+#define INTERP_U1(v, p, f)      \
+    do{                         \
+        READ_U1(v, p);          \
+        GET_OFFSET(f)+=1;       \
+    }while(0)
+
+static const int BRANCH_BYTE = 1; 
+static const int TWO_BRANCH_BYTE = 2;
 
 //vm.h
 extern FILE* Log_file;
@@ -147,8 +170,7 @@ static void exe_OPC_DCONST_1(JF f)
 static void exe_OPC_BIPUSH(JF f)
 {
     int value = 0;
-    PCMOVE(1);
-    READ_BYTE(value, f->pc);
+    INTERP_U1(value, GET_PC(f), f);
     push(f,&value, TYPE_INT);
 }
 
@@ -158,9 +180,7 @@ static void exe_OPC_SIPUSH(JF f)
     short value0;
     int value;
 
-    PCMOVE(1);
-    READ_SHORT(value0, GET_PC(f));
-    PCMOVE(1);
+    INTERP_U2(value0, GET_PC(f), f);
     value = (int)value0;
     push(f,&value, TYPE_INT);
 
@@ -172,8 +192,7 @@ static void exe_OPC_LDC(JF f)
     int index = 0;
     u4 cp_info;
 
-    PCMOVE(1);
-    READ_BYTE(index, GET_PC(f));
+    INTERP_U1(index, GET_PC(f),f);
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), index);
     switch (CP_TYPE(GET_CONSTANTPOOL(f), index))
     {
@@ -249,9 +268,7 @@ static void exe_OPC_LDC_W(JF f)
 {
     int index = 0;
     u4 cp_info;
-    PCMOVE(1);
-    READ_IDX(index, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(index, GET_PC(f), f);
 
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), index);
     switch (CP_TYPE(GET_CONSTANTPOOL(f), index))
@@ -327,9 +344,7 @@ static void exe_OPC_LDC2_W(JF f)
 {
     int index = 0;
     u4 cp_info;
-    PCMOVE(1);
-    READ_IDX(index, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(index, GET_PC(f), f);
 
 
     switch (CP_TYPE(GET_CONSTANTPOOL(f), index))
@@ -362,9 +377,8 @@ static void exe_OPC_ILOAD(JF f)
     int value;
     int locals_idx = 0;
 
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
-    load(&value, TYPE_INT, locals_idx);
+    INTERP_U1(locals_idx, GET_PC(f), f);
+    LOAD(f, value, int, locals_idx);
     push(f,&value, TYPE_INT);
 
 }
@@ -373,9 +387,8 @@ static void exe_OPC_LLOAD(JF f)
     int locals_idx = 0;
     long long value;
 
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
-    load(&value, TYPE_LONG, locals_idx);
+    INTERP_U1(locals_idx, GET_PC(f), f);
+    LOAD(f, value, long long, locals_idx);
     push(f,&value, TYPE_LONG);
 
 }
@@ -384,9 +397,8 @@ static void exe_OPC_FLOAD(JF f)
     int locals_idx = 0;
     float value;
 
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
-    load(&value, TYPE_FLOAT, locals_idx);
+    INTERP_U1(locals_idx, GET_PC(f), f);
+    LOAD(f, value, float, locals_idx);
     push(f,&value, TYPE_FLOAT);
 
 }
@@ -395,9 +407,8 @@ static void exe_OPC_DLOAD(JF f)
     int locals_idx = 0;
     double value;
 
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
-    load(&value, TYPE_DOUBLE, locals_idx);
+    INTERP_U1(locals_idx, GET_PC(f), f);
+    LOAD(f, value, double, locals_idx);
 
     push(f,&value, TYPE_DOUBLE);
 }
@@ -406,148 +417,147 @@ static void exe_OPC_ALOAD(JF f)
     O objref;
     int locals_idx = 0;
 
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
-    load(&objref, TYPE_REFERENCE, locals_idx);
+    INTERP_U1(locals_idx, GET_PC(f), f);
+    LOAD(f, objref, O, locals_idx);
     push(f,&objref, TYPE_REFERENCE);
 }
 
 static void exe_OPC_ILOAD_0(JF f)
 {
     int value;
-    load(&value, TYPE_INT, 0);
+    LOAD(f, value, int, 0);
     push(f,&value, TYPE_INT);
 }
 
 static void exe_OPC_ILOAD_1(JF f)
 {
     int value;
-    load(&value, TYPE_INT, 1);
+    LOAD(f, value, int , 1);
     push(f,&value, TYPE_INT);
 }
 
 static void exe_OPC_ILOAD_2(JF f)
 {
     int value;
-    load(&value, TYPE_INT, 2);
+    LOAD(f, value, int , 2);
     push(f,&value, TYPE_INT);
 }
 
 static void exe_OPC_ILOAD_3(JF f)
 {
     int value;
-    load(&value, TYPE_INT, 3);
+    LOAD(f, value, int, 3);
     push(f,&value, TYPE_INT);
 }
 
 static void exe_OPC_LLOAD_0(JF f)
 {
     long long value;
-    load(&value, TYPE_LONG, 0);
+    LOAD(f, value, long long, 0);
     push(f,&value, TYPE_LONG);
 }
 static void exe_OPC_LLOAD_1(JF f)
 {
     long long value;
-    load(&value, TYPE_LONG, 1);
+    LOAD(f, value, long long, 1);
     push(f,&value, TYPE_LONG);
 }
 
 static void exe_OPC_LLOAD_2(JF f)
 {
     long long value;
-    load(&value, TYPE_LONG, 2);
+    LOAD(f, value, long long, 2);
     push(f,&value, TYPE_LONG);
 }
 
 static void exe_OPC_LLOAD_3(JF f)
 {
     long long value;
-    load(&value, TYPE_LONG, 3);
+    LOAD(f, value, long long, 3);
     push(f,&value, TYPE_LONG);
 }
 
 static void exe_OPC_FLOAD_0(JF f)
 {
     float value;
-    load(&value, TYPE_FLOAT, 0);
+    LOAD(f, value, float, 0);
     push(f,&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_FLOAD_1(JF f)
 {
     float value;
-    load(&value, TYPE_FLOAT, 1);
+    LOAD(f, value, float, 1);
     push(f,&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_FLOAD_2(JF f)
 {
     float value;
-    load(&value, TYPE_FLOAT, 2);
+    LOAD(f, value, float, 2);
     push(f,&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_FLOAD_3(JF f)
 {
     float value;
-    load(&value, TYPE_FLOAT, 3);
+    LOAD(f, value, float, 3);
     push(f,&value, TYPE_FLOAT);
 }
 
 static void exe_OPC_DLOAD_0(JF f)
 {
     double value;
-    load(&value, TYPE_DOUBLE, 0);
+    LOAD(f, value, double, 0);
     push(f,&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_DLOAD_1(JF f)
 {
     double value;
-    load(&value, TYPE_DOUBLE, 1);
+    LOAD(f, value, double, 1);
     push(f,&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_DLOAD_2(JF f)
 {
     double value;
-    load(&value, TYPE_DOUBLE, 2);
+    LOAD(f, value, double, 2);
     push(f,&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_DLOAD_3(JF f)
 {
     double value;
-    load(&value, TYPE_DOUBLE, 3);
+    LOAD(f, value, double, 3);
     push(f,&value, TYPE_DOUBLE);
 }
 
 static void exe_OPC_ALOAD_0(JF f)
 {
     O obj;
-    load(&obj, TYPE_REFERENCE, 0);
+    LOAD(f, obj, O, 0);
     push(f,&obj, TYPE_REFERENCE);
 }
 
 static void exe_OPC_ALOAD_1(JF f)
 {
     O obj;
-    load(&obj, TYPE_REFERENCE, 1);
+    LOAD(f, obj, O, 1);
     push(f,&obj, TYPE_REFERENCE);
 }
 
 static void exe_OPC_ALOAD_2(JF f)
 {
     O obj;
-    load(&obj, TYPE_REFERENCE, 2);
+    LOAD(f, obj, O, 2);
     push(f,&obj, TYPE_REFERENCE);
 }
 
 static void exe_OPC_ALOAD_3(JF f)
 {
     O obj;
-    load(&obj, TYPE_REFERENCE, 3);
+    LOAD(f, obj, O, 3);
     push(f,&obj, TYPE_REFERENCE);
 }
 
@@ -692,10 +702,9 @@ static void exe_OPC_ISTORE(JF f)
 {
     int value;
     int locals_idx = 0;
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
+    INTERP_U1(locals_idx, GET_PC(f), f);
     pop(f,&value, TYPE_INT);
-    store(&value, TYPE_INT, locals_idx);
+    STORE(f, value, int, locals_idx);
 
 }
 
@@ -704,12 +713,11 @@ static void exe_OPC_LSTORE(JF f)
     long long value;
     int locals_idx = 0;
 
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
+    INTERP_U1(locals_idx, GET_PC(f), f);
     pop(f,&value, TYPE_LONG);
 
     /*NOTE: The long and double use STORE and LOAD as well*/
-    store(&value, TYPE_LONG, locals_idx);
+    STORE(f, value, long long, locals_idx);
 
 }
 
@@ -718,10 +726,9 @@ static void exe_OPC_FSTORE(JF f)
     float value;
     int locals_idx = 0;
 
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
+    INTERP_U1(locals_idx, GET_PC(f), f);
     pop(f,&value, TYPE_FLOAT);
-    store(&value, TYPE_FLOAT, locals_idx);
+    STORE(f, value, float, locals_idx);
 
 }
 
@@ -730,11 +737,10 @@ static void exe_OPC_DSTORE(JF f)
     double value;
     int locals_idx = 0;
 
-    PCMOVE(1);
-    READ_BYTE(locals_idx, GET_PC(f));
+    INTERP_U1(locals_idx, GET_PC(f), f);
     pop(f,&value, TYPE_DOUBLE);
 
-    store(&value, TYPE_DOUBLE, locals_idx);
+    STORE(f, value, double, locals_idx);
 
 }
 
@@ -742,11 +748,9 @@ static void exe_OPC_ASTORE(JF f)
 {
     int value = 0;
     O obj;
-    PCMOVE(1);
-    READ_BYTE(value, GET_PC(f));
-    //obj = popObject();
+    INTERP_U1(value, GET_PC(f), f);
     pop(f,&obj, TYPE_REFERENCE);
-    store(&obj, TYPE_REFERENCE, value);
+    STORE(f, obj, O, value);
 
 }
 
@@ -754,84 +758,84 @@ static void exe_OPC_ISTORE_0(JF f)
 {
     int value;
     pop(f,&value, TYPE_INT);
-    store(&value, TYPE_INT, 0);
+    STORE(f, value, int, 0);
 }
 
 static void exe_OPC_ISTORE_1(JF f)
 {
     int value;
     pop(f,&value, TYPE_INT);
-    store(&value, TYPE_INT, 1);
+    STORE(f, value, int, 1);
 }
 
 static void exe_OPC_ISTORE_2(JF f)
 {
     int value;
     pop(f,&value, TYPE_INT);
-    store(&value, TYPE_INT, 2);
+    STORE(f, value, int, 2);
 }
 
 static void exe_OPC_ISTORE_3(JF f)
 {
     int value;
     pop(f,&value, TYPE_INT);
-    store(&value, TYPE_INT, 3);
+    STORE(f, value, int, 3);
 }
 
 static void exe_OPC_LSTORE_0(JF f)
 {
     long long value;
     pop(f,&value, TYPE_LONG);
-    store(&value, TYPE_LONG, 0);
+    STORE(f, value, long long, 0);
 }
 
 static void exe_OPC_LSTORE_1(JF f)
 {
     long long value;
     pop(f,&value, TYPE_LONG);
-    store(&value, TYPE_LONG, 1);
+    STORE(f, value, long long, 1);
 }
 
 static void exe_OPC_LSTORE_2(JF f)
 {
     long long value;
     pop(f,&value, TYPE_LONG);
-    store(&value, TYPE_LONG, 2);
+    STORE(f, value, long long, 2);
 }
 
 static void exe_OPC_LSTORE_3(JF f)
 {
     long long value;
     pop(f,&value, TYPE_LONG);
-    store(&value, TYPE_LONG , 3);
+    STORE(f, value, long long, 3);
 }
 
 static void exe_OPC_FSTORE_0(JF f)
 {
     float value;
     pop(f,&value, TYPE_FLOAT);
-    store(&value, TYPE_FLOAT, 0);
+    STORE(f, value, float, 0);
 }
 
 static void exe_OPC_FSTORE_1(JF f)
 {
     float value;
     pop(f,&value, TYPE_FLOAT);
-    store(&value, TYPE_FLOAT, 1);
+    STORE(f, value, float, 1);
 }
 
 static void exe_OPC_FSTORE_2(JF f)
 {
     float value;
     pop(f,&value, TYPE_FLOAT);
-    store(&value, TYPE_FLOAT, 2);
+    STORE(f, value, float, 2);
 }
 
 static void exe_OPC_FSTORE_3(JF f)
 {
     float value;
     pop(f,&value, TYPE_FLOAT);
-    store(&value, TYPE_FLOAT, 3);
+    STORE(f, value, float, 3);
 }
 
 static void exe_OPC_DSTORE_0(JF f)
@@ -844,21 +848,21 @@ static void exe_OPC_DSTORE_1(JF f)
 {
     double value;
     pop(f,&value, TYPE_DOUBLE);
-    store(&value, TYPE_DOUBLE, 1);
+    STORE(f, value, double, 1);
 }
 
 static void exe_OPC_DSTORE_2(JF f)
 {
     double value;
     pop(f,&value, TYPE_DOUBLE);
-    store(&value, TYPE_DOUBLE, 2);
+    STORE(f, value, double, 2);
 }
 
 static void exe_OPC_DSTORE_3(JF f)
 {
     double value;
     pop(f,&value, TYPE_DOUBLE);
-    store(&value, TYPE_DOUBLE, 3);
+    STORE(f, value, double, 3);
 }
 
 
@@ -866,28 +870,28 @@ static void exe_OPC_ASTORE_0(JF f)
 {
     O obj;
     pop(f,&obj, TYPE_REFERENCE);
-    store(&obj, TYPE_REFERENCE, 0);
+    STORE(f, obj, O, 0);
 }
 
 static void exe_OPC_ASTORE_1(JF f)
 {
     O obj;
     pop(f,&obj, TYPE_REFERENCE);
-    store(&obj, TYPE_REFERENCE, 1);
+    STORE(f, obj, O, 1);
 }
 
 static void exe_OPC_ASTORE_2(JF f)
 {
     O obj;
     pop(f,&obj, TYPE_REFERENCE);
-    store(&obj, TYPE_REFERENCE, 2);
+    STORE(f, obj, O, 2);
 }
 
 static void exe_OPC_ASTORE_3(JF f)
 {
     O obj;
     pop(f,&obj, TYPE_REFERENCE);
-    store(&obj, TYPE_REFERENCE, 3);
+    STORE(f, obj, O, 3);
 }
 
 static void exe_OPC_IASTORE(JF f)
@@ -1584,18 +1588,16 @@ static void exe_OPC_IINC(JF f)
     int value;
     char c;
 
-    PCMOVE(1);
-    READ_BYTE(index, GET_PC(f));
-    PCMOVE(1);
+    INTERP_U1(index, GET_PC(f), f);
 
     /*NOTE: extend the byte constt to int*/
     constt = 0;
-    READ_BYTE(c, GET_PC(f));
+    INTERP_U1(c, GET_PC(f), f);
     constt = (int)c;
 
-    load(&value, TYPE_INT, index);
+    LOAD(f, value, int, index);
     value += constt;
-    store(&value, TYPE_INT, index);
+    STORE(f, value, int, index);
 
 }
 
@@ -1803,6 +1805,7 @@ static void exe_OPC_DCMPG(JF f)
 {
 }
 
+//XXX 
 static void exe_OPC_IFEQ(JF f)
 {
     int value;
@@ -1811,14 +1814,13 @@ static void exe_OPC_IFEQ(JF f)
     if (0 == value)
     {
         short offset;
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset-3, f);
 
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -1832,13 +1834,12 @@ static void exe_OPC_IFNE(JF f)
     {
         short offset;
 
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -1851,13 +1852,12 @@ static void exe_OPC_IFLT(JF f)
     if (value < 0)
     {
         short offset;
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -1871,13 +1871,12 @@ static void exe_OPC_IFGE(JF f)
     {
         short offset;
 
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -1891,13 +1890,12 @@ static void exe_OPC_IFGT(JF f)
     {
         short offset;
 
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -1911,13 +1909,12 @@ static void exe_OPC_IFLE(JF f)
     {
         short offset;
 
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -1934,14 +1931,13 @@ static void exe_OPC_IF_ICMPEQ(JF f)
     {
         short offset;
 
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
+        INTERP_INDEX(offset, GET_PC(f), f);
 
-        PCMOVE(offset - 2);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -1958,14 +1954,13 @@ static void exe_OPC_IF_ICMPNE(JF f)
     {
         short offset;
 
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
+        INTERP_INDEX(offset, GET_PC(f), f);
 
-        PCMOVE(offset - 2);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -1981,14 +1976,13 @@ static void exe_OPC_IF_ICMPLT(JF f)
     {
         short offset;
 
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
+        INTERP_INDEX(offset, GET_PC(f), f);
         /*NOTE: the offset */
-        PCMOVE(offset - 2);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -2002,15 +1996,14 @@ static void exe_OPC_IF_ICMPGE(JF f)
     if (value1 >= value2)
     {
         short offset;
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
+        INTERP_INDEX(offset, GET_PC(f), f);
         /*NOTE: the offset is in terms of OPC_IF_ICMPGE*/
 
-        PCMOVE(offset - 2);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -2025,13 +2018,12 @@ static void exe_OPC_IF_ICMPGT(JF f)
     if (value1 > value2)
     {
         short offset;
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -2046,13 +2038,12 @@ static void exe_OPC_IF_ICMPLE(JF f)
     if (value1 <= value2)
     {
         short offset;
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -2078,13 +2069,12 @@ static void exe_OPC_IF_ACMPEQ(JF f)
     if (r)
     {
         short offset;
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -2110,13 +2100,12 @@ static void exe_OPC_IF_ACMPNE(JF f)
     if (r)
     {
         short offset;
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset-2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset-3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -2125,14 +2114,13 @@ static void exe_OPC_GOTO(JF f)
 {
     short offset;
 
-    PCMOVE(1);
-    READ_IDX(offset, GET_PC(f));
+    INTERP_INDEX(offset, GET_PC(f), f);
     /*
-     * Since before READ_IDX has already pc+1, and
+     * Since before INTERP_INDEX has already pc+1, and
      * when break switch the there will pc+1 autolly
      * So, the real offset is offset - 2.
      */
-    PCMOVE(offset - 2);
+    PC_MOVE(offset - 3, f);
 
 }
 
@@ -2141,9 +2129,7 @@ static void exe_OPC_JSR(JF f)
     short offset;
     int address;
 
-    PCMOVE(1);
-    READ_IDX(offset, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(offset, GET_PC(f), f);
 
     address = offset;
     push(f,&address, TYPE_INT);
@@ -2165,24 +2151,22 @@ static void exe_OPC_TABLESWITCH(JF f)
     int pad;
     int jump;
 
+    PC_MOVE(-1, f);
+
     base = GET_OFFSET(f);//record the location of opc_tableswitch
     int temp = GET_OFFSET(f);
     pad = 4-temp%4;//the padding bit(0~3)
-    PCMOVE(pad);
-    READ_INT(def, GET_PC(f));
-    PCMOVE(4);
-    READ_INT(low, GET_PC(f));
-    PCMOVE(4);
-    READ_INT(high, GET_PC(f));
-    PCMOVE(4);
-
+    PC_MOVE(pad, f);
+    INTERP_U4(def, GET_PC(f), f);
+    INTERP_U4(low, GET_PC(f), f);
+    INTERP_U4(high, GET_PC(f), f);
     pop(f,&index, TYPE_INT);
     /*default case*/
     if (index < low || index > high)
     {
         int temp = GET_OFFSET(f);
         int jump = def-(temp - base);
-        PCMOVE(jump - 1);
+        PC_MOVE(jump, f);
         return;
     }
 
@@ -2193,18 +2177,18 @@ static void exe_OPC_TABLESWITCH(JF f)
      * the case by lowest to highest automatically.
      *
      * `jump` is the offset relative to the current_pc.
-     * But after READ_INT(jump, GET_PC(f)), the `jump`
+     * But after INTERP_U4(jump, GET_PC(f)), the `jump`
      * is the offset relative to the OPC_TABLESWITCH which is
      * represented by `base`. So the pc is alread moved
      * pc_offset-base relative to base, and now it's still need
      * move jump-(pc_offset-base).
      * @qcliu 2015/03/16
      */
-    PCMOVE((index-low)*4);
-    READ_INT(jump, GET_PC(f));
+    PC_MOVE((index-low)*4, f);
+    INTERP_U4(jump, GET_PC(f), f);
     temp = GET_OFFSET(f);
     jump = jump - (temp - base);
-    PCMOVE(jump - 1);
+    PC_MOVE(jump, f);
 
 }
 
@@ -2217,16 +2201,15 @@ static void exe_OPC_LOOKUPSWITCH(JF f)
     int pad;
     int key;
     int jump;
+    PC_MOVE(-1, f);
 
     pop(f,&key, TYPE_INT);
     base = GET_OFFSET(f);
     temp = GET_OFFSET(f);
     pad = 4-temp%4;
-    PCMOVE(pad);
-    READ_INT(def, GET_PC(f));
-    PCMOVE(4);
-    READ_INT(npairs, GET_PC(f));
-    PCMOVE(4);
+    PC_MOVE(pad, f);
+    INTERP_U4(def, GET_PC(f), f);
+    INTERP_U4(npairs, GET_PC(f), f);
 
     int* match;
     int* _offset;
@@ -2236,10 +2219,8 @@ static void exe_OPC_LOOKUPSWITCH(JF f)
     int i;
     for (i=0; i<npairs; i++)
     {
-        READ_INT(match[i], GET_PC(f));
-        PCMOVE(4);
-        READ_INT(_offset[i], GET_PC(f));
-        PCMOVE(4);
+        INTERP_U4(match[i], GET_PC(f), f);
+        INTERP_U4(_offset[i], GET_PC(f), f);
     }
 
     /*
@@ -2260,14 +2241,14 @@ static void exe_OPC_LOOKUPSWITCH(JF f)
 
         temp = GET_OFFSET(f);
         jump = _offset[i]-(temp-base);
-        PCMOVE(jump-1);
+        PC_MOVE(jump, f);
         return;
 
     }
     //default
     temp = GET_OFFSET(f);
     jump = def-(temp-base);
-    PCMOVE(jump-1);
+    PC_MOVE(jump, f);
     return;
 }
 
@@ -2311,9 +2292,7 @@ static void exe_OPC_GETSTATIC(JF f)
     u2 fieldref_idx;
     FieldBlock_t* fb;
 
-    PCMOVE(1);
-    READ_IDX(fieldref_idx, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(fieldref_idx, GET_PC(f), f);
     fb = resolveField(GET_CLASS(f), fieldref_idx);
 
     Assert_ASSERT(fb);
@@ -2350,9 +2329,7 @@ static void exe_OPC_PUTSTATIC(JF f)
     u2 fieldref_idx;
     FieldBlock_t* fb;
 
-    PCMOVE(1);
-    READ_IDX(fieldref_idx, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(fieldref_idx, GET_PC(f), f);
     fb = resolveField(GET_CLASS(f), fieldref_idx);
     Assert_ASSERT(fb);
 
@@ -2391,9 +2368,7 @@ static void exe_OPC_GETFIELD(JF f)
     O value2;
     u2 fieldref_idx;
 
-    PCMOVE(1);
-    READ_IDX(fieldref_idx, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(fieldref_idx, GET_PC(f), f);
 
     FieldBlock_t* fb = resolveField(GET_CLASS(f), fieldref_idx);
 
@@ -2435,9 +2410,7 @@ static void exe_OPC_PUTFIELD(JF f)
     u2 fieldref_idx;
     FieldBlock_t* fb;
 
-    PCMOVE(1);
-    READ_IDX(fieldref_idx, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(fieldref_idx, GET_PC(f), f);
 
     fb = resolveField(GET_CLASS(f), fieldref_idx);
     Assert_ASSERT(fb);
@@ -2492,9 +2465,7 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
     char* type;
     int args_count;
 
-    PCMOVE(1);
-    READ_IDX(methodref_idx, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(methodref_idx, GET_PC(f), f);
     /* According to the Methodref_info, get the description of
      * the method. Then, get the args' count
      */
@@ -2564,9 +2535,7 @@ static void exe_OPC_INVOKESPECIAL(JF f)
     char *type;
 
     current_cb = CLASS_CB(GET_CLASS(f));
-    PCMOVE(1);
-    READ_IDX(methodref_idx, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(methodref_idx, GET_PC(f), f);
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
 
     /* The methodref_idx maybe resolved*/
@@ -2625,9 +2594,7 @@ static void exe_OPC_INVOKESTATIC(JF f)
     char* classname;
     MethodBlock_t* method;
 
-    PCMOVE(1);
-    READ_IDX(methodref_idx, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(methodref_idx, GET_PC(f), f);
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
 
     /*
@@ -2686,17 +2653,12 @@ static void exe_OPC_INVOKEINTERFACE(JF f)
     char* type;
     int args_count;
 
-    PCMOVE(1);
-    READ_IDX(methodref_idx,GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(methodref_idx,GET_PC(f), f);
 
-    PCMOVE(1);
     int count = 0;
-    READ_BYTE(count, GET_PC(f));
-    PCMOVE(1);
+    INTERP_U1(count, GET_PC(f), f);
     int isZero = 0;
-    READ_BYTE(isZero, GET_PC(f));
-    //PCMOVE(1);
+    INTERP_U1(isZero, GET_PC(f), f);
     /* According to the Methodref_info, get the description of
      * the method. Then, get the args' count
      */
@@ -2747,9 +2709,7 @@ static void exe_OPC_NEW(JF f)
     C class;
     O obj;
 
-    PCMOVE(1);
-    READ_IDX(class_idx, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(class_idx, GET_PC(f), f);
     class = resolveClass(GET_CLASS(f), class_idx);
     obj = allocObject(class);
     push(f,&obj, TYPE_REFERENCE);
@@ -2762,8 +2722,7 @@ static void exe_OPC_NEWARRAY(JF f)
     int array_type;
     O obj;
 
-    PCMOVE(1);
-    READ_BYTE(array_type, GET_PC(f));
+    INTERP_U1(array_type, GET_PC(f), f);
     pop(f,&count, TYPE_INT);
 
     obj = (O)allocTypeArray(array_type, count, NULL);
@@ -2782,10 +2741,7 @@ static void exe_OPC_ANEWARRAY(JF f)
     C class;
 
     index = 0;
-    PCMOVE(1);
-    //READ_IDX(index, GET_PC(f));
-    index=(GET_PC(f)[0]<<8)|(GET_PC(f)[1]);//test
-    PCMOVE(1);
+    INTERP_INDEX(index, GET_PC(f), f);
 
     /*need to resolveClass*/
     char* classname;
@@ -2860,8 +2816,7 @@ static void exe_OPC_ATHROW(JF f)
 static void exe_OPC_CHECKCAST(JF f)
 {
     //TODO
-    PCMOVE(1);
-    PCMOVE(1);
+    PC_MOVE(TWO_BRANCH_BYTE, f);
 }
 
 static void exe_OPC_INSTANCEOF(JF f)
@@ -2871,9 +2826,7 @@ static void exe_OPC_INSTANCEOF(JF f)
     u2 index;
     int result;
 
-    PCMOVE(1);
-    READ_IDX(index, GET_PC(f));
-    PCMOVE(1);
+    INTERP_INDEX(index, GET_PC(f), f);
 
     pop(f,&obj, TYPE_REFERENCE);
 
@@ -2931,13 +2884,12 @@ static void exe_OPC_IFNULL(JF f)
     pop(f,&obj, TYPE_REFERENCE);
     if (obj == NULL)
     {
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -2953,13 +2905,12 @@ static void exe_OPC_IFNONNULL(JF f)
 
     if (obj != NULL)
     {
-        PCMOVE(1);
-        READ_IDX(offset, GET_PC(f));
-        PCMOVE(offset - 2);
+        INTERP_INDEX(offset, GET_PC(f), f);
+        PC_MOVE(offset - 3, f);
     }
     else
     {
-        PCMOVE(2);
+        PC_MOVE(TWO_BRANCH_BYTE, f);
     }
 
 }
@@ -3007,7 +2958,17 @@ int executeJava(JF retFrame, JF f)
     /* main loop of interpreter */
     while (GET_OFFSET(f) < code_length)
     {
-        Opcode_e opcode = *GET_PC(f);
+        //Opcode_e opcode = *GET_PC(f);
+        Opcode_e opcode;
+        INTERP_U1(opcode, GET_PC(f), f);
+        opcodeStatistics(opcode);
+        if (dis_testinfo)
+        {
+            fprintf(stdout,"\nopcode: ---------%s\n", dumpOpcode(opcode));//for test
+            fprintf(stdout,"pc_offset:------------%d\n", GET_OFFSET(f));
+            fprintf(stdout,"GET_PC(f):---------%d\n", (unsigned int)GET_PC(f));
+            printStackLog(stdout, f);
+        }
 
         if (Log_file)
         {
@@ -3613,7 +3574,6 @@ int executeJava(JF retFrame, JF f)
             printf("\nwrong opcode!!%s\n", dumpOpcode(opcode));
             exit(0);
         }
-        PCMOVE(1);
     }
     return 0;
 }
@@ -3621,3 +3581,8 @@ int executeJava(JF retFrame, JF f)
 #undef C
 #undef O
 #undef JF
+#undef PC_MOVE
+#undef INTERP_U1
+#undef INTERP_U2
+#undef INTERP_U4
+#undef INTERP_INDEX

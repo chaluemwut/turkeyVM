@@ -245,7 +245,6 @@ O getClassConstructors(O vmClass, int isPublic)
     /*{{{*/
     C array_class = findArrayClass("[Ljava/lang/reflect/Constructor;");
     C reflect_class = loadClass("java/lang/reflect/Constructor");
-    /**/
     O c = (O)vmClass->binding;
 
     ClassBlock_t *cb = CLASS_CB(c->binding);
@@ -311,6 +310,7 @@ O getClassConstructors(O vmClass, int isPublic)
                 /*NOTE: vmClass->binding is a Class Object */
                 OBJECT_DATA(reflect_ob, clazz->offset-1, O) = (O)vmClass->binding;
                 /**
+                 * mb->slot 
                  * @see class.c defineClass()
                  * 2015/07/01
                  */

@@ -305,18 +305,6 @@ void setCurrentFrame(JF f)
 }
 
 
-void PCIncrease(int x)
-{
-    current_frame->pc+=x;
-    current_frame->pc_offset+=x;
-}
-
-void PCDecrease(int x)
-{
-    current_frame->pc-=x;
-    current_frame->pc_offset-=x;
-}
-
 NF getNativeFrame()
 {
     return nframe;
@@ -338,6 +326,7 @@ NF getNativeFrame()
     }while(0)
 
 
+/*
 void load(void* result, Operand_e t, int index)
 {
     switch (t)
@@ -397,7 +386,7 @@ void store(void* value, Operand_e t, int index)
         ERROR("wrong type");
     }
 }
-
+*/
 void seek(void* result, Operand_e t)
 {
     TODO("seek");

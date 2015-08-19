@@ -37,14 +37,14 @@
  * @t type
  * @i index of frame's locals
  */
-#define LOAD(f, v, t, i)            \
-    do{                             \
-        v = *(t*)(f->locals+i);     \
+#define LOAD(f, v, t, i)                \
+    do{                                 \
+        v = *(t*)(f->locals+(i));       \
     }while(0)
 
-#define STORE(f, v, t, i)           \
-    do{                             \
-        *(t*)(f->locals+i)=v;       \
+#define STORE(f, v, t, i)               \
+    do{                                 \
+        *(t*)(f->locals+(i))=v;         \
     }while(0)
 
 
@@ -105,10 +105,6 @@ extern void initNativeFrame();
 
 extern JF getCurrentFrame();
 
-extern void PCIncrease(int x);
-
-extern void PCDecrease(int x);
-
 extern void setCurrentFrame(JF f);
 
 extern JF popFrame();
@@ -127,9 +123,9 @@ extern void pop(JF f, void* result, Operand_e t);
 
 extern void push(JF f, void* value, Operand_e t);
 
-extern void load(void* result, Operand_e t, int index);
+//extern void load(void* result, Operand_e t, int index);
 
-extern void store(void* value, Operand_e t, int index);
+//extern void store(void* value, Operand_e t, int index);
 
 
 #undef C

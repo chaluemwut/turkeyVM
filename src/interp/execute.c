@@ -87,7 +87,7 @@ int Verbose_executeMethod(MethodBlock_t* mb, va_list jargs)
         JF currentF = getCurrentFrame();
         //executeJava
         
-        char* s = String_concat(getMethodClassName(mb), ":",mb->name, mb->type, NULL);
+        char* s = String_concat(getMethodClassName(mb), ":", mb->name, mb->type, NULL);
         int r;
         Log_SingleMethod(s, Log_executeJava, (retFrame, currentF), r);
     }
@@ -171,7 +171,6 @@ void invokeConstructNative(MethodBlock_t* mb, O args, O this)
      */
 
     Assert_ASSERT(args->type == OBJECT_ARRAY);
-    //copyArgs(Frame* frame, MethodBlock_t* mb)
     if (!(mb->access_flags & ACC_STATIC))//non-static
       locals_idx = args_count;
     else
@@ -182,19 +181,16 @@ void invokeConstructNative(MethodBlock_t* mb, O args, O this)
         throwException("args count error");
     }
 
-    //*((Object**)&frame->locals[0]) = this;
-    store(&this, TYPE_REFERENCE, 0);
+    STORE(frame, this, O, 0);
     int i;
     for (i = 0; i<args->length; i++)
     {
-        //*((Object**)&frame->locals[i+1]) = ARRAY_DATA(args, i, Object*);
-        store(&(ARRAY_DATA(args, i, O)), TYPE_REFERENCE, i+1);
-
-        //NOTE: equals 0 also need copy
-        //memcpy(frame->locals + locals_idx, current_frame->ostack, sizeof(int));
-        /*NOTE: pop the stack*/
-        //*current_frame->ostack = 0;
-        //current_frame->ostack--;
+        STORE(frame, (ARRAY_DATA(args, i, O)), O, i+1);
+        /*
+         * Since this method is not normal, it's not have a prev frame,
+         * we don't need to copy args for it, just create it's locals 
+         * manually.
+         */
     }
 
     executeJava(retFrame, frame);

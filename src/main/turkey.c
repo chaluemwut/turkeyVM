@@ -28,6 +28,7 @@
 #include "../control/control.h"
 #include "../classloader/class.h"
 #include "../interp/stackmanager.h"
+#include "../interp/opcode.h"
 #include "../dll/dll.h"
 #include "../lib/list.h"
 #include "../lib/hash.h"
@@ -146,6 +147,7 @@ int main(int argc, char** argv)
     printf("\nVM run %f seconds\n", (double)(end-start)/CLOCKS_PER_SEC);
     //Hash_foreachKey(CMap, doKey);
     classHashStatus();
+    opcodeStatus();
     return 0; 
     
     /*}}}*/

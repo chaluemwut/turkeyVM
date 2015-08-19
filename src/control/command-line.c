@@ -21,7 +21,7 @@
 #define P Poly_t
 
 
-static const char* VERSION = "turkey v0.0.5 linux/386";
+static const char* VERSION = "turkey v0.0.6 linux/386";
 static const char* WEBSITE = "https://github.com/qc1iu/turkeyVM";
 
 static void actionArg_help();
@@ -82,10 +82,16 @@ static void arg_setVerbose(int i)
     }
 }
 
+static void arg_setOpcode()
+{
+    Control_opcode = 1;
+}
+
 
 static Arg_t allArgs[] =
 {
     {"cp", ARGTYPE_STRING, "{path}", "set class search path", arg_setClassSearchPath},
+    {"opcode", ARGTYPE_EMPTY, "<NULL>", "statistic instrctions", arg_setOpcode},
     {"log", ARGTYPE_STRING, "{name}", "log method", arg_setLog},
     {"verbose", ARGTYPE_INT, "{0|1|2|3}", "verbose turkey",  arg_setVerbose},
     {"trace", ARGTYPE_STRING, "{name}", "trace specific method", arg_setTrace},

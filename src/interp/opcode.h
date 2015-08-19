@@ -212,5 +212,9 @@ typedef enum
 
 extern char* dumpOpcode(Opcode_e);
 
+extern void opcodeStatistics(Opcode_e);
+
+extern void opcodeStatus();
+
 
 #endif

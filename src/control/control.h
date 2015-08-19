@@ -19,4 +19,6 @@ extern Verbose_t Control_verbose;
 
 extern void Control_setLogFile(FILE* fd);
 
+extern int Control_opcode;
+
 #endif

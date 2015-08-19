@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "opcode.h"
+#include "../control/control.h"
 #include "../lib/assert.h"
 
 /*
@@ -234,7 +235,88 @@ static char* const OPCODE[] =
 
 char* dumpOpcode(Opcode_e cpcode)
 {
-    Assert_ASSERT(cpcode<=0 && cpcode<OPC_NUMBER);
+    Assert_ASSERT(cpcode>=0 && cpcode<OPC_NUMBER);
 
     return OPCODE[cpcode];
+}
+
+static int times;
+static int statistics[OPC_NUMBER];
+
+void opcodeStatistics(Opcode_e c)
+{
+    if (0 == Control_opcode)
+      return;
+
+    times+=1;
+    statistics[c]+=1;
+}
+
+static int printSpace(FILE* fd, int i)
+{
+    int setp = i;
+    while (i >0)
+    {
+        fprintf(fd, " ");
+        i--;
+    }
+    return setp;
+}
+
+void opcodeStatus()
+{
+    if (0 == Control_opcode)
+      return;
+
+    printf("Generate instruction statistics...\n");
+    printf("Find detail in \'instruction.txt\'\n");
+
+    FILE* fd;
+    int i;
+    int j;
+
+    fd = fopen("instruction.txt", "wr");
+    i = 0;
+    j = 0;
+
+    j+=fprintf(fd, "INSTRUCTION");
+    j+=printSpace(fd, 30-j);
+    j+=fprintf(fd, "TIMES");
+    printSpace(fd, 45-j);
+    fprintf(fd, "PERCENT\n");
+
+    while(i<52)
+    {
+        fprintf(fd, "-");
+        i++;
+    }
+    fprintf(fd, "\n");
+
+    i=0;
+    while (i<OPC_NUMBER)
+    {
+        j = 0;
+        j += fprintf(fd, "%s", OPCODE[i]);
+        j += printSpace(fd, 30-j);
+        j += fprintf(fd, "%d", statistics[i]);
+        printSpace(fd, 45-j);
+        fprintf(fd, "%.2f%%\n", (float)statistics[i]/(float)times*100);
+        i++;
+    }
+
+    i=0;
+    while(i<52)
+    {
+        fprintf(fd, "-");
+        i++;
+    }
+    fprintf(fd, "\n");
+
+
+    j=0;
+    j+=fprintf(fd, "SUM");
+    j+=printSpace(fd, 30-j);
+    j+=fprintf(fd, "%d", times);
+    printSpace(fd, 45-j);
+    fprintf(fd, "100%%\n");
 }
