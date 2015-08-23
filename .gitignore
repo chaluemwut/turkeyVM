@@ -4,6 +4,7 @@
 *.taghl
 tags
 *.out
+.test
 *_test
 *~
 /src/CMakeFiles
