@@ -41,8 +41,6 @@
 
 extern List_t CList;
 
-
-
 static int executeNativeMethod(MethodBlock_t* mb)
 {
     if (dis_testinfo)
@@ -54,10 +52,8 @@ static int executeNativeMethod(MethodBlock_t* mb)
     JF retFrame = getCurrentFrame();
     //TODO According to the method->type, need change the return type.@qcliu 2015/03/06
     ((void (*)(JF))mb->native_invoker)(retFrame);
-
     popNativeFrame();
     //printf("pop Native method:%s\n", mb->name);
-
     return 0;
 }
 
@@ -65,7 +61,6 @@ int Log_executeJava(JF retFrame, JF currentF)
 {
     executeJava(retFrame, currentF);
     popFrame();
-
     return 0;
 }
 
@@ -91,7 +86,6 @@ int Verbose_executeMethod(MethodBlock_t* mb, va_list jargs)
         int r;
         Log_SingleMethod(s, Log_executeJava, (retFrame, currentF), r);
     }
-
     return 0;
     /*}}}*/
 }
@@ -121,12 +115,10 @@ static int Verbose_executeStaticMain(MethodBlock_t* mb, O args)
     int args_count = mb->args_count;
     JF frame = createFrame0(mb);
     *(O*)(frame->locals+0) = *(O*)&args;
-
     if (dis_testinfo)
       printf("\nnew Frame: %d\n", frame->id);
     int r;
     Log_SingleMethod("staticMain", Log_executeJava, (NULL, frame), r);
-
     return 0;
     /*}}}*/
 }
@@ -192,9 +184,7 @@ void invokeConstructNative(MethodBlock_t* mb, O args, O this)
          * manually.
          */
     }
-
     executeJava(retFrame, frame);
-
     popFrame();
     /*}}}*/
 }

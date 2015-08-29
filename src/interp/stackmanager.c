@@ -71,9 +71,7 @@ JF initFrame()
     f->mb = NULL;
     f->ostack=NULL;
     f->locals=NULL;
-
     Stack_push(methodF, f);
-
     return NULL;
 }
 
@@ -84,7 +82,6 @@ void initNativeFrame()
     frame->class = NULL;
     frame->locals = NULL;
     nframe = frame;
-
 }
 
 /*
@@ -173,21 +170,16 @@ JF createFrame0(MethodBlock_t* mb)
     memset(frame->locals, 0, sizeof(int)*(max_stack+max_locals));
     //point to the previous slot of aviliable
     frame->ostack = frame->locals + max_locals - 1;
-
     frame->bottom = frame->ostack;
     frame->top = frame->ostack+max_stack;
     frame->id = getNewId();
-
     //point to the prev
     Stack_push(methodF, frame);
     setCurrentFrame(frame);
     bottom = current_frame->bottom;
     top = current_frame->top;
 
-
-
     return frame;
-
 }
 
 /*
@@ -218,8 +210,6 @@ JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
 
     int args_count = mb->args_count;
     int locals_idx = 0;
-
-
     //XXX copy args
     if (jargs == NULL)
     {
@@ -240,7 +230,6 @@ JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
     }
     else
     {
-        //printf("jarg not null\n");
         unsigned int* sp = frame->locals;
         if (!(mb->access_flags & ACC_STATIC))//non-static
         {
@@ -250,12 +239,10 @@ JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
         char* sig = mb->type;
         SCAN_SIG(sig, VA_DOUBLE(jargs, sp), VA_SINGLE(jargs, sp));
     }
-
     if (dis_testinfo)
     {
         printf("\n%dnew Frame:---- %d, name:%s\n",method_num, frame->id, frame->mb->name);
     }
-
     return frame;
 }
 
@@ -270,7 +257,6 @@ JF popFrame()
 {
     JF temp = (JF)Stack_pop(methodF);
     //printf("pop frame:%s, size:%d\n", temp->mb->name, Stack_size(methodF));
-
     if (dis_testinfo)
     {
         printf("pop Frame: %d  ", temp->id);
@@ -278,19 +264,15 @@ JF popFrame()
     free(temp->locals);
     free(temp);
     frame_num--;
-
     //XXX If not have a dummy node, will error.
     JF f = (JF)Stack_seek(methodF);
     if (f == NULL)
         ERROR("stack is NULL");
-
     setCurrentFrame(f);
-
     bottom = current_frame->bottom;
     top = current_frame->top;
 
     return f;
-
 }
 
 JF getCurrentFrame()
@@ -309,7 +291,6 @@ NF getNativeFrame()
 {
     return nframe;
 }
-
 
 
 #define ASSERT_STACK(f)                                 \

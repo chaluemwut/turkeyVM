@@ -151,18 +151,14 @@ void addClassHeader(C class)
     if (java_lang_Class)
     {
         O obj = allocObject(java_lang_Class);
-
         if (java_lang_VMClass == NULL)
             java_lang_VMClass = loadClass("java/lang/VMClass");
-
         O vmobj = allocObject(java_lang_VMClass);
         //NOTE: vmClass obj can also known which class he belong to
         vmobj->binding = (C)obj;
-
         /* Every Class obj need a VMClass obj.*/
         FieldBlock_t* fb = findField(java_lang_Class, "vmClass", "Ljava/lang/VMClass;");
         OBJECT_DATA(obj, fb->offset-1, O) = vmobj;
-
         obj->binding = class;//Class obj's binding refer to the method area.
         class->class = obj;
     }
@@ -208,7 +204,6 @@ int parseArgs(char* args)
 {
     char* ptr = args;/*{{{*/
     int count = 0;
-
     /*
      * (ParameterDesciptor*) ReturnDescriptor
      * The args must start with '(' and end with ')'
@@ -238,7 +233,6 @@ int parseArgs(char* args)
         else if (*ptr == '[')
         {
             count++;
-
             do
             {
                 ptr++;
@@ -253,9 +247,7 @@ int parseArgs(char* args)
                 }
                 while (*ptr != ';');
             }
-
             ptr++;
-
         }
         //TODO need??
         else
@@ -263,7 +255,6 @@ int parseArgs(char* args)
             ptr++;
         }
     }
-
     return count;/*}}}*/
 }
 
@@ -300,7 +291,6 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
     READ_U2(major_v , ptr);
     class = sysMalloc(CLASS_HEADER_SIZE+sizeof(ClassBlock_t));
     classblock = CLASS_CB(class);
-
     //init
     classblock->magic = magic;
     classblock->minor_version = minor_v;
@@ -313,23 +303,19 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
     classblock->this_classname = classname;//mast read from constant pool
     classblock->type_flags = 0;
     classblock->interface_count = 0;
-
     /*-----------------constant_pool---------------------*/
     READ_U2(cp_count, ptr);/*{{{*/
     //printf("constant_pool_count:%d\n", cp_count);
     classblock->constant_pool_count = cp_count;
-
     constantPool = &classblock->constant_pool;
     constantPool->type = (volatile u1*)sysMalloc(cp_count);
     constantPool->info = (ConstantPoolEntry_t*)
                           sysMalloc(cp_count * sizeof(ConstantPoolEntry_t));
-
     for (i=1; i<cp_count; i++)
     {
         u1 tag;
         READ_U1(tag, ptr);
         CP_TYPE(constantPool, i) = tag;
-
         switch (tag)
         {
         case CONSTANT_Class:
@@ -355,7 +341,6 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
         case CONSTANT_Float:
             READ_U4(CP_INFO(constantPool, i),  ptr);
             break;
-
             /*NOTE: Long and Double use two step to obtain.
              *
              *@qcliu 2015/03/15
@@ -380,7 +365,6 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
             memcpy(utf8, ptr, length);
             utf8[length]='\0';
             ptr += length;
-
             CP_INFO(constantPool,i) = (u4)utf8;
             break;
         }
@@ -397,24 +381,18 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
             printf("%d\n", i);
             throwException("InvalidConstantPoolIndex");
         }
-
-
     }
     /*}}}*/
-
     /*---------------------------access_flag,this_class,super_class------------*/
     READ_U2(classblock->access_flags, ptr);/*{{{*/
     u2 this_classidx, super_classidx, super_name_idx;
     READ_U2(this_classidx, ptr);
     READ_U2(super_classidx, ptr);
-    //printf("this_classidx:%d\n", this_classidx);
-    //printf("super_classidx:%d\n", super_classidx);
     this_classidx = CP_INFO(constantPool, this_classidx);
     super_name_idx = CP_INFO(constantPool, super_classidx);
     classblock->this_classname = CP_UTF8(constantPool, this_classidx);
     classblock->super_classname = CP_UTF8(constantPool, super_name_idx);
     //resovle/*}}}*/
-
     /*----------------------------interface------------------------------------*/
     u2 idx;/*{{{*/
     READ_U2(interfaces_count, ptr);
@@ -422,29 +400,23 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
     //printf("interface_count:%d\n", interfaces_count);
     //interfaces_idx=classblock->interfaces_idx;
     //interfaces_idx=(u2*)sysMalloc(interfaces_count * sizeof(u2));
-
     classblock->interfaces = (C*)sysMalloc(sizeof(struct Class_t) * interfaces_count);
-
     for (i=0; i<interfaces_count; i++)
     {
         READ_U2(idx, ptr);
-
         classblock->interfaces[i] = resolveClass(class,idx);
     }
     /*}}}*/
-
     /*--------------------------fields------------------------------------------*/
     /*{{{*/
     READ_U2(classblock->fields_count, ptr);
     //printf("fields_count:%d\n", classblock->fields_count);
     fields = sysMalloc(classblock->fields_count * sizeof(FieldBlock_t));
     classblock->fields = fields;
-
     for (i = 0; i<classblock->fields_count; i++)
     {
         u2 name_idx, type_idx;
         u2 attr_count;
-
         u2 attr_name_idx;
         u4 attr_length;
 
@@ -459,20 +431,16 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
         fields[i].constant = 0;
         fields[i].static_value = 0;
         fields[i].offset = 0;
-
         READ_U2(attr_count, ptr);
         //printf("attr_count:%d\n", attr_count);
-
         while (attr_count != 0)
         {
             READ_U2(attr_name_idx, ptr);
             READ_U4(attr_length, ptr);
             Assert_ASSERT(attr_length == 2);
             //printf("attr_length:%d\n", attr_length);
-
             char* attr_name = CP_UTF8(constantPool, attr_name_idx);
             //printf("%s\n", attr_name);
-
             //this field is static final
             if (strcmp(attr_name, "ConstantValue") == 0 )
             {
@@ -485,17 +453,14 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
             }
             attr_count--;
         }
-
     }
     /*}}}*/
-
     /*-------------------------------------Method----------------*/
     READ_U2(methodsCount, ptr);/*{{{*/
     //printf("methods_count:%d\n", methods_count);
     classblock->methods_count = methodsCount;
     methods = (MethodBlock_t*)sysMalloc(methodsCount * sizeof(MethodBlock_t));
     classblock->methods = methods;
-
     for (i = 0; i < methodsCount; i++)
     {
         u2 access_flags, name_idx, type_idx, attr_count;
@@ -505,23 +470,18 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
         READ_U2(attr_count, ptr);
 
         methods->access_flags = access_flags;
-
         methods->name = CP_UTF8(constantPool, name_idx);
-
         /*@TEST
          *
          * 2015/07/06
          * */
         //if (0 == strcmp(methods->name, "constructNative"))
         //DEBUG("constructNative");
-
         methods->type = CP_UTF8(constantPool, type_idx);
         methods->code_length = 0;
         methods->native_invoker = 0;
         methods->max_locals = 0;
         methods->max_stack = 0;
-
-
         /**
          * @see native.c
          * 2015/07/01
@@ -533,30 +493,15 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
          * @qcliu 2015/01/27
          */
         methods->args_count = parseArgs(methods->type);
-
         //========================================================================
         /*
          * Binding the native method to the mb->native_invoker
          * @qcliu 2015/03/06
          */
         if (methods->access_flags & ACC_NATIVE)
-        {
-            /*
-            int j;
-            for (j = 0; nativeMethods[j].action; j++)
-            {
-                if ((strcmp(nativeMethods[j].method_name, methods->name) == 0) &&
-                        (strcmp(nativeMethods[j].desc, methods->type) == 0))
-                {
-                    methods->native_invoker = nativeMethods[j].action;
-                    break;
-                }
-            }
-            */
-            methods->native_invoker = findNativeInvoker(methods->name, methods->type);
-        }
+          methods->native_invoker = 
+              findNativeInvoker(methods->name, methods->type);
         //====================================================================
-
         methods->class = class;
         //ClassBlock_t* testcb = CLASS_CB(class);
         //printf("%s\n", testcb->this_classname);
@@ -584,13 +529,11 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
                 READ_U2(methods->max_locals, ptr);
                 READ_U4(code_length, ptr);
                 //printf("code_length:%d\n", code_length);
-
                 code = (u1*)sysMalloc(code_length * sizeof(u1));
                 for (j = 0; j < code_length; j++)
                 {
                     READ_U1(code[j], ptr);
                 }
-
                 methods->code_length = code_length;
                 methods->code = code;
                 /*print*/
@@ -599,10 +542,9 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
                     //printf("%d ", methods->code[j]);
                 }
                 //printf("\n");
-
                 READ_U2(exception_table_length, ptr);
-                exception = (CodeException_t*)sysMalloc(exception_table_length
-                                                      * sizeof(CodeException_t));
+                exception = (CodeException_t*)sysMalloc(
+                            exception_table_length * sizeof(CodeException_t));
                 for (j = 0; j < exception_table_length; j++)
                 {
                     READ_U2(exception[j].start_pc, ptr);
@@ -623,9 +565,7 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
                     READ_U4(len, ptr);
                     ptr += len;
                 }
-
             }
-
             else if (strcmp(attr_name, "Exceptions") == 0)
             {
                 u2 exception_count , j;
@@ -637,7 +577,6 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
                 {
                     READ_U2(exception_index_table[j], ptr);
                 }
-
                 methods->number_of_exceptions = exception_count;
                 methods->exception_idx_table = exception_index_table;
             }
@@ -651,11 +590,9 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
         methods++;
     }
     /*}}}*/
-
     /*----------------------------attr-----------------------*/
     READ_U2(attrCount, ptr);/*{{{*/
     //printf("attr_count:%d\n", attr_count);
-
     for (; attrCount != 0; attrCount--)
     {
         u2 attr_name_idx;
@@ -665,9 +602,7 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
         READ_U4(attr_length, ptr);
         ptr += attr_length;
     }
-
     /*}}}*/
-
     /*resolve super*/
     if (super_classidx)
     {
@@ -704,18 +639,19 @@ static C loadSystemClass(char* classname)
 
         if (dis_testinfo)
             printf("%s have already in table!!!!!!!!!!!!!!!!!!!!\n",cb->this_classname);
-
         return class;
     }
-
     if (dis_testinfo)
         printf("loadSystemClass----------------------------\n");
-
-    int file_len, fname_len = strlen(classname) + 8;
-    char* buff = (char*)malloc(MAX_PATH_LEN + file_len);
-    char filename[fname_len];
+    int file_len;
+    int fname_len;
+    char* buff;
     char* data;
 
+    file_len = strlen(classname) + 8;
+    fname_len = strlen(classname) + 8;
+    buff = (char*)malloc(MAX_PATH_LEN + file_len);
+    char filename[fname_len];
     filename[0] = '/';
     strcat(strcpy(&filename[1], classname), ".class");
     filename[fname_len-1] = '\0';
@@ -728,7 +664,6 @@ static C loadSystemClass(char* classname)
         cfd = fopen(fullName, "r");
         cp_ptr++;
     }while(*cp_ptr&&!cfd);
-
     if (cfd == NULL)
     {
         char* fullName = String_concat(CLASS_SEARCH_PATH, filename, NULL);
@@ -736,32 +671,20 @@ static C loadSystemClass(char* classname)
     }
     if (dis_testinfo)
         printf("this fiel name is %s\n", filename);
-
     if (cfd == NULL)
-    {
-        Exception("Could not find or load main class %s", filename);
-    }
-
+      Exception("Could not find or load main class %s", filename);
     fseek(cfd, 0L, SEEK_END);
     file_len = ftell(cfd);
     fseek(cfd, 0L, SEEK_SET);
-
     data = (char*)sysMalloc(file_len);
+
     if (fread(data, sizeof(char), file_len, cfd) != file_len)
-    {
-        ERROR("fread error");
-    }
+      ERROR("fread error");
     else
-    {
-        /*defineClass()*/
-        class = defineClass(classname, data, file_len);
-    }
+      class = defineClass(classname, data, file_len);
 
     free(buff);
     free(data);
-
-
-
     return class;
     /*}}}*/
 }
@@ -769,55 +692,35 @@ static C loadSystemClass(char* classname)
 static int prepareMethod(C class)
 {
     ClassBlock_t* cb;
-    u2 this_methodstable_size;
+    MethodBlock_t* super_mb;
     u2 super_methodstable_size;
+    int idx;
 
     cb = CLASS_CB(class);
-    this_methodstable_size = 0;
     super_methodstable_size = 0;
-    if (cb->super == NULL)
+    idx = 0;
+    if (cb->super)
     {
-        int i = 0;
-        int idx = 0;
-        for (i = 0; i<cb->methods_count; i++)
-        {
-            MethodBlock_t* mb = &cb->methods[i];
-            /* omit <init>,<clinit>,static,private */
-            if ((strcmp(mb->name, "<init>") == 0) ||
-                        (strcmp(mb->name, "<clinit>") == 0) ||
-                        (mb->access_flags & ACC_STATIC) ||
-                        (mb->access_flags & ACC_PRIVATE))
-              continue;
-            this_methodstable_size++;
-            mb->methods_table_idx = idx++;
-        }
-        cb->methods_table_size = this_methodstable_size;
-    }
-    else
-    {
-        int i = 0;
-        u2 idx = 0;
         ClassBlock_t* super_cb = CLASS_CB(cb->super);
         super_methodstable_size = super_cb->methods_table_size;
-
-        for (i = 0; i<cb->methods_count; i++)
-        {
-            MethodBlock_t* mb = &cb->methods[i];
-            //omit static,private,clinit,init
-            if ((mb->access_flags & ACC_STATIC) ||
-                        (mb->access_flags & ACC_PRIVATE) ||
-                        (strcmp(mb->name, "<init>") == 0) ||
-                        (strcmp(mb->name, "<clinit>") == 0))
-              continue;
-
-            MethodBlock_t* super_mb = findMethod(cb->super, mb->name, mb->type);
-            if (super_mb)
-              mb->methods_table_idx = super_mb->methods_table_idx;
-            else
-              mb->methods_table_idx = super_methodstable_size + idx++;
-        }
-        cb->methods_table_size = super_methodstable_size + idx;
     }
+    int i = 0;
+    for (i = 0; i<cb->methods_count; i++)
+    {
+        MethodBlock_t* mb = &cb->methods[i];
+        //omit static,private,clinit,init
+        if ((mb->access_flags & ACC_STATIC) ||
+                    (mb->access_flags & ACC_PRIVATE) ||
+                    (strcmp(mb->name, "<init>") == 0) ||
+                    (strcmp(mb->name, "<clinit>") == 0))
+          continue;
+
+        if (cb->super &&(super_mb = findMethod(cb->super, mb->name, mb->type)))
+          mb->methods_table_idx = super_mb->methods_table_idx;
+        else
+          mb->methods_table_idx = super_methodstable_size + idx++;
+    }
+    cb->methods_table_size = super_methodstable_size + idx;
     return 0;
 }
 
@@ -828,7 +731,6 @@ static int prepareField(C class)
 
     cb = CLASS_CB(class);
     field_offset = 1;
-
     if (cb->super)
     {
         ClassBlock_t* super_cb = CLASS_CB(cb->super);
@@ -838,7 +740,6 @@ static int prepareField(C class)
     for(i = 0; i<cb->fields_count; i++)
     {
         FieldBlock_t* fb = &cb->fields[i];
-
         //static field
         if (fb->access_flags & ACC_STATIC)
         {
@@ -847,11 +748,8 @@ static int prepareField(C class)
             else
               fb->static_value = 0;
         }
-        else   //non static
+        else
         {
-            /*
-             * note: the filed_offset now is already become the super offset
-             */
             fb->offset = field_offset;
             if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
               field_offset += 2;
@@ -864,9 +762,138 @@ static int prepareField(C class)
      * @qcliu 2015/01/30
      */
     cb->obj_size = field_offset - 1;
-
     return 0;
 }
+
+/*
+static int prepareField_1(C class)
+{
+    ClassBlock_t* cb;
+    u2 this_fieldtable_size;
+    u2 super_fieldtable_size;
+
+    cb = CLASS_CB(class);
+    this_fieldtable_size = 0;
+    super_fieldtable_size = 0;
+    if (cb->super == NULL)
+    {
+        int i;
+        int offset = 1;
+        int idx = 0;
+        int private_start = 0;
+        FieldBlock_t* fb;
+        for (i=0; i<cb->fields_count; i++)
+        {
+            fb = cb->fields+i;
+            if (fb->access_flags & ACC_STATIC)
+            {
+                if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
+                  *(long long*)(&fb->static_value) = 0;
+                else
+                  fb->static_value = 0;
+
+                continue;
+            }
+            if (fb->access_flags & ACC_PRIVATE)
+              continue;
+
+            fb->offset = offset;
+            fb->fields_table_idx = idx;
+            if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
+              offset += 2;
+            else
+              offset += 1;
+            idx++;
+        }
+        private_start = offset;
+        for (i=0; i<cb->fields_count; i++)
+        {
+            fb = cb->fields+i;
+            if (fb->access_flags & ACC_PRIVATE)
+            {
+                fb->offset = offset;
+                fb->fields_table_idx = idx;
+                if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
+                  offset += 2;
+                else
+                  offset += 1;
+                idx++;
+            }
+        }
+        cb->fields_table_size = idx;
+        cb->obj_size = offset-1;
+        cb->private_start = private_start;
+    }
+    else
+    {
+        ClassBlock_t* super_cb = CLASS_CB(cb->super);
+        int i;
+        int offset = super_cb->private_start;
+        int idx = super_cb->fields_table_size;
+        int private_start = 0;
+        FieldBlock_t* fb;
+        for (i=0; i<cb->fields_count; i++)
+        {
+            fb = cb->fields+i;
+            if (fb->access_flags & ACC_STATIC)
+            {
+                if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
+                  *(long long*)(&fb->static_value) = 0;
+                else
+                  fb->static_value = 0;
+
+                continue;
+            }
+            if (fb->access_flags & ACC_PRIVATE)
+              continue;
+
+            FieldBlock_t* super_fb = findField(cb->super, fb->name, fb->type);
+            if (super_fb)
+            {
+                fb->offset = super_fb->offset;
+                fb->fields_table_idx = super_fb->fields_table_idx;
+
+                continue;
+            }
+
+            fb->offset = offset;
+            fb->fields_table_idx = idx;
+            if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
+              offset += 2;
+            else
+              offset += 1;
+            idx++;
+        }
+        private_start = offset;
+        for (i=0; i<cb->fields_count; i++)
+        {
+            fb = cb->fields+i;
+            if (fb->access_flags & ACC_PRIVATE)
+            {
+                FieldBlock_t* super_fb = findField(cb->super, fb->name, fb->type);
+                if (super_fb)
+                {
+                    fb->offset = super_fb->offset;
+                    fb->fields_table_idx = super_fb->fields_table_idx;
+
+                    continue;
+                }
+                fb->offset = offset;
+                fb->fields_table_idx = idx;
+                if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
+                  offset += 2;
+                else
+                  offset += 1;
+                idx++;
+            }
+        }
+        cb->fields_table_size = idx;
+        cb->obj_size = offset-1;
+        cb->private_start = private_start;
+    }
+    return 0;
+}
+*/
 /*
  * Obtain the methods_table_size of each ClassBlock
  * During this function,<init>,<clinit>,static,private methods can
@@ -879,15 +906,12 @@ static int Verbose_prepareClass(C class)
     ClassBlock_t* cb = CLASS_CB(class);
 
     if (cb->flags >= PREPARED)
-        return 0;
-
+      return 0;
     if (dis_testinfo)
         printf("preparing class.....%s\n", cb->this_classname);
-
     prepareMethod(class);
     prepareField(class);
     cb->flags = PREPARED;
-
     return 0;
 }
 
@@ -903,54 +927,36 @@ static void prepareClass(C class)
 static int linkMethod(C class)
 {
     ClassBlock_t* cb;
+    ClassBlock_t* super_cb;
     int this_methodstable_size;
     int super_methodstable_size;
 
     cb = CLASS_CB(class);
     this_methodstable_size = cb->methods_table_size;
     super_methodstable_size = 0;
-
-    if (cb->super != NULL)
+    if (cb->super)
     {
-        int i;
-        ClassBlock_t* super_cb = CLASS_CB(cb->super);
+        super_cb = CLASS_CB(cb->super);
         super_methodstable_size = super_cb->methods_table_size;
-        cb->methods_table = (MethodBlock_t**)sysMalloc(sizeof(MethodBlock_t*)*
-                            this_methodstable_size);
+    }
+    cb->methods_table = (MethodBlock_t**)sysMalloc(sizeof(MethodBlock_t*)*
+                this_methodstable_size);
+    if (cb->super)
         memcpy(cb->methods_table, super_cb->methods_table, 
                     super_methodstable_size * (sizeof(MethodBlock_t*)));
-        for (i = 0; i<cb->methods_count; i++)
-        {
-            MethodBlock_t* mb = &cb->methods[i];
-            if ((strcmp(mb->name, "<clinit>") == 0) || 
-                        (strcmp(mb->name, "<init>") == 0) ||
-                    (mb->access_flags & ACC_STATIC) || 
-                    (mb->access_flags & ACC_PRIVATE))
-                continue;
-
-            u2 idx = mb->methods_table_idx;
-            cb->methods_table[idx] = mb;
-        }
-    }
-    else
+    int i;
+    for (i = 0; i<cb->methods_count; i++)
     {
-        int i = 0;
-        cb->methods_table = (MethodBlock_t**)sysMalloc(
-                    sizeof(MethodBlock_t*) * this_methodstable_size);
-        for (i = 0; i<cb->methods_count; i++)
-        {
-            MethodBlock_t* mb = &cb->methods[i];
-            if ((strcmp(mb->name, "<clinit>") == 0) || 
-                        (strcmp(mb->name, "<init>") == 0) ||
+        MethodBlock_t* mb = &cb->methods[i];
+        if ((strcmp(mb->name, "<clinit>") == 0) || 
+                    (strcmp(mb->name, "<init>") == 0) ||
                     (mb->access_flags & ACC_STATIC) || 
                     (mb->access_flags & ACC_PRIVATE))
-                continue;
+          continue;
 
-            u2 idx = mb->methods_table_idx;
-            cb->methods_table[idx] = mb;
-        }
+        u2 idx = mb->methods_table_idx;
+        cb->methods_table[idx] = mb;
     }
-
     return 0;
 }
 
@@ -977,7 +983,6 @@ static C Verbose_linkClass(C class)
     linkMethod(class);
     addClassHeader(class);
     cb->flags = LINKED;
-
     return class;
 }
 
@@ -987,7 +992,6 @@ static C linkClass(C class)
     char* s = String_concat(c, " \e[36m\e[1mlink\e[0m", NULL);
     C r;
     Verbose_TRACE(s, Verbose_linkClass, (class), r, VERBOSE_SUBPASS);
-
     return r;
 }
 
@@ -1006,10 +1010,8 @@ void initClass(C class)
 
     ClassBlock_t* cb = CLASS_CB(class);
     ConstantPool_t* cp = &cb->constant_pool;
-
     if (dis_testinfo)
         printf("initClass-------------%s\n", cb->this_classname);
-
     if (cb->flags >= INITED)
     {
         if (dis_testinfo)
@@ -1033,7 +1035,6 @@ void initClass(C class)
             }
         }
     }
-
     MethodBlock_t* mb = findMethodinCurrent(class, "<clinit>", "()V");
     /*
      * The <clinit> is a static method, it's dosen't refer to
@@ -1062,7 +1063,6 @@ static C Verbose_loadClass0(char* classname)
         class = loadArrayClass(classname);
     else
         class = loadSystemClass(classname);
-
     /*
      * This must before initClass().Otherwise, there will
      * be loop untill death.
@@ -1070,20 +1070,14 @@ static C Verbose_loadClass0(char* classname)
     cb = CLASS_CB(class);
     String_t s = String_new(cb->this_classname);
     Hash_put(CMap, s, class);
-
-
     //prepareClass
     prepareClass(class);
-
     //linkClass
     class = linkClass(class);
-
     // If the class is not interface, initClass
     cb = CLASS_CB(class);
-
     if (!(cb->access_flags & ACC_INTERFACE))
         initClass(class);
-
     return class;
 
 }
@@ -1093,7 +1087,6 @@ C loadClass0(char* classname)
     char* s = String_concat(classname, " \e[33m\e[1mload\e[0m", NULL);
     C r;
     Verbose_TRACE(s, Verbose_loadClass0, (classname), r, VERBOSE_PASS);
-
     return r;
 }
 
@@ -1113,14 +1106,11 @@ C loadClass(char* classname)
     /*{{{*/
     C class = findClass(classname);
     ClassBlock_t* cb;
-
     if (class != NULL)
     {
         ClassBlock_t* cb = CLASS_CB(class);
-
         if (dis_testinfo)
             printf("%s have already in the table\n",cb->this_classname);
-
         return class;
     }
     else
@@ -1149,7 +1139,6 @@ static C loadArrayClass(char* classname)
     size =  CLASS_HEADER_SIZE+sizeof(ClassBlock_t);
     class = (C)sysMalloc(size);
     cb = CLASS_CB(class);
-
     cb->flags = 0;
     cb->access_flags = 0;
     cb->methods_table = NULL;
@@ -1163,24 +1152,19 @@ static C loadArrayClass(char* classname)
     cb->dim = 0;
     cb->type_flags = 0;
     cb->element = NULL;
-
     cb->this_classname = strcpy((char*)sysMalloc(len + 1), classname);
     cb->super = loadClass("java/lang/Object");
-
     cb->interface_count = 2;
 
     if (dis_testinfo)
         printf("this array is %s\n",cb->this_classname);
-
     cb->interfaces = (C*)sysMalloc(2 * sizeof(C));
     cb->interfaces[0] = loadClass("java/lang/Cloneable");
     cb->interfaces[1] = loadClass("java/io/Serializable");
-
     //according to the classname, determining dim, element
     if (classname[1] == '[')  //multi array
     {
         cb->element = loadClass(classname + 1);
-
         ClassBlock_t* temp = CLASS_CB(cb->element);
         cb->dim = temp->dim + 1;
     }
@@ -1193,17 +1177,14 @@ static C loadArrayClass(char* classname)
             char* newname = (char*)sysMalloc(len - 2);
             memcpy(newname, classname+2, len-3);
             newname[len-3] = '\0';
-
             //this must be a reference type
             cb->element = loadClass(newname);
         }
         else
         {
-            //primitivte type
             cb->element = findPrimitiveClass(classname[len - 1]);
             //cb->flags = PRIM;
         }
-
         cb->dim += 1;
     }
 
@@ -1213,7 +1194,6 @@ static C loadArrayClass(char* classname)
         obj->binding = class;
         class->class = obj;
     }
-
     return class;
     /*}}}*/
 }
@@ -1226,16 +1206,12 @@ C findArrayClass(char* classname)
 {
     /*{{{*/
     C class = findClass(classname);
-
     if (class != NULL)
         return class;
     else
         class = loadClass(classname);
-
     ClassBlock_t* cb = CLASS_CB(class);
     cb->type_flags = ARRAY;
-
-
     return class;
     /*}}}*/
 }
@@ -1277,7 +1253,6 @@ static C loadPrimitiveClass(char* classname, int index)
 
     cb->this_classname = strcpy((char*)sysMalloc(len + 1), classname);
     //cb->super = loadClass("java/lang/Object");
-
     cb->element = NULL;
     cb->dim = 0;
 
@@ -1287,16 +1262,11 @@ static C loadPrimitiveClass(char* classname, int index)
     prepareClass(class);
     //linkClass
     class = linkClass(class);
-
     cb->type_flags = PRIM;
-
     addClassHeader(class);
     class->class = (O)(index+1);
-    
-
     PRIM_CLASS[index] = class;
     return class;
-
     /*}}}*/
 }
 
@@ -1347,8 +1317,6 @@ C findPrimitiveClass(char primtype)
     default:
         throwException("findPrimitiveClass() error");
     }
-
-
     if(PRIM_CLASS[index] != NULL)
         return PRIM_CLASS[index];
     else
@@ -1368,14 +1336,11 @@ int initSystemClass()
     C system = loadClass("java/lang/System");
     C object = loadClass("java/lang/Object");
     //java_lang_String = loadClass("java/lang/String");
-
     initable = TRUE;
-
     initClass(object);
     initClass(system);
     initClass(java_lang_Class);
     initClass(java_lang_VMClass);
-
     if (java_lang_VMClass)
     {
         O obj = allocObject(java_lang_VMClass);
@@ -1387,7 +1352,6 @@ int initSystemClass()
         obj->binding = java_lang_Class;
         java_lang_VMClass->class = obj;
     }
-
     return 0;
 }
 
@@ -1400,7 +1364,6 @@ char* getClassPath()
 int setClassSearchPath(char* s)
 {
     CLASS_SEARCH_PATH = s;
-
     return 0;
 }
 
@@ -1420,7 +1383,6 @@ void initClassHash()
                     ,(Poly_tyEquals)String_equals
                     ,keyDup);
 }
-
 
 
 

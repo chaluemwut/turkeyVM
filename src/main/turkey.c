@@ -116,10 +116,8 @@ int main(int argc, char** argv)
 
     int r;
     Verbose_TRACE("initVM", initVM, (), r, VERBOSE_PASS);
-
     main_class = loadClass(filename);
     Assert_ASSERT(main_class);
-
     //find access main method!
     main_mehtod = findMethod(main_class, "main", "([Ljava/lang/String;)V");
 
@@ -139,17 +137,14 @@ int main(int argc, char** argv)
     executeStaticMain(main_mehtod, args);
 
     end = clock();
-
     printf("\nVM run %f seconds\n", (double)(end-start)/CLOCKS_PER_SEC);
     //Hash_foreachKey(CMap, doKey);
     classHashStatus();
     opcodeStatus();
+
     return 0; 
-    
     /*}}}*/
 }
-
-
 
 char* getMethodClassName(MethodBlock_t* mb)
 {

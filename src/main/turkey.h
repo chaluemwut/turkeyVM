@@ -130,6 +130,7 @@ typedef struct fieldblock
     u2 access_flags;
     char* name;
     char* type;
+    //int fields_table_idx;
     u2 constant;//static final
     int static_value;//static
     int offset;//if not static, it has a offset to mark the allocation in object
@@ -183,8 +184,9 @@ struct classblock
     C* interfaces;//interface_table
     u2 fields_count;
     FieldBlock_t* fields;
-    FieldBlock_t** fields_table;
-    int fields_table_size;
+    //FieldBlock_t** fields_table;
+    //int fields_table_size;
+    //int private_start;
     u2 methods_count;
     C super;//the superclass address
     MethodBlock_t* methods;
