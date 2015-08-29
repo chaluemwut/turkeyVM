@@ -40,16 +40,12 @@
 #include "../control/verbose.h"
 #include <time.h>
 
-#define TRUE 1
-#define FALSE 0
 #define C Class_t
 #define O Object_t
 #define P Poly_t
 
 
 int vmsize = 0;
-
-
 
 
 void doKey(P key)
@@ -166,5 +162,3 @@ char* getMethodClassName(MethodBlock_t* mb)
 #undef C
 #undef O
 #undef P
-#undef TRUE
-#undef FALSE

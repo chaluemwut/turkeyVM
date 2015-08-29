@@ -175,6 +175,38 @@ MethodBlock_t* findMethod(C class, char* name, char* type)
     return findMethod(cb->super, name, type);/*}}}*/
 }
 
+/**
+ * Find method in vtable.
+ * @see exe_OPC_INVOKEVIRTUAL()
+ */
+MethodBlock_t* quickSearch(C class, char* name, char* type)
+{
+    /*{{{*/
+    ClassBlock_t* cb;
+    MethodBlock_t** methods_table;
+    u2 methods_table_size;
+
+    cb = CLASS_CB(class);
+    methods_table = cb->methods_table;
+    methods_table_size = cb->methods_table_size;
+    Assert_ASSERT(methods_table);
+
+    int i;
+    for (i=0; i<methods_table_size; i++)
+    {
+        MethodBlock_t* mb = *(methods_table+i);
+        if (!(0 == strcmp(name, mb->name) &&
+                        0 == strcmp(type, mb->type)))
+          continue;
+
+        return mb;
+    }
+
+    return NULL;
+    /*}}}*/
+}
+
+
 
 /*
  * According to the Classinfo in constants_pool, find
@@ -238,6 +270,7 @@ C resolveClass(C class,  u2 index)
  */
 MethodBlock_t* resolveInterfaceMethod(C class, u2 index)
 {
+    /*{{{*/
     MethodBlock_t* resolve_method = NULL;
     JF current_frame = getCurrentFrame();
     ConstantPool_t* current_cp = GET_CONSTANTPOOL(current_frame);
@@ -295,6 +328,7 @@ MethodBlock_t* resolveInterfaceMethod(C class, u2 index)
     }
 
     return resolve_method;
+    /*}}}*/
 }
 
 
@@ -307,7 +341,7 @@ MethodBlock_t* resolveInterfaceMethod(C class, u2 index)
  *
  * @qcliu 2015/01/26
  */
-MethodBlock_t* resolveMethod(C class, u2 index)
+MethodBlock_t* resolveMethod(C class, u2 index, MethodBlock_t*(*f)(C, char*, char*))
 {
     /*{{{*/
     MethodBlock_t* resolve_method = NULL; 
@@ -340,7 +374,7 @@ MethodBlock_t* resolveMethod(C class, u2 index)
                 name = CP_UTF8(current_cp, name_idx);
                 type = CP_UTF8(current_cp, type_idx);
 
-                resolve_method = (MethodBlock_t*)findMethod(class, name, type);
+                resolve_method = (MethodBlock_t*)f(class, name, type);
 
                 if (resolve_method == NULL)
                 {
@@ -370,14 +404,9 @@ MethodBlock_t* resolveMethod(C class, u2 index)
             }
     }
 
-
     return resolve_method;
     /*}}}*/
 }
-
-
-
-
 
 u4 resolveConstant(C class, int cp_index)
 {

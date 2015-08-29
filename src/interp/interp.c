@@ -69,8 +69,8 @@
         GET_OFFSET(f)+=1;       \
     }while(0)
 
+
 static const int BRANCH_BYTE = 1; 
-static const int TWO_BRANCH_BYTE = 2;
 
 //vm.h
 extern FILE* Log_file;
@@ -1820,7 +1820,7 @@ static void exe_OPC_IFEQ(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -1839,7 +1839,7 @@ static void exe_OPC_IFNE(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -1857,7 +1857,7 @@ static void exe_OPC_IFLT(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -1876,7 +1876,7 @@ static void exe_OPC_IFGE(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -1895,7 +1895,7 @@ static void exe_OPC_IFGT(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -1914,7 +1914,7 @@ static void exe_OPC_IFLE(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -1937,7 +1937,7 @@ static void exe_OPC_IF_ICMPEQ(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -1960,7 +1960,7 @@ static void exe_OPC_IF_ICMPNE(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -1982,7 +1982,7 @@ static void exe_OPC_IF_ICMPLT(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -2003,7 +2003,7 @@ static void exe_OPC_IF_ICMPGE(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -2023,7 +2023,7 @@ static void exe_OPC_IF_ICMPGT(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -2043,7 +2043,7 @@ static void exe_OPC_IF_ICMPLE(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -2074,7 +2074,7 @@ static void exe_OPC_IF_ACMPEQ(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -2105,7 +2105,7 @@ static void exe_OPC_IF_ACMPNE(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -2453,6 +2453,7 @@ static void exe_OPC_PUTFIELD(JF f)
 
 }
 
+
 static void exe_OPC_INVOKEVIRTUAL(JF f)
 {
     u2 methodref_idx;
@@ -2496,14 +2497,11 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
          */
         args_count = parseArgs(type);
         objref = *(O*)(f->ostack - args_count);
-        if (objref == 0)
-        {
-          printStack(f);
-        }
         Assert_ASSERT(objref);
         class = objref->class;
 
-        method = (MethodBlock_t*)resolveMethod(class, methodref_idx);
+        method = (MethodBlock_t*)resolveMethod(class, methodref_idx, quickSearch);
+        //method = (MethodBlock_t*)resolveVirtualMethod(class, methodref_idx);
 
         break;
     }
@@ -2571,7 +2569,7 @@ static void exe_OPC_INVOKESPECIAL(JF f)
         else
             class = sym_class;
 
-        method = resolveMethod(class, methodref_idx);
+        method = resolveMethod(class, methodref_idx, findMethod);
 
         break;
     }
@@ -2625,7 +2623,7 @@ static void exe_OPC_INVOKESTATIC(JF f)
          */
         //C class = (C)loadClass(classname);
         C class = (C)resolveClass(GET_CLASS(f), class_idx);
-        method = (MethodBlock_t*)resolveMethod(class, methodref_idx);
+        method = (MethodBlock_t*)resolveMethod(class, methodref_idx, findMethod);
 
         break;
 
@@ -2816,7 +2814,7 @@ static void exe_OPC_ATHROW(JF f)
 static void exe_OPC_CHECKCAST(JF f)
 {
     //TODO
-    PC_MOVE(TWO_BRANCH_BYTE, f);
+    PC_MOVE(BRANCH_BYTE*2, f);
 }
 
 static void exe_OPC_INSTANCEOF(JF f)
@@ -2889,7 +2887,7 @@ static void exe_OPC_IFNULL(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }
@@ -2910,7 +2908,7 @@ static void exe_OPC_IFNONNULL(JF f)
     }
     else
     {
-        PC_MOVE(TWO_BRANCH_BYTE, f);
+        PC_MOVE(BRANCH_BYTE*2, f);
     }
 
 }

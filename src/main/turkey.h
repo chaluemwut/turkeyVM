@@ -183,9 +183,11 @@ struct classblock
     C* interfaces;//interface_table
     u2 fields_count;
     FieldBlock_t* fields;
+    FieldBlock_t** fields_table;
+    int fields_table_size;
     u2 methods_count;
-    MethodBlock_t* methods;
     C super;//the superclass address
+    MethodBlock_t* methods;
     MethodBlock_t** methods_table;
     int methods_table_size;
     u2 flags;//loaded, prepared, linked, inited...

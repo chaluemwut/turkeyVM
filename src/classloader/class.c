@@ -45,9 +45,8 @@
 
 static int initable = FALSE;
 
-//static const int MAX_PRIMITIVE = 9;
 
-static const char PRIM_CLASS_NAME[] =
+static char const PRIM_CLASS_NAME[] =
 {
     'B',
     'S',
@@ -103,6 +102,7 @@ static C java_lang_VMClass;
 
 //method
 static C loadArrayClass(char* classname);
+
 C findArrayClass(char* classname);
 
 //extern
@@ -273,7 +273,7 @@ int parseArgs(char* args)
  * invoke by: loadSystemClass()
  * @qcliu 2015/01/27
  */
-static C Trace_defineClass(char* classname, char* data, int file_len)
+static C Verbose_defineClass(char* classname, char* data, int file_len)
 {
     /*{{{*/
     unsigned char* ptr = (unsigned char*)data;
@@ -682,7 +682,7 @@ static C defineClass(char* classname, char* data, int file_len)
 {
     char* s = String_concat(classname, " \e[34m\e[1mdefine\e[0m", NULL);
     C r;
-    Verbose_TRACE(s, Trace_defineClass, (classname, data, file_len), r, VERBOSE_SUBPASS);
+    Verbose_TRACE(s, Verbose_defineClass, (classname, data, file_len), r, VERBOSE_SUBPASS);
     return r;
 }
 
@@ -766,100 +766,19 @@ static C loadSystemClass(char* classname)
     /*}}}*/
 }
 
-/*
- * Obtain the methods_table_size of each ClassBlock
- * During this function,<init>,<clinit>,static,private methods can
- * be omit.The override can be given the index according to super_class.
- *
- * invoke by: loadClass()
- **/
-static int Trace_prepareClass(C class)
+static int prepareMethod(C class)
 {
-    /*{{{*/
-    ClassBlock_t* cb = CLASS_CB(class);
-    u2 this_methodstable_size = 0;
-    u2 super_methodstable_size = 0;
-    int obj_size = 0;
-    /*
-     * The offset of filed of object that in javaheap
-     * note: start from 1 !!!!!! Take 0 as the failure case.
-     * @qcliu 2015/01/30
-     */
-    int field_offset = 1;
-    int loop = 0;
+    ClassBlock_t* cb;
+    u2 this_methodstable_size;
+    u2 super_methodstable_size;
 
-    //if already prepared,return
-    if (cb->flags >= PREPARED)
-        return 0;
-
-    if (dis_testinfo)
-        printf("preparing class.....%s\n", cb->this_classname);
-
-    //has super
-    if (cb->super != NULL)
-    {
-        int i = 0;
-        u2 idx = 0;
-        ClassBlock_t* super_cb = CLASS_CB(cb->super);
-        super_methodstable_size = super_cb->methods_table_size;
-        /*
-         * Extends super's filed, for prepare field.
-         * note: Just like the init field_offset=1, this field_offset
-         *       also take 0 as the failure case.
-         * @qcliu 2015/01/30
-         */
-        field_offset = super_cb->obj_size + 1;
-
-
-        //prepare methods
-        //table driven approache
-        for (i = 0; i<cb->methods_count; i++)
-        {
-            MethodBlock_t* mb = &cb->methods[i];
-
-            //omit static,private,clinit,init
-            if ((mb->access_flags & ACC_STATIC) ||
-                        (mb->access_flags & ACC_PRIVATE) ||
-                        (strcmp(mb->name, "<init>") == 0) ||
-                        (strcmp(mb->name, "<clinit>") == 0))
-                continue;
-
-            /*the findMethod() is return the same method which is as elder as
-             *possible in super classes*/
-            MethodBlock_t* super_mb = findMethod(cb->super, mb->name, mb->type);
-            if (super_mb)
-            {
-                //override
-                mb->methods_table_idx = super_mb->methods_table_idx;
-            }
-            else
-            {
-                /*
-                 ----------------------
-                 |                     |
-                 |                     |
-                 |super_methods_table  |
-                 |                     |
-                 ----------------------
-                 |                     |
-                 ----------------------
-                 |                     |
-                 ----------------------
-                 |
-
-                 */
-                mb->methods_table_idx = super_methodstable_size + idx++;
-
-            }
-
-        }//end for(i = 0; i<cb->methods_count; i++)
-        cb->methods_table_size = super_methodstable_size + idx;
-    }
-    else  //Object.class
+    cb = CLASS_CB(class);
+    this_methodstable_size = 0;
+    super_methodstable_size = 0;
+    if (cb->super == NULL)
     {
         int i = 0;
         int idx = 0;
-
         for (i = 0; i<cb->methods_count; i++)
         {
             MethodBlock_t* mb = &cb->methods[i];
@@ -868,32 +787,65 @@ static int Trace_prepareClass(C class)
                         (strcmp(mb->name, "<clinit>") == 0) ||
                         (mb->access_flags & ACC_STATIC) ||
                         (mb->access_flags & ACC_PRIVATE))
-                continue;
+              continue;
             this_methodstable_size++;
-            /*determine the final index*/
             mb->methods_table_idx = idx++;
         }
         cb->methods_table_size = this_methodstable_size;
-    }//end if (cb->super != NULL)
-
-
-    //prepare field
-    /*
-     * calculate erery field's offset that in the object moudle in javaheap.
-     * for static variable no need a offset,but need give them initial value
-     */
-    for(loop = 0; loop<cb->fields_count; loop++)
+    }
+    else
     {
-        int i = loop;
+        int i = 0;
+        u2 idx = 0;
+        ClassBlock_t* super_cb = CLASS_CB(cb->super);
+        super_methodstable_size = super_cb->methods_table_size;
+
+        for (i = 0; i<cb->methods_count; i++)
+        {
+            MethodBlock_t* mb = &cb->methods[i];
+            //omit static,private,clinit,init
+            if ((mb->access_flags & ACC_STATIC) ||
+                        (mb->access_flags & ACC_PRIVATE) ||
+                        (strcmp(mb->name, "<init>") == 0) ||
+                        (strcmp(mb->name, "<clinit>") == 0))
+              continue;
+
+            MethodBlock_t* super_mb = findMethod(cb->super, mb->name, mb->type);
+            if (super_mb)
+              mb->methods_table_idx = super_mb->methods_table_idx;
+            else
+              mb->methods_table_idx = super_methodstable_size + idx++;
+        }
+        cb->methods_table_size = super_methodstable_size + idx;
+    }
+    return 0;
+}
+
+static int prepareField(C class)
+{
+    int field_offset;
+    ClassBlock_t* cb;
+
+    cb = CLASS_CB(class);
+    field_offset = 1;
+
+    if (cb->super)
+    {
+        ClassBlock_t* super_cb = CLASS_CB(cb->super);
+        field_offset += super_cb->obj_size;
+    }
+    int i;
+    for(i = 0; i<cb->fields_count; i++)
+    {
         FieldBlock_t* fb = &cb->fields[i];
 
         //static field
         if (fb->access_flags & ACC_STATIC)
         {
             if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
-                *(long long*)(&fb->static_value) = 0;
+              *(long long*)(&fb->static_value) = 0;
             else
-                fb->static_value = 0;
+              fb->static_value = 0;
         }
         else   //non static
         {
@@ -902,9 +854,9 @@ static int Trace_prepareClass(C class)
              */
             fb->offset = field_offset;
             if ((strcmp(fb->type, "J") == 0) || (strcmp(fb->type, "D") == 0))
-                field_offset += 2;
+              field_offset += 2;
             else
-                field_offset += 1;
+              field_offset += 1;
         }
     }
     /*
@@ -913,106 +865,128 @@ static int Trace_prepareClass(C class)
      */
     cb->obj_size = field_offset - 1;
 
+    return 0;
+}
+/*
+ * Obtain the methods_table_size of each ClassBlock
+ * During this function,<init>,<clinit>,static,private methods can
+ * be omit.The override can be given the index according to super_class.
+ *
+ * invoke by: loadClass()
+ **/
+static int Verbose_prepareClass(C class)
+{
+    ClassBlock_t* cb = CLASS_CB(class);
 
+    if (cb->flags >= PREPARED)
+        return 0;
 
+    if (dis_testinfo)
+        printf("preparing class.....%s\n", cb->this_classname);
+
+    prepareMethod(class);
+    prepareField(class);
     cb->flags = PREPARED;
 
     return 0;
-    /*}}}*/
-}//end prepareClass()
+}
 
 static void prepareClass(C class)
 {
     char* c = CLASSNAME(class);
     char* s = String_concat(c, " \e[35m\e[1mprepare\e[0m", NULL);
     int r;
-    Verbose_TRACE(s, Trace_prepareClass, (class), r, VERBOSE_SUBPASS);
+    Verbose_TRACE(s, Verbose_prepareClass, (class), r, VERBOSE_SUBPASS);
 }
 
 
-
-/*
- * Now,every ClassBlocks have had  a specific methods_table_size accoring to preparClass().
- * merge the table!!!!!
- *
- * invoke by: loadClass()
- */
-
-static C Trace_linkClass(C class)
+static int linkMethod(C class)
 {
-    /*{{{*/
-    ClassBlock_t* cb = CLASS_CB(class);
+    ClassBlock_t* cb;
+    int this_methodstable_size;
+    int super_methodstable_size;
 
-    if(cb->access_flags & ACC_INTERFACE)
-        return class;
+    cb = CLASS_CB(class);
+    this_methodstable_size = cb->methods_table_size;
+    super_methodstable_size = 0;
 
-    if (cb->flags >= LINKED)
-        return class;
-
-    int this_methodstable_size = cb->methods_table_size;
-    int super_methodstable_size = 0;
-
-    if (dis_testinfo)
-        printf("linking class......%s\n",cb->this_classname);
-
-    if (cb->super != NULL)  //has super
+    if (cb->super != NULL)
     {
         int i;
         ClassBlock_t* super_cb = CLASS_CB(cb->super);
         super_methodstable_size = super_cb->methods_table_size;
         cb->methods_table = (MethodBlock_t**)sysMalloc(sizeof(MethodBlock_t*)*
                             this_methodstable_size);
-        memcpy(cb->methods_table, super_cb->methods_table, super_methodstable_size * (sizeof(MethodBlock_t*)));
-
+        memcpy(cb->methods_table, super_cb->methods_table, 
+                    super_methodstable_size * (sizeof(MethodBlock_t*)));
         for (i = 0; i<cb->methods_count; i++)
         {
             MethodBlock_t* mb = &cb->methods[i];
-
-
-            if ((strcmp(mb->name, "<clinit>") == 0) || (strcmp(mb->name, "<init>") == 0) ||
-                    (mb->access_flags & ACC_STATIC) || (mb->access_flags & ACC_PRIVATE))
+            if ((strcmp(mb->name, "<clinit>") == 0) || 
+                        (strcmp(mb->name, "<init>") == 0) ||
+                    (mb->access_flags & ACC_STATIC) || 
+                    (mb->access_flags & ACC_PRIVATE))
                 continue;
 
             u2 idx = mb->methods_table_idx;
             cb->methods_table[idx] = mb;
         }
     }
-    else  //Object.class
+    else
     {
         int i = 0;
-
-        cb->methods_table = (MethodBlock_t**)sysMalloc(sizeof(MethodBlock_t*) * this_methodstable_size);
-
+        cb->methods_table = (MethodBlock_t**)sysMalloc(
+                    sizeof(MethodBlock_t*) * this_methodstable_size);
         for (i = 0; i<cb->methods_count; i++)
         {
             MethodBlock_t* mb = &cb->methods[i];
-            if ((strcmp(mb->name, "<clinit>") == 0) || (strcmp(mb->name, "<init>") == 0) ||
-                    (mb->access_flags & ACC_STATIC) || (mb->access_flags & ACC_PRIVATE))
+            if ((strcmp(mb->name, "<clinit>") == 0) || 
+                        (strcmp(mb->name, "<init>") == 0) ||
+                    (mb->access_flags & ACC_STATIC) || 
+                    (mb->access_flags & ACC_PRIVATE))
                 continue;
+
             u2 idx = mb->methods_table_idx;
             cb->methods_table[idx] = mb;
         }
-    }//end if(cd->super != NULL)
+    }
 
+    return 0;
+}
 
-    /*in the <clinit>, it maybe need java/lang/Class*/
+static int linkField(C class)
+{
+    return 0;
+}
+/*
+ * Now,every ClassBlocks have had  a specific methods_table_size accoring to preparClass().
+ * merge the table!!!!!
+ *
+ * invoke by: loadClass()
+ */
+static C Verbose_linkClass(C class)
+{
+    ClassBlock_t* cb = CLASS_CB(class);
+    if(cb->access_flags & ACC_INTERFACE)
+        return class;
+    if (cb->flags >= LINKED)
+        return class;
+    if (dis_testinfo)
+        printf("linking class......%s\n",cb->this_classname);
 
-
+    linkMethod(class);
     addClassHeader(class);
-    
     cb->flags = LINKED;
 
     return class;
-    /*}}}*/
-}//end linkClass()
-
+}
 
 static C linkClass(C class)
 {
     char* c = CLASSNAME(class);
     char* s = String_concat(c, " \e[36m\e[1mlink\e[0m", NULL);
     C r;
-    Verbose_TRACE(s, Trace_linkClass, (class), r, VERBOSE_SUBPASS);
+    Verbose_TRACE(s, Verbose_linkClass, (class), r, VERBOSE_SUBPASS);
 
     return r;
 }
@@ -1080,7 +1054,7 @@ void initClass(C class)
 }
 
 
-static C Trace_loadClass0(char* classname)
+static C Verbose_loadClass0(char* classname)
 {
     C class = NULL;
     ClassBlock_t* cb = NULL;
@@ -1118,7 +1092,7 @@ C loadClass0(char* classname)
 {
     char* s = String_concat(classname, " \e[33m\e[1mload\e[0m", NULL);
     C r;
-    Verbose_TRACE(s, Trace_loadClass0, (classname), r, VERBOSE_PASS);
+    Verbose_TRACE(s, Verbose_loadClass0, (classname), r, VERBOSE_PASS);
 
     return r;
 }
@@ -1145,7 +1119,7 @@ C loadClass(char* classname)
         ClassBlock_t* cb = CLASS_CB(class);
 
         if (dis_testinfo)
-            printf("%s have already in the table!!!!!!!!!!!!!!!\n",cb->this_classname);
+            printf("%s have already in the table\n",cb->this_classname);
 
         return class;
     }
@@ -1415,7 +1389,6 @@ int initSystemClass()
     }
 
     return 0;
-
 }
 
 
