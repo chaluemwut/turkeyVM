@@ -2324,7 +2324,6 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
      * the method. Then, get the args' count
      */
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
-
     /*
      * The methodref_idx maybe resovled.
      */
@@ -2342,7 +2341,6 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
         cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
         type_idx = cp_info>>16;
         type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
-
         /*
          * According to the args_count, find the objectref's location in
          * the stack.
@@ -2353,7 +2351,6 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
         Assert_ASSERT(objref);
         class = objref->class;
         method = (MethodBlock_t*)resolveMethod(class, methodref_idx, quickSearch);
-        //method = (MethodBlock_t*)resolveVirtualMethod(class, methodref_idx);
         break;
     }
     default:
@@ -2385,48 +2382,41 @@ static void exe_OPC_INVOKESPECIAL(JF f)
     current_cb = CLASS_CB(GET_CLASS(f));
     INTERP_INDEX(methodref_idx, GET_PC(f), f);
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
-
     /* The methodref_idx maybe resolved*/
     switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx))
     {
-    case RESOLVED:
-    {
-        method = (MethodBlock_t*)cp_info;
-        break;
+        case RESOLVED:
+            {
+                ERROR("impossible");
+                method = (MethodBlock_t*)cp_info;
+                break;
+            }
+        case CONSTANT_Methodref:
+            {
+                /* omit high16bit*/
+                class_idx = cp_info;
+                /*get the symbolic Class*/
+                sym_class = (C)resolveClass(GET_CLASS(f), class_idx);
+                name_type_idx = cp_info >> 16;
+                cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
+                name_idx = cp_info;
+                type_idx = cp_info>>16;
+                name = CP_UTF8(GET_CONSTANTPOOL(f), name_idx);
+                type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
+                // Determine weather the symbolic class or current class's superclass.
+                if ((strcmp(name, "<init>") !=0) && (current_cb->super == sym_class) &&
+                            (current_cb->access_flags & ACC_SUPER))
+                  class = current_cb->super;
+                else
+                  class = sym_class;
+                method = resolveMethod(class, methodref_idx, findMethod);
+                break;
+            }
+        default:
+            throwException("invokespecial error!!!");
     }
-    case CONSTANT_Methodref:
-    {
-        /* omit high16bit*/
-        class_idx = cp_info;
-
-        /*get the symbolic Class*/
-        sym_class = (C)resolveClass(GET_CLASS(f), class_idx);
-
-        name_type_idx = cp_info >> 16;
-        cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
-        name_idx = cp_info;
-        type_idx = cp_info>>16;
-
-        name = CP_UTF8(GET_CONSTANTPOOL(f), name_idx);
-        type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
-        /*
-         * Determine weather the symbolic class or current class's superclass.
-         */
-        if ((strcmp(name, "<init>") !=0) && (current_cb->super == sym_class) &&
-                (current_cb->access_flags & ACC_SUPER))
-            class = current_cb->super;
-        else
-            class = sym_class;
-
-        method = resolveMethod(class, methodref_idx, findMethod);
-        break;
-    }
-    default:
-        throwException("invokespecial error!!!");
-    }
-
     if (!method)
-        throwException("NoSuchMethodError");
+      throwException("NoSuchMethodError");
 
     executeMethod(method, NULL);
 }
@@ -2441,43 +2431,39 @@ static void exe_OPC_INVOKESTATIC(JF f)
 
     INTERP_INDEX(methodref_idx, GET_PC(f), f);
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
-
     /*
      * The methodref_idx maybe resolved.
      */
     switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx))
     {
-    case RESOLVED:
-    {
-        method = (MethodBlock_t*)cp_info;
-        break;
-    }
-    case CONSTANT_Methodref:
-    {
-        /*high                    low
-         *--------------------------
-         *|name&type |class        |
-         *--------------------------
-         */
-        class_idx = cp_info;
-        //classname = CP_UTF8(GET_CONSTANTPOOL(f), CP_INFO(GET_CONSTANTPOOL(f), class_idx));
-
-        /*
-         * The class is the resovle_method class.It must be inited
-         * before the method resovle.
-         * note: in this case, can not use resolveClass. Because we
-         *       don't know the obj Class's CONSTANT_Class belong to which Class
-         */
-        //C class = (C)loadClass(classname);
-        C class = (C)resolveClass(GET_CLASS(f), class_idx);
-        method = (MethodBlock_t*)resolveMethod(class, methodref_idx, findMethod);
-        break;
-    }
-    default:
-        throwException("invokestatic error!!!!");
+        case RESOLVED:
+            {
+                method = (MethodBlock_t*)cp_info;
+                break;
+            }
+        case CONSTANT_Methodref:
+            {
+                /*high                    low
+                 *--------------------------
+                 *|name&type |class        |
+                 *--------------------------
+                 */
+                class_idx = cp_info;
+                /*
+                 * The class is the resovle_method class.It must be inited
+                 * before the method resovle.
+                 * note: in this case, can not use resolveClass. Because we
+                 *       don't know the obj Class's CONSTANT_Class belong to which Class
+                 */
+                C class = (C)resolveClass(GET_CLASS(f), class_idx);
+                method = (MethodBlock_t*)resolveMethod(class, methodref_idx, findMethod);
+                break;
+            }
+        default:
+            throwException("invokestatic error!!!!");
     }
     if (method == NULL)
-        throwException("invokestatic error!!!no such method");
+      throwException("invokestatic error!!!no such method");
 
     executeMethod(method, NULL);
 }
@@ -2503,38 +2489,35 @@ static void exe_OPC_INVOKEINTERFACE(JF f)
      * the method. Then, get the args' count
      */
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
-    /*
-     * The methodref_idx maybe resovled.
-     */
-    //===============================================
+    //The methodref_idx maybe resovled.
     switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx))
     {
-    case RESOLVED:
-    {
-        throwException("invokeinterface resolved");
-    }
-    /*NOTE: this is InterfaceMethodref*/
-    case CONSTANT_InterfaceMethodref:
-    {
-        name_type_idx = cp_info >> 16;
-        cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
-        type_idx = cp_info>>16;
-        type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
+        case RESOLVED:
+            {
+                throwException("invokeinterface resolved");
+            }
+            /*NOTE: this is InterfaceMethodref*/
+        case CONSTANT_InterfaceMethodref:
+            {
+                name_type_idx = cp_info >> 16;
+                cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
+                type_idx = cp_info>>16;
+                type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
 
-        args_count = parseArgs(type);
-        objref = *(O*)(f->ostack - args_count);
-        class = objref->class;
-        ClassBlock_t* cb = CLASS_CB(class);
-        /*NOTE: resolveInterfaceMethod()*/
-        method = (MethodBlock_t*)resolveInterfaceMethod(class, methodref_idx);
-        break;
-    }
-    default:
-        throwException("invokeInterface error!\n");
+                args_count = parseArgs(type);
+                objref = *(O*)(f->ostack - args_count);
+                class = objref->class;
+                ClassBlock_t* cb = CLASS_CB(class);
+                /*NOTE: resolveInterfaceMethod()*/
+                method = (MethodBlock_t*)resolveInterfaceMethod(class, methodref_idx);
+                break;
+            }
+        default:
+            throwException("invokeInterface error!\n");
     }
     //===============================================
     if (!method)
-        throwException("NoSuchMethodError");
+      throwException("NoSuchMethodError");
 
     executeMethod(method, NULL);
 }

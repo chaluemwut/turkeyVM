@@ -97,7 +97,6 @@ void printNativeStack()
 
 void printStack(JF current_frame)
 {
-    //JF current_frame = getCurrentFrame();
     unsigned int* postack;/*{{{*/
     int max_stack;
     int max_locals;

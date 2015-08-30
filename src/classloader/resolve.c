@@ -114,6 +114,7 @@ FieldBlock_t* resolveField(C class, u2 index)
     }
     case RESOLVED:
     {
+        ERROR("impossible");
         fb = (FieldBlock_t*)CP_INFO(current_cp, index);
         break;
     }
@@ -356,15 +357,17 @@ MethodBlock_t* resolveMethod(C class, u2 index, MethodBlock_t*(*f)(C, char*, cha
                     ERROR("resolveMethod");
                     throwException("no such method");
                 }
+                //fprintf(stdout, "resovle method: %x\n", resolve_method);
                 /*change the tag to record that the method is already resovled*/
-                /*
-                 *(MethodBlock_t**)&CP_INFO(current_cp, index) = resolve_method;
-                 CP_TYPE(current_cp, index) = RESOLVED;
-                 */
+                //*(MethodBlock_t**)&CP_INFO(current_cp, index) = resolve_method;
+                //CP_TYPE(current_cp, index) = RESOLVED;
+                // fprintf(stdout, "cp->info[index]: %x\n", CP_INFO(current_cp, index));
+                // fprintf(stdout, "cp->type[index]: %x\n", CP_TYPE(current_cp, index));
                 break;
             }
         case RESOLVED:
             {
+                ERROR("impossible");
                 resolve_method = (MethodBlock_t*)CP_INFO(current_cp, index);
                 break;
             }
