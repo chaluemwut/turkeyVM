@@ -33,7 +33,7 @@ void* sysMalloc(int n)
 {
     void* mem = malloc(n);
     if(mem == NULL)
-      ERROR("malloc error");
+        ERROR("malloc error");
     memset(mem, 0, n);
     vmsize += n;
     return mem;
@@ -105,14 +105,13 @@ O allocArray(C class, int size, int el_size, int atype)
 int objectSize(O obj)
 {
     Assert_ASSERT(obj);
-    switch (obj->type)
-    {
-        case OBJECT_ARRAY:
-        case OBJECT_OBJECT:
-        case OBJECT_STRING:
-            return OBJ_HEADER_SIZE+obj->length*obj->el_size;
-        default:
-            ERROR("impossible");
+    switch (obj->type) {
+    case OBJECT_ARRAY:
+    case OBJECT_OBJECT:
+    case OBJECT_STRING:
+        return OBJ_HEADER_SIZE+obj->length*obj->el_size;
+    default:
+        ERROR("impossible");
     }
     return 0;
 }
@@ -126,8 +125,7 @@ O allocTypeArray(int type, int size, char* element_name)
     int el_size;
     C class;
 
-    switch (type)
-    {
+    switch (type) {
     case T_BYTE:
         class = loadClass("[B");
         el_size = 1;
@@ -160,8 +158,7 @@ O allocTypeArray(int type, int size, char* element_name)
         class = loadClass("[J");
         el_size = 8;
         break;
-    case T_REFERENCE:
-    {
+    case T_REFERENCE: {
         class = loadClass(element_name);
         el_size = 4;
         break;

@@ -117,8 +117,7 @@ void createNativeFrame(MethodBlock_t* mb)
     else
         n_locals_idx = n_locals - 1;
 
-    for (; n_locals_idx >= 0; n_locals_idx--)
-    {
+    for (; n_locals_idx >= 0; n_locals_idx--) {
         //NOTE: equals 0 also need copy
         memcpy(nframe->locals + n_locals_idx, current_frame->ostack, sizeof(int));
         /*NOTE: pop the stack*/
@@ -211,36 +210,30 @@ JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
     int args_count = mb->args_count;
     int locals_idx = 0;
     //XXX copy args
-    if (jargs == NULL)
-    {
+    if (jargs == NULL) {
         //copyArgs(Frame* frame, MethodBlock_t* mb)
         if (!(mb->access_flags & ACC_STATIC))//non-static
             locals_idx = args_count;
         else
             locals_idx = args_count - 1;
 
-        for (; locals_idx >= 0; locals_idx--)
-        {
+        for (; locals_idx >= 0; locals_idx--) {
             //NOTE: equals 0 also need copy
             memcpy(frame->locals + locals_idx, prev->ostack, sizeof(int));
             /*NOTE: pop the stack*/
             *prev->ostack = 0;
             prev->ostack--;
         }
-    }
-    else
-    {
+    } else {
         unsigned int* sp = frame->locals;
-        if (!(mb->access_flags & ACC_STATIC))//non-static
-        {
+        if (!(mb->access_flags & ACC_STATIC)) { //non-static
             *sp = va_arg(jargs, u4);
             sp++;
         }
         char* sig = mb->type;
         SCAN_SIG(sig, VA_DOUBLE(jargs, sp), VA_SINGLE(jargs, sp));
     }
-    if (dis_testinfo)
-    {
+    if (dis_testinfo) {
         printf("\n%dnew Frame:---- %d, name:%s\n",method_num, frame->id, frame->mb->name);
     }
     return frame;
@@ -257,8 +250,7 @@ JF popFrame()
 {
     JF temp = (JF)Stack_pop(methodF);
     //printf("pop frame:%s, size:%d\n", temp->mb->name, Stack_size(methodF));
-    if (dis_testinfo)
-    {
+    if (dis_testinfo) {
         printf("pop Frame: %d  ", temp->id);
     }
     free(temp->locals);
@@ -372,8 +364,7 @@ void seek(void* result, Operand_e t)
 
 void pop(JF f, void* result, Operand_e t)
 {
-    switch (t)
-    {
+    switch (t) {
     case TYPE_INT:
         *(int*)result = *(int*)f->ostack;
         *(int*)f->ostack = 0;
@@ -442,8 +433,7 @@ void push(JF frame, void* value, Operand_e type)
 {
     frame->ostack++;
     ASSERT_STACK(frame);
-    switch (type)
-    {
+    switch (type) {
     case TYPE_INT:
         *(int*)(frame->ostack) = *(int*)value;
         break;

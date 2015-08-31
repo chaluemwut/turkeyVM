@@ -110,10 +110,8 @@ void printStack(JF current_frame)
     PRINTLN(stdout,"");
     PRINT_DISTANCE(stdout,10);
     PRINTLN(stdout,"stack");
-    for (; max_stack > 0; max_stack--)
-    {
-        if (postack == current_frame->ostack)
-        {
+    for (; max_stack > 0; max_stack--) {
+        if (postack == current_frame->ostack) {
             PRINT_DISTANCE(stdout,5);
             PRINT(stdout,"top->");
         }
@@ -135,8 +133,7 @@ void printStack(JF current_frame)
     PRINT_DISTANCE(stdout,10);
     PRINTLN(stdout,"locals");
     postack = current_frame->locals;
-    for (locals_idx = 0; max_locals > 0; max_locals--, locals_idx++)
-    {
+    for (locals_idx = 0; max_locals > 0; max_locals--, locals_idx++) {
         PRINT_DISTANCE(stdout,10);
         PRINTLN(stdout,"----------------");
         PRINT_DISTANCE(stdout,7);
@@ -177,10 +174,8 @@ void printStackLog(FILE* fd, JF current_frame)
     PRINTLN(fd,"");
     PRINT_DISTANCE(fd,10);
     PRINTLN(fd,"stack");
-    for (; max_stack > 0; max_stack--)
-    {
-        if (postack == current_frame->ostack)
-        {
+    for (; max_stack > 0; max_stack--) {
+        if (postack == current_frame->ostack) {
             PRINT_DISTANCE(fd,5);
             PRINT(fd,"top->");
         }
@@ -202,8 +197,7 @@ void printStackLog(FILE* fd, JF current_frame)
     PRINT_DISTANCE(fd,10);
     PRINTLN(fd,"locals");
     postack = current_frame->locals;
-    for (locals_idx = 0; max_locals > 0; max_locals--, locals_idx++)
-    {
+    for (locals_idx = 0; max_locals > 0; max_locals--, locals_idx++) {
         PRINT_DISTANCE(fd,10);
         PRINTLN(fd,"----------------");
         PRINT_DISTANCE(fd,7);
@@ -232,10 +226,8 @@ void printArray(O arrayref)
     el_size = arrayref->el_size;
     void* data = arrayref->data;
 
-    for(i=0; i<arrayref->length; i++)
-    {
-        switch (arrayref->atype)
-        {
+    for(i=0; i<arrayref->length; i++) {
+        switch (arrayref->atype) {
         case T_CHAR:
             printf("%d|%d\n",i, *((u2*)arrayref->data+el_size*i));
             break;
@@ -303,23 +295,20 @@ void printObject(O objref)
     PRINTLN(stdout,"");
 
     PRINT_DISTANCE(stdout,11);
-    for (i = 0; i < obj_size; i++)
-    {
+    for (i = 0; i < obj_size; i++) {
         PRINT(stdout,"-----------");
     }
     PRINTLN(stdout,"");
 
     PRINT_DISTANCE(stdout,11);
-    for (i = 0; i < obj_size; i++)
-    {
+    for (i = 0; i < obj_size; i++) {
         PRINT_D(stdout,"|", (int)objref->data[i]);
         PRINT_DISTANCE(stdout,11*(i+2));
     }
     PRINTLN(stdout,"|");
 
     PRINT_DISTANCE(stdout,11);
-    for (i = 0; i < obj_size; i++)
-    {
+    for (i = 0; i < obj_size; i++) {
         PRINT(stdout,"-----------");
     }
     PRINTLN(stdout,"");/*}}}*/
@@ -331,8 +320,7 @@ void printChar0(O obj)
     Assert_ASSERT(obj->type == OBJECT_ARRAY);
     short* p = (short*)obj->data;
     int i;
-    for (i = 0; i < obj->length; i++)
-    {
+    for (i = 0; i < obj->length; i++) {
         char c = (char)(*p);
         printf("%c", c);
         p++;

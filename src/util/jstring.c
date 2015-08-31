@@ -99,8 +99,7 @@ O char2Char(char* s)
 
     obj = (O)allocTypeArray(T_CHAR, length, NULL);
 
-    for (i = 0; i < length; i++)
-    {
+    for (i = 0; i < length; i++) {
         *((char*)(unsigned short*)obj->data+i) = s[i];
     }
 
@@ -169,15 +168,15 @@ int Jstring_equals(O s1, O s2)
     char* c2 = Jstring2Char(s2);
 
     if (0 == strcmp(c1, c2))
-      return 1;
-    else 
-      return 0;
+        return 1;
+    else
+        return 0;
 
 
 }
 
 
-/** 
+/**
  * print char[].
  * @parm obj an Object_t, and type must be array.
  */
@@ -188,8 +187,7 @@ void dumpChar(O obj)
     Assert_ASSERT(obj->type == OBJECT_ARRAY);
     short* p = (short*)obj->data;
     int i;
-    for (i = 0; i < obj->length; i++)
-    {
+    for (i = 0; i < obj->length; i++) {
         char c = (char)(*p);
         printf("%c", c);
         p++;

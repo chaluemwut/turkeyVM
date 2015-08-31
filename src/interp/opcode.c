@@ -24,8 +24,7 @@
  * @see interp.c
  * @qcliu 2015/01/27
  */
-static char* const OPCODE[] =
-{
+static char* const OPCODE[] = {
     /*{{{*/
     "nop",
     "aconst_null",
@@ -246,7 +245,7 @@ static int statistics[OPC_NUMBER];
 void opcodeStatistics(Opcode_e c)
 {
     if (0 == Control_opcode)
-      return;
+        return;
 
     times+=1;
     statistics[c]+=1;
@@ -255,8 +254,7 @@ void opcodeStatistics(Opcode_e c)
 static int printSpace(FILE* fd, int i)
 {
     int setp = i;
-    while (i >0)
-    {
+    while (i >0) {
         fprintf(fd, " ");
         i--;
     }
@@ -266,7 +264,7 @@ static int printSpace(FILE* fd, int i)
 void opcodeStatus()
 {
     if (0 == Control_opcode)
-      return;
+        return;
 
     printf("Generate instruction statistics...\n");
     printf("Find detail in \'instruction.txt\'\n");
@@ -285,16 +283,14 @@ void opcodeStatus()
     printSpace(fd, 45-j);
     fprintf(fd, "PERCENT\n");
 
-    while(i<52)
-    {
+    while(i<52) {
         fprintf(fd, "-");
         i++;
     }
     fprintf(fd, "\n");
 
     i=0;
-    while (i<OPC_NUMBER)
-    {
+    while (i<OPC_NUMBER) {
         j = 0;
         j += fprintf(fd, "%s", OPCODE[i]);
         j += printSpace(fd, 30-j);
@@ -305,8 +301,7 @@ void opcodeStatus()
     }
 
     i=0;
-    while(i<52)
-    {
+    while(i<52) {
         fprintf(fd, "-");
         i++;
     }

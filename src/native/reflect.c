@@ -40,42 +40,29 @@ static int getArgsCount(char* mbtype)
     char* ptr = mbtype;
     ptr++;
     // step1: culucating the args count.
-    while (*ptr != ')')
-    {
-        if (*ptr == '[')
-        {
-            do
-            {
+    while (*ptr != ')') {
+        if (*ptr == '[') {
+            do {
                 ptr++;
-            }
-            while (*ptr == '[');
+            } while (*ptr == '[');
 
-            if (*ptr == 'L')
-            {
-                do
-                {
+            if (*ptr == 'L') {
+                do {
                     ptr++;
-                }
-                while (*ptr != ';');
+                } while (*ptr != ';');
 
             }
 
             ptr++;
             args_count++;
-        }
-        else if (*ptr == 'L')
-        {
-            do
-            {
+        } else if (*ptr == 'L') {
+            do {
                 ptr++;
-            }
-            while (*ptr != ';');
+            } while (*ptr != ';');
             ptr++;
             args_count++;
 
-        }
-        else
-        {
+        } else {
             ptr++;
             args_count++;
         }
@@ -104,91 +91,74 @@ static char** getArgsName(char* desc, int argcount)
     index = 0;
     ptr = desc;
     ptr++;
-    while (*ptr != ')')
-    {
-        if (index == argcount)
-        {
+    while (*ptr != ')') {
+        if (index == argcount) {
             DEBUG("%s", "index, error");
             throwException("index error");
         }
-        switch (*ptr)
-        {
-        case 'B':
-        {
+        switch (*ptr) {
+        case 'B': {
             char* name = "java/lang/Byte";
             names[index++] = name;
             ptr++;
             break;
         }
-        case 'C':
-        {
+        case 'C': {
             char* name = "java/lang/Char";
             names[index++] = name;
             ptr++;
             break;
         }
-        case 'D':
-        {
+        case 'D': {
             char* name = "java/lang/Double";
             names[index++] = name;
             ptr++;
             break;
         }
-        case 'F':
-        {
+        case 'F': {
             char* name = "java/lang/Float";
             names[index++] = name;
             ptr++;
             break;
         }
-        case 'I':
-        {
+        case 'I': {
             char* name = "java/lang/Integer";
             names[index++] = name;
             ptr++;
             break;
         }
-        case 'J':
-        {
+        case 'J': {
             char* name = "java/lang/Long";
             names[index++] = name;
             ptr++;
             break;
         }
         break;
-        case 'S':
-        {
+        case 'S': {
             char* name = "java/lang/Short";
             names[index++] = name;
             ptr++;
             break;
         }
-        case 'Z':
-        {
+        case 'Z': {
             char* name = "java/lang/Boolean";
             names[index++] = name;
             ptr++;
             break;
         }
-        case '[':
-        {
+        case '[': {
             char* p = ptr;
             int size = 0;
-            do
-            {
+            do {
                 size++;
                 ptr++;
-            }
-            while (*ptr == '[');
+            } while (*ptr == '[');
 
-            if (*ptr == 'L')
-            {
-                do
-                {
+            if (*ptr == 'L') {
+                do {
                     size++;
                     ptr++;
-                }
-                while (*ptr != ';');
+                } while (*ptr != ';');
             }
             char* name = (char*)sysMalloc(size);
             memcpy(name, p, size);
@@ -198,18 +168,15 @@ static char** getArgsName(char* desc, int argcount)
             ptr++;
             break;
         }
-        case 'L':
-        {
+        case 'L': {
             ptr++;
             char* p = ptr;
             int size = 0;
 
-            do
-            {
+            do {
                 size++;
                 ptr++;
-            }
-            while (*ptr != ';');
+            } while (*ptr != ';');
 
             char* name = (char*)sysMalloc(size+1);
             memcpy(name, p, size);
@@ -261,8 +228,7 @@ O getClassConstructors(O vmClass, int isPublic)
     if(!(init_mb = findMethod(reflect_class, "<init>", "(Ljava/lang/Class;I)V")))
         return NULL;
     // setp1 sum the count of constrctor for objclass
-    for(i = 0; i < cb->methods_count; i++)
-    {
+    for(i = 0; i < cb->methods_count; i++) {
         MethodBlock_t *mb = &cb->methods[i];
         if((strcmp(mb->name, "<init>") == 0) && (!isPublic || (mb->access_flags & ACC_PUBLIC)))
             count++;
@@ -272,46 +238,41 @@ O getClassConstructors(O vmClass, int isPublic)
         return NULL;
 
     cons = (O*)INST_DATA(array);
-    for(i = 0, j = 0; j < count; i++)
-    {
+    for(i = 0, j = 0; j < count; i++) {
         MethodBlock_t *mb = &cb->methods[i];
 
-        if((strcmp(mb->name, "<init>") == 0))
-        {
+        if((strcmp(mb->name, "<init>") == 0)) {
             O reflect_ob;
 
-            if((reflect_ob = allocObject(reflect_class)))
-            {
+            if((reflect_ob = allocObject(reflect_class))) {
                 /**
                  * @see java.lang.reflect.Constructor
                  */
                 FieldBlock_t* paramType = findField(
-                            reflect_class, "parameterTypes", "[Ljava/lang/Class;");
+                                              reflect_class, "parameterTypes", "[Ljava/lang/Class;");
                 FieldBlock_t* clazz = findField(
-                            reflect_class, "clazz", "Ljava/lang/Class;");
+                                          reflect_class, "clazz", "Ljava/lang/Class;");
                 FieldBlock_t* slot = findField(reflect_class, "slot", "I");
                 int argcount = getArgsCount(mb->type);
                 C class = loadClass("[Ljava/lang/Class;");
                 O classarray = (O)allocArray(class, argcount, sizeof(int), T_REFERENCE);
                 char** argname = getArgsName(mb->type, argcount);
                 int i = 0;
-                for (; i < argcount; i++)
-                {
+                for (; i < argcount; i++) {
                     O arg_x = getClass_name(argname[i]);
                     ARRAY_DATA(classarray, i, O) = arg_x;
                 }
                 /*NOTE: vmClass->binding is a Class Object */
                 OBJECT_DATA(reflect_ob, clazz->offset-1, O) = (O)vmClass->binding;
                 /**
-                 * mb->slot 
+                 * mb->slot
                  * @see class.c defineClass()
                  * 2015/07/01
                  */
                 OBJECT_DATA(reflect_ob, slot->offset-1, int) = mb->slot;
                 OBJECT_DATA(reflect_ob, paramType->offset-1, O) = classarray;
                 cons[j++] = reflect_ob;
-            }
-            else
+            } else
                 return NULL;
         }
     }
@@ -342,30 +303,21 @@ int instanceOf(O obj, C class)
     obj_cb = CLASS_CB(obj->class);
     t_name = cb->this_classname;
 
-    if (IS_INTERFACE(cb))
-    {
+    if (IS_INTERFACE(cb)) {
         throwException("instanceof interface");
-    }
-    else if (IS_ARRAY(cb))
-    {
+    } else if (IS_ARRAY(cb)) {
         throwException("instanceof array");
-    }
-    else
-    {
+    } else {
 
-        if (strcmp(obj_cb->this_classname, t_name) == 0)
-        {
+        if (strcmp(obj_cb->this_classname, t_name) == 0) {
             result = 1;
             return result;
-        }
-        else
+        } else
             result = 0;
 
-        while (obj_cb->super)
-        {
+        while (obj_cb->super) {
             obj_cb = CLASS_CB(obj_cb->super);
-            if (strcmp(obj_cb->this_classname, t_name) == 0)
-            {
+            if (strcmp(obj_cb->this_classname, t_name) == 0) {
                 result = 1;
                 break;
             }

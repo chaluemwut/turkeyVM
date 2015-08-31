@@ -70,7 +70,7 @@
     }while(0)
 
 
-static const int BRANCH_BYTE = 1; 
+static const int BRANCH_BYTE = 1;
 
 //vm.h
 extern FILE* Log_file;
@@ -193,24 +193,20 @@ static void exe_OPC_LDC(JF f)
 
     INTERP_U1(index, GET_PC(f),f);
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), index);
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), index))
-    {
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), index)) {
         /*NOTE: possible???*/
-    case RESOLVED:
-    {
+    case RESOLVED: {
         ERROR("impossible");
         push(f,&cp_info, TYPE_INT);
         break;
     }
-    case CONSTANT_Integer:
-    {
+    case CONSTANT_Integer: {
         int value;
         value = (int)cp_info;
         push(f,&value, TYPE_INT);
         break;
     }
-    case CONSTANT_Float:
-    {
+    case CONSTANT_Float: {
         float value;
         /*NOTE: get the value from constants_pool as the type float
          *      instead of get as the type int then reverse int to float.
@@ -220,8 +216,7 @@ static void exe_OPC_LDC(JF f)
         push(f,&value, TYPE_FLOAT);
         break;
     }
-    case CONSTANT_String:
-    {
+    case CONSTANT_String: {
         if (CP_TYPE(GET_CONSTANTPOOL(f), cp_info) != CONSTANT_Utf8)
             throwException("not UTF8@ interp.c ldc");
 
@@ -243,16 +238,12 @@ static void exe_OPC_LDC(JF f)
 
         break;
     }
-    case CONSTANT_Class:
-    {
+    case CONSTANT_Class: {
         C class = (C)resolveClass(GET_CLASS(f), index);
-        if (class != NULL)
-        {
+        if (class != NULL) {
             O obj = class->class;
             push(f,&obj, TYPE_REFERENCE);
-        }
-        else
-        {
+        } else {
             throwException("ldc CONSTANT_Class");
         }
         break;
@@ -270,23 +261,19 @@ static void exe_OPC_LDC_W(JF f)
     INTERP_INDEX(index, GET_PC(f), f);
 
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), index);
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), index))
-    {
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), index)) {
         /*NOTE: possible???*/
-    case RESOLVED:
-    {
+    case RESOLVED: {
         push(f,&cp_info, TYPE_INT);
         break;
     }
-    case CONSTANT_Integer:
-    {
+    case CONSTANT_Integer: {
         int value;
         value = (int)cp_info;
         push(f,&value, TYPE_INT);
         break;
     }
-    case CONSTANT_Float:
-    {
+    case CONSTANT_Float: {
         float value;
         /*NOTE: get the value from constants_pool as the type float
          *      instead of get as the type int then reverse int to float.
@@ -296,8 +283,7 @@ static void exe_OPC_LDC_W(JF f)
         push(f,&value, TYPE_FLOAT);
         break;
     }
-    case CONSTANT_String:
-    {
+    case CONSTANT_String: {
         if (CP_TYPE(GET_CONSTANTPOOL(f), cp_info) != CONSTANT_Utf8)
             throwException("not UTF8@ interp.c ldc_w");
         /*
@@ -317,16 +303,12 @@ static void exe_OPC_LDC_W(JF f)
         push(f,&obj, TYPE_REFERENCE);
         break;
     }
-    case CONSTANT_Class:
-    {
+    case CONSTANT_Class: {
         C class = (C)resolveClass(GET_CLASS(f), index);
-        if (class != NULL)
-        {
+        if (class != NULL) {
             O obj = class->class;
             push(f,&obj, TYPE_REFERENCE);
-        }
-        else
-        {
+        } else {
             throwException("ldc CONSTANT_Class");
         }
         break;
@@ -342,22 +324,18 @@ static void exe_OPC_LDC2_W(JF f)
     u4 cp_info;
 
     INTERP_INDEX(index, GET_PC(f), f);
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), index))
-    {
-    case RESOLVED:
-    {
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), index)) {
+    case RESOLVED: {
         //TODO
         break;
     }
-    case CONSTANT_Long:
-    {
+    case CONSTANT_Long: {
         long long value;
         value = *(long long*)&GET_CONSTANTPOOL(f)->info[index];
         push(f,&value, TYPE_LONG);
         break;
     }
-    case CONSTANT_Double:
-    {
+    case CONSTANT_Double: {
         double value;
         value = *(double*)&GET_CONSTANTPOOL(f)->info[index];
         push(f,&value, TYPE_DOUBLE);
@@ -1182,7 +1160,7 @@ static void exe_OPC_IDIV(JF f)
     pop(f,&value2, TYPE_INT);
     Assert_ASSERT(0 != value2);
     //if(0 == value2)
-       // throwException("ArithmeticException");
+    // throwException("ArithmeticException");
     pop(f,&value1, TYPE_INT);
     result = value1/value2;
     push(f,&result, TYPE_INT);
@@ -1197,7 +1175,7 @@ static void exe_OPC_LDIV(JF f)
     pop(f,&value2, TYPE_LONG);
     Assert_ASSERT(0!=value2);
     //if (0 == value2)
-      //  throwException("ArithmeticException");
+    //  throwException("ArithmeticException");
     pop(f,&value1,TYPE_LONG);
     result = value1 / value2;
     push(f,&result, TYPE_LONG);
@@ -1212,7 +1190,7 @@ static void exe_OPC_FDIV(JF f)
     pop(f,&value2, TYPE_FLOAT);
     Assert_ASSERT(0 != value2);
     //if (0 == value2)
-      //  throwException("ArithmeticException");
+    //  throwException("ArithmeticException");
     pop(f,&value1, TYPE_FLOAT);
     result = value1/value2;
     push(f,&result, TYPE_FLOAT);
@@ -1227,7 +1205,7 @@ static void exe_OPC_DDIV(JF f)
     pop(f,&value2, TYPE_DOUBLE);
     Assert_ASSERT(0 != value2);
     //if (0 == value2)
-      //  throwException("ArithmeticException");
+    //  throwException("ArithmeticException");
     pop(f,&value1, TYPE_DOUBLE);
     result = value1/value2;
     push(f,&result, TYPE_DOUBLE);
@@ -1246,7 +1224,7 @@ static void exe_OPC_IREM(JF f)
     pop(f,&value2, TYPE_INT);
     Assert_ASSERT(0 != value2);
     //if (0 == value2)
-      //  throwException("ArithmeticException");
+    //  throwException("ArithmeticException");
     pop(f,&value1, TYPE_INT);
     result = value1 - (value1/value2)*value2;
     push(f,&result, TYPE_INT);
@@ -1261,7 +1239,7 @@ static void exe_OPC_LREM(JF f)
     pop(f,&value2, TYPE_LONG);
     Assert_ASSERT(0 != value2);
     //if (0 == value2)
-      //  throwException("ArithmeticException");
+    //  throwException("ArithmeticException");
     pop(f,&value1, TYPE_LONG);
     result = value1 % value2;
     push(f,&result, TYPE_LONG);
@@ -1499,7 +1477,7 @@ static void exe_OPC_IINC(JF f)
 }
 
 static void Trace_exe_OPC_I2L(JF f)
-{   
+{
     int value;
     long long result;
 
@@ -1643,16 +1621,11 @@ static void exe_OPC_LCMP(JF f)
 
     pop(f,&value2, TYPE_LONG);
     pop(f,&value1, TYPE_LONG);
-    if (value1 > value2)
-    {
+    if (value1 > value2) {
         result = 1;
-    }
-    else if (value1 == value2)
-    {
+    } else if (value1 == value2) {
         result = 0;
-    }
-    else
-    {
+    } else {
         result = -1;
     }
     push(f,&result, TYPE_INT);
@@ -1666,16 +1639,11 @@ static void exe_OPC_FCMPL(JF f)
 
     pop(f,&value2, TYPE_FLOAT);
     pop(f,&value1, TYPE_FLOAT);
-    if (value1 > value2)
-    {
+    if (value1 > value2) {
         result = 1;
-    }
-    else if (value1 == value2)
-    {
+    } else if (value1 == value2) {
         result = 0;
-    }
-    else
-    {
+    } else {
         result = -1;
     }
     push(f,&result, TYPE_INT);
@@ -1693,21 +1661,18 @@ static void exe_OPC_DCMPG(JF f)
 {
 }
 
-//XXX 
+//XXX
 static void exe_OPC_IFEQ(JF f)
 {
     int value;
 
     pop(f,&value, TYPE_INT);
-    if (0 == value)
-    {
+    if (0 == value) {
         short offset;
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset-3, f);
 
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1717,15 +1682,12 @@ static void exe_OPC_IFNE(JF f)
     int value;
 
     pop(f,&value, TYPE_INT);
-    if (0 != value)
-    {
+    if (0 != value) {
         short offset;
 
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1735,14 +1697,11 @@ static void exe_OPC_IFLT(JF f)
     int value;
 
     pop(f,&value, TYPE_INT);
-    if (value < 0)
-    {
+    if (value < 0) {
         short offset;
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1752,15 +1711,12 @@ static void exe_OPC_IFGE(JF f)
     int value;
 
     pop(f,&value, TYPE_INT);
-    if (value >= 0)
-    {
+    if (value >= 0) {
         short offset;
 
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1770,15 +1726,12 @@ static void exe_OPC_IFGT(JF f)
     int value;
 
     pop(f,&value, TYPE_INT);
-    if (value > 0)
-    {
+    if (value > 0) {
         short offset;
 
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1788,15 +1741,12 @@ static void exe_OPC_IFLE(JF f)
     int value;
 
     pop(f,&value, TYPE_INT);
-    if (value <= 0)
-    {
+    if (value <= 0) {
         short offset;
 
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1808,15 +1758,12 @@ static void exe_OPC_IF_ICMPEQ(JF f)
 
     pop(f,&value2, TYPE_INT);
     pop(f,&value1, TYPE_INT);
-    if (value1 == value2)
-    {
+    if (value1 == value2) {
         short offset;
 
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1828,15 +1775,12 @@ static void exe_OPC_IF_ICMPNE(JF f)
 
     pop(f,&value2, TYPE_INT);
     pop(f,&value1, TYPE_INT);
-    if (value1 != value2)
-    {
+    if (value1 != value2) {
         short offset;
 
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1848,16 +1792,13 @@ static void exe_OPC_IF_ICMPLT(JF f)
 
     pop(f,&value2, TYPE_INT);
     pop(f,&value1, TYPE_INT);
-    if (value1 < value2)
-    {
+    if (value1 < value2) {
         short offset;
 
         INTERP_INDEX(offset, GET_PC(f), f);
         /*NOTE: the offset */
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1868,15 +1809,12 @@ static void exe_OPC_IF_ICMPGE(JF f)
 
     pop(f,&value2, TYPE_INT);
     pop(f,&value1, TYPE_INT);
-    if (value1 >= value2)
-    {
+    if (value1 >= value2) {
         short offset;
         INTERP_INDEX(offset, GET_PC(f), f);
         /*NOTE: the offset is in terms of OPC_IF_ICMPGE*/
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1888,14 +1826,11 @@ static void exe_OPC_IF_ICMPGT(JF f)
 
     pop(f,&value2, TYPE_INT);
     pop(f,&value1, TYPE_INT);
-    if (value1 > value2)
-    {
+    if (value1 > value2) {
         short offset;
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1907,14 +1842,11 @@ static void exe_OPC_IF_ICMPLE(JF f)
 
     pop(f,&value2, TYPE_INT);
     pop(f,&value1, TYPE_INT);
-    if (value1 <= value2)
-    {
+    if (value1 <= value2) {
         short offset;
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1927,24 +1859,18 @@ static void exe_OPC_IF_ACMPEQ(JF f)
     pop(f,&value2, TYPE_REFERENCE);
     pop(f,&value1, TYPE_REFERENCE);
     int r;
-    if (value1->type == OBJECT_STRING && 
-                value2->type == OBJECT_STRING)
-    {
+    if (value1->type == OBJECT_STRING &&
+            value2->type == OBJECT_STRING) {
         r = Jstring_equals(value1, value2);
-    }
-    else
-    {
+    } else {
         r = (value1==value2);
     }
 
-    if (r)
-    {
+    if (r) {
         short offset;
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -1957,23 +1883,17 @@ static void exe_OPC_IF_ACMPNE(JF f)
     pop(f,&value2, TYPE_REFERENCE);
     pop(f,&value1, TYPE_REFERENCE);
     int r;
-    if (value1->type == OBJECT_STRING && 
-                value2->type == OBJECT_STRING)
-    {
+    if (value1->type == OBJECT_STRING &&
+            value2->type == OBJECT_STRING) {
         r = !Jstring_equals(value1, value2);
-    }
-    else
-    {
+    } else {
         r = (value1 != value2);
     }
-    if (r)
-    {
+    if (r) {
         short offset;
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset-3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -2026,8 +1946,7 @@ static void exe_OPC_TABLESWITCH(JF f)
     INTERP_U4(high, GET_PC(f), f);
     pop(f,&index, TYPE_INT);
     /*default case*/
-    if (index < low || index > high)
-    {
+    if (index < low || index > high) {
         int temp = GET_OFFSET(f);
         int jump = def-(temp - base);
         PC_MOVE(jump, f);
@@ -2077,8 +1996,7 @@ static void exe_OPC_LOOKUPSWITCH(JF f)
     Mem_newSize(match, npairs);
     Mem_newSize(_offset, npairs);
     int i;
-    for (i=0; i<npairs; i++)
-    {
+    for (i=0; i<npairs; i++) {
         INTERP_U4(match[i], GET_PC(f), f);
         INTERP_U4(_offset[i], GET_PC(f), f);
     }
@@ -2093,10 +2011,9 @@ static void exe_OPC_LOOKUPSWITCH(JF f)
 
     //printf("key:%d\n", key);
 
-    for (i=0; i<npairs; i++)
-    {
+    for (i=0; i<npairs; i++) {
         if (key != match[i])
-          continue;
+            continue;
 
         temp = GET_OFFSET(f);
         jump = _offset[i]-(temp-base);
@@ -2157,26 +2074,19 @@ static void exe_OPC_GETSTATIC(JF f)
 
     Assert_ASSERT(fb);
 
-    if (0 == strcmp(fb->type, "D"))
-    {
+    if (0 == strcmp(fb->type, "D")) {
         double value;
         value = *(double*)&(fb->static_value);
         push(f,&value, TYPE_DOUBLE);
-    }
-    else if (0 == strcmp(fb->type, "J"))
-    {
+    } else if (0 == strcmp(fb->type, "J")) {
         long long value;
         value = *(long long*)&(fb->static_value);
         push(f,&value, TYPE_LONG);
-    }
-    else if (0 == strcmp(fb->type, "F"))
-    {
+    } else if (0 == strcmp(fb->type, "F")) {
         float value;
         value = *(float*)&(fb->static_value);
         push(f,&value, TYPE_FLOAT);
-    }
-    else
-    {
+    } else {
         int value;
         value = fb->static_value;
         push(f,&value, TYPE_INT);
@@ -2192,26 +2102,19 @@ static void exe_OPC_PUTSTATIC(JF f)
     fb = resolveField(GET_CLASS(f), fieldref_idx);
     Assert_ASSERT(fb);
 
-    if (0 == strcmp(fb->type, "D"))
-    {
+    if (0 == strcmp(fb->type, "D")) {
         double value;
         pop(f,&value, TYPE_DOUBLE);
         *(double*)&(fb->static_value) = value;
-    }
-    else if (0 == strcmp(fb->type, "F"))
-    {
+    } else if (0 == strcmp(fb->type, "F")) {
         float value;
         pop(f,&value, TYPE_FLOAT);
         *(float*)&(fb->static_value) = value;
-    }
-    else if (0 == strcmp(fb->type, "J"))
-    {
+    } else if (0 == strcmp(fb->type, "J")) {
         long long value;
         pop(f,&value, TYPE_LONG);
         *(long long*)&(fb->static_value) = value;
-    }
-    else
-    {
+    } else {
         int value;
         pop(f,&value, TYPE_INT);
         *(int*)&(fb->static_value) = value;
@@ -2233,26 +2136,19 @@ static void exe_OPC_GETFIELD(JF f)
     Assert_ASSERT(fb);
     offset = fb->offset;
     pop(f,&objref, TYPE_REFERENCE);
-    if (0 == strcmp(fb->type, "J"))
-    {
+    if (0 == strcmp(fb->type, "J")) {
         long long value;
         value = OBJECT_DATA(objref, offset-1, long long);
         push(f,&value, TYPE_LONG);
-    }
-    else if (0 == strcmp(fb->type, "D"))
-    {
+    } else if (0 == strcmp(fb->type, "D")) {
         double value;
         value = OBJECT_DATA(objref, offset-1, double);
         push(f,&value, TYPE_DOUBLE);
-    }
-    else if (0 == strcmp(fb->type, "F"))
-    {
+    } else if (0 == strcmp(fb->type, "F")) {
         float value;
         value = OBJECT_DATA(objref, offset-1, float);
         push(f,&value, TYPE_FLOAT);
-    }
-    else
-    {
+    } else {
         int value;
         value = OBJECT_DATA(objref, offset-1, int);
         push(f,&value, TYPE_INT);
@@ -2271,29 +2167,22 @@ static void exe_OPC_PUTFIELD(JF f)
     fb = resolveField(GET_CLASS(f), fieldref_idx);
     Assert_ASSERT(fb);
     offset = fb->offset;//offest always need sub 1;
-    if (0 == strcmp(fb->type, "J"))
-    {
+    if (0 == strcmp(fb->type, "J")) {
         long long value;
         pop(f,&value, TYPE_LONG);
         pop(f,&objref, TYPE_REFERENCE);
         OBJECT_DATA(objref, offset-1, long long) = value;
-    }
-    else if (0 == strcmp(fb->type, "D"))
-    {
+    } else if (0 == strcmp(fb->type, "D")) {
         double value;
         pop(f,&value, TYPE_DOUBLE);
         pop(f,&objref, TYPE_REFERENCE);
         OBJECT_DATA(objref, offset-1, double) = value;
-    }
-    else if (0 == strcmp(fb->type, "F"))
-    {
+    } else if (0 == strcmp(fb->type, "F")) {
         float value;
         pop(f,&value, TYPE_FLOAT);
         pop(f,&objref, TYPE_REFERENCE);
         OBJECT_DATA(objref, offset-1, float) = value;
-    }
-    else
-    {
+    } else {
         int value;
         pop(f,&value, TYPE_INT);
         pop(f,&objref, TYPE_REFERENCE);
@@ -2326,15 +2215,12 @@ static void exe_OPC_INVOKEVIRTUAL(JF f)
      * The methodref_idx maybe resovled.
      */
     //===============================================
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx))
-    {
-    case RESOLVED:
-    {
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx)) {
+    case RESOLVED: {
         method = (MethodBlock_t*)cp_info;
         break;
     }
-    case CONSTANT_Methodref:
-    {
+    case CONSTANT_Methodref: {
         name_type_idx = cp_info >> 16;
         cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
         type_idx = cp_info>>16;
@@ -2381,40 +2267,37 @@ static void exe_OPC_INVOKESPECIAL(JF f)
     INTERP_INDEX(methodref_idx, GET_PC(f), f);
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
     /* The methodref_idx maybe resolved*/
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx))
-    {
-        case RESOLVED:
-            {
-                ERROR("impossible");
-                method = (MethodBlock_t*)cp_info;
-                break;
-            }
-        case CONSTANT_Methodref:
-            {
-                /* omit high16bit*/
-                class_idx = cp_info;
-                /*get the symbolic Class*/
-                sym_class = (C)resolveClass(GET_CLASS(f), class_idx);
-                name_type_idx = cp_info >> 16;
-                cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
-                name_idx = cp_info;
-                type_idx = cp_info>>16;
-                name = CP_UTF8(GET_CONSTANTPOOL(f), name_idx);
-                type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
-                // Determine weather the symbolic class or current class's superclass.
-                if ((strcmp(name, "<init>") !=0) && (current_cb->super == sym_class) &&
-                            (current_cb->access_flags & ACC_SUPER))
-                  class = current_cb->super;
-                else
-                  class = sym_class;
-                method = resolveMethod(class, methodref_idx, findMethod);
-                break;
-            }
-        default:
-            throwException("invokespecial error!!!");
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx)) {
+    case RESOLVED: {
+        ERROR("impossible");
+        method = (MethodBlock_t*)cp_info;
+        break;
+    }
+    case CONSTANT_Methodref: {
+        /* omit high16bit*/
+        class_idx = cp_info;
+        /*get the symbolic Class*/
+        sym_class = (C)resolveClass(GET_CLASS(f), class_idx);
+        name_type_idx = cp_info >> 16;
+        cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
+        name_idx = cp_info;
+        type_idx = cp_info>>16;
+        name = CP_UTF8(GET_CONSTANTPOOL(f), name_idx);
+        type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
+        // Determine weather the symbolic class or current class's superclass.
+        if ((strcmp(name, "<init>") !=0) && (current_cb->super == sym_class) &&
+                (current_cb->access_flags & ACC_SUPER))
+            class = current_cb->super;
+        else
+            class = sym_class;
+        method = resolveMethod(class, methodref_idx, findMethod);
+        break;
+    }
+    default:
+        throwException("invokespecial error!!!");
     }
     if (!method)
-      throwException("NoSuchMethodError");
+        throwException("NoSuchMethodError");
 
     executeMethod(method, NULL);
 }
@@ -2432,36 +2315,33 @@ static void exe_OPC_INVOKESTATIC(JF f)
     /*
      * The methodref_idx maybe resolved.
      */
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx))
-    {
-        case RESOLVED:
-            {
-                method = (MethodBlock_t*)cp_info;
-                break;
-            }
-        case CONSTANT_Methodref:
-            {
-                /*high                    low
-                 *--------------------------
-                 *|name&type |class        |
-                 *--------------------------
-                 */
-                class_idx = cp_info;
-                /*
-                 * The class is the resovle_method class.It must be inited
-                 * before the method resovle.
-                 * note: in this case, can not use resolveClass. Because we
-                 *       don't know the obj Class's CONSTANT_Class belong to which Class
-                 */
-                C class = (C)resolveClass(GET_CLASS(f), class_idx);
-                method = (MethodBlock_t*)resolveMethod(class, methodref_idx, findMethod);
-                break;
-            }
-        default:
-            throwException("invokestatic error!!!!");
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx)) {
+    case RESOLVED: {
+        method = (MethodBlock_t*)cp_info;
+        break;
+    }
+    case CONSTANT_Methodref: {
+        /*high                    low
+         *--------------------------
+         *|name&type |class        |
+         *--------------------------
+         */
+        class_idx = cp_info;
+        /*
+         * The class is the resovle_method class.It must be inited
+         * before the method resovle.
+         * note: in this case, can not use resolveClass. Because we
+         *       don't know the obj Class's CONSTANT_Class belong to which Class
+         */
+        C class = (C)resolveClass(GET_CLASS(f), class_idx);
+        method = (MethodBlock_t*)resolveMethod(class, methodref_idx, findMethod);
+        break;
+    }
+    default:
+        throwException("invokestatic error!!!!");
     }
     if (method == NULL)
-      throwException("invokestatic error!!!no such method");
+        throwException("invokestatic error!!!no such method");
 
     executeMethod(method, NULL);
 }
@@ -2488,34 +2368,31 @@ static void exe_OPC_INVOKEINTERFACE(JF f)
      */
     cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
     //The methodref_idx maybe resovled.
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx))
-    {
-        case RESOLVED:
-            {
-                throwException("invokeinterface resolved");
-            }
-            /*NOTE: this is InterfaceMethodref*/
-        case CONSTANT_InterfaceMethodref:
-            {
-                name_type_idx = cp_info >> 16;
-                cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
-                type_idx = cp_info>>16;
-                type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx)) {
+    case RESOLVED: {
+        throwException("invokeinterface resolved");
+    }
+    /*NOTE: this is InterfaceMethodref*/
+    case CONSTANT_InterfaceMethodref: {
+        name_type_idx = cp_info >> 16;
+        cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
+        type_idx = cp_info>>16;
+        type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
 
-                args_count = parseArgs(type);
-                objref = *(O*)(f->ostack - args_count);
-                class = objref->class;
-                ClassBlock_t* cb = CLASS_CB(class);
-                /*NOTE: resolveInterfaceMethod()*/
-                method = (MethodBlock_t*)resolveInterfaceMethod(class, methodref_idx);
-                break;
-            }
-        default:
-            throwException("invokeInterface error!\n");
+        args_count = parseArgs(type);
+        objref = *(O*)(f->ostack - args_count);
+        class = objref->class;
+        ClassBlock_t* cb = CLASS_CB(class);
+        /*NOTE: resolveInterfaceMethod()*/
+        method = (MethodBlock_t*)resolveInterfaceMethod(class, methodref_idx);
+        break;
+    }
+    default:
+        throwException("invokeInterface error!\n");
     }
     //===============================================
     if (!method)
-      throwException("NoSuchMethodError");
+        throwException("NoSuchMethodError");
 
     executeMethod(method, NULL);
 }
@@ -2560,10 +2437,8 @@ static void exe_OPC_ANEWARRAY(JF f)
     /*need to resolveClass*/
     char* classname;
     GET_CONSTANTPOOL(f)->type[index];//test
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), index))
-    {
-    case RESOLVED:
-    {
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), index)) {
+    case RESOLVED: {
         C class = (C)CP_INFO(GET_CONSTANTPOOL(f), index);
         ClassBlock_t* cb = CLASS_CB(class);
         classname = cb->this_classname;
@@ -2635,12 +2510,9 @@ static void exe_OPC_INSTANCEOF(JF f)
 
     INTERP_INDEX(index, GET_PC(f), f);
     pop(f,&obj, TYPE_REFERENCE);
-    if (obj == NULL)
-    {
+    if (obj == NULL) {
         result = 0;
-    }
-    else
-    {
+    } else {
         C class = resolveClass(GET_CLASS(f), index);
         if (class == NULL)
             throwException("instanceof error");
@@ -2683,13 +2555,10 @@ static void exe_OPC_IFNULL(JF f)
     short offset;
 
     pop(f,&obj, TYPE_REFERENCE);
-    if (obj == NULL)
-    {
+    if (obj == NULL) {
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -2703,13 +2572,10 @@ static void exe_OPC_IFNONNULL(JF f)
 
     pop(f,&obj, TYPE_REFERENCE);
 
-    if (obj != NULL)
-    {
+    if (obj != NULL) {
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
-    }
-    else
-    {
+    } else {
         PC_MOVE(BRANCH_BYTE*2, f);
     }
 }
@@ -2726,8 +2592,7 @@ static void exe_OPC_JSR_W(JF f)
 int executeJava(JF retFrame, JF f)
 {
     // When the stack frame is move to the top, exit.
-    if (f->mb == NULL)
-    {
+    if (f->mb == NULL) {
         printf("\nframe is NULL\n");
         exitVM();
     }
@@ -2741,8 +2606,7 @@ int executeJava(JF retFrame, JF f)
 
 
     //Native doesn't have a return
-    if (0 == code_length)
-    {
+    if (0 == code_length) {
         printf("code_length == 0    ");
         ClassBlock_t* cb = CLASS_CB(GET_CLASS(f));
         printf("method name:%s,type:%s, class:%s\n", f->mb->name,f->mb->type, cb->this_classname);
@@ -2755,29 +2619,25 @@ int executeJava(JF retFrame, JF f)
      *       the PCMOVE() as much as possible.
      */
     /* main loop of interpreter */
-    while (GET_OFFSET(f) < code_length)
-    {
+    while (GET_OFFSET(f) < code_length) {
         //Opcode_e opcode = *GET_PC(f);
         Opcode_e opcode;
         INTERP_U1(opcode, GET_PC(f), f);
         opcodeStatistics(opcode);
-        if (dis_testinfo)
-        {
+        if (dis_testinfo) {
             fprintf(stdout,"\nopcode: ---------%s\n", dumpOpcode(opcode));//for test
             fprintf(stdout,"pc_offset:------------%d\n", GET_OFFSET(f));
             fprintf(stdout,"GET_PC(f):---------%d\n", (unsigned int)GET_PC(f));
             printStackLog(stdout, f);
         }
 
-        if (Log_file)
-        {
+        if (Log_file) {
             fprintf(Log_file,"\nopcode: ---------%s\n", dumpOpcode(opcode));//for test
             fprintf(Log_file,"pc_offset:------------%d\n", GET_OFFSET(f));
             fprintf(Log_file,"GET_PC(f):---------%d\n", (unsigned int)GET_PC(f));
             printStackLog(Log_file, f);
         }
-        switch (opcode)
-        {
+        switch (opcode) {
         case OPC_NOP://0
             break;
         case OPC_ACONST_NULL://1

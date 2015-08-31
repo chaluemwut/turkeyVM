@@ -27,16 +27,14 @@ static char* const WEBSITE = "https://github.com/qc1iu/turkeyVM";
 static void actionArg_help();
 static void actionArg_test();
 
-typedef enum
-{
+typedef enum {
     ARGTYPE_BOOL,
     ARGTYPE_EMPTY,
     ARGTYPE_INT,
     ARGTYPE_STRING,
-}Arg_type;
+} Arg_type;
 
-typedef struct
-{
+typedef struct {
     char* name;
     Arg_type type;
     char* arg;
@@ -68,22 +66,21 @@ static void arg_setClassPath(char* s)
 
 static void arg_setVerbose(int i)
 {
-    switch (i)
-    {
-        case 0:
-            Control_verbose = VERBOSE_SILENT;
-            break;
-        case 1:
-            Control_verbose = VERBOSE_PASS;
-            break;
-        case 2:
-            Control_verbose = VERBOSE_SUBPASS;
-            break;
-        case 3:
-            Control_verbose = VERBOSE_DETAIL;
-            break;
-        default:
-            ERROR("-verbose {0|1|2|3}");
+    switch (i) {
+    case 0:
+        Control_verbose = VERBOSE_SILENT;
+        break;
+    case 1:
+        Control_verbose = VERBOSE_PASS;
+        break;
+    case 2:
+        Control_verbose = VERBOSE_SUBPASS;
+        break;
+    case 3:
+        Control_verbose = VERBOSE_DETAIL;
+        break;
+    default:
+        ERROR("-verbose {0|1|2|3}");
     }
 }
 
@@ -92,24 +89,54 @@ static void arg_setOpcode()
     Control_opcode = 1;
 }
 
-static Arg_t allArgs[] =
-{
-    {"cp", ARGTYPE_STRING, "{path}", "set class search path", arg_setClassSearchPath},
-    {"classpath", ARGTYPE_STRING, "{path}", "set classpath", arg_setClassPath},
-    {"opcode", ARGTYPE_EMPTY, "<NULL>", "statistic instrctions", arg_setOpcode},
-    {"log", ARGTYPE_STRING, "{name}", "log method", arg_setLog},
-    {"verbose", ARGTYPE_INT, "{0|1|2|3}", "verbose turkey",  arg_setVerbose},
-    {"trace", ARGTYPE_STRING, "{name}", "trace specific method", arg_setTrace},
-    {"help", ARGTYPE_EMPTY,"<NULL>", "commandline list", actionArg_help},
-    {"test", ARGTYPE_EMPTY, "<NULL>", "super test!!", actionArg_test},
+static Arg_t allArgs[] = {
+    {"cp",
+        ARGTYPE_STRING,
+        "{path}",
+        "set class search path",
+        arg_setClassSearchPath},
+    {"classpath",
+        ARGTYPE_STRING,
+        "{path}",
+        "set classpath",
+        arg_setClassPath},
+    {"opcode",
+        ARGTYPE_EMPTY,
+        "<NULL>",
+        "statistic instrctions",
+        arg_setOpcode},
+    {"log",
+        ARGTYPE_STRING,
+        "{name}",
+        "log method",
+        arg_setLog},
+    {"verbose",
+        ARGTYPE_INT,
+        "{0|1|2|3}",
+        "verbose turkey",
+        arg_setVerbose},
+    {"trace",
+        ARGTYPE_STRING,
+        "{name}",
+        "trace specific method",
+        arg_setTrace},
+    {"help",
+        ARGTYPE_EMPTY,
+        "<NULL>",
+        "commandline list",
+        actionArg_help},
+    {"test",
+        ARGTYPE_EMPTY,
+        "<NULL>",
+        "super test!!",
+        actionArg_test},
     {NULL, 0, NULL, NULL, NULL}
 };
 
 static int printSpace(int i, int indent)
 {
     Assert_ASSERT(i<=indent);
-    while(i < indent)
-    {
+    while(i < indent) {
         i += fprintf(stdout, " ");
     }
 
@@ -124,8 +151,7 @@ static void actionArg_test()
 static void printAllarg()
 {
     int i = 0;
-    for(; allArgs[i].action; i++)
-    {
+    for(; allArgs[i].action; i++) {
         int k=0;
         k += fprintf(stdout, "  -%s", allArgs[i].name);
         k = printSpace(k, 15);
@@ -177,8 +203,7 @@ static int createTurkeyArgs(int argc, char** argv, int index, char** args)
 {
     int i;
     int j=0;
-    for (i=index; i<argc; i++, j++)
-    {
+    for (i=index; i<argc; i++, j++) {
         args[j] = String_new(argv[i]);
     }
     args[j] = NULL;
@@ -195,8 +220,7 @@ static int turkeyArgsCount(int argc, char** argv, int index)
 {
     int i=index;
     int count = 0;
-    while (i <argc)
-    {
+    while (i <argc) {
         count++;
         i++;
     }
@@ -232,22 +256,18 @@ Triple_t commandline_doarg(int argc,char** argv)
     int count;
     int index;
 
-    if (argc == 1)
-    {
+    if (argc == 1) {
         printUsage();
         exit(0);
     }
     count = 0;
     index = 1;
-    for(; index < argc;index++)
-    {
+    for(; index < argc; index++) {
         int i = 0;
-        if (argv[index][0] != '-')
-        {
-            if (filename == NULL)
-            {
+        if (argv[index][0] != '-') {
+            if (filename == NULL) {
                 /*
-                 * If find a file, we treat all arg behind filename as 
+                 * If find a file, we treat all arg behind filename as
                  * inputfile's args.
                  */
                 filename = String_new(argv[index]);
@@ -262,60 +282,51 @@ Triple_t commandline_doarg(int argc,char** argv)
                 //Trace_dor(t);
 
                 return t;
-            }
-            else
-            {
+            } else {
                 ERROR("impossible");
                 argException("only one file");
             }
         }
 
-        for(; allArgs[i].action; i++)
-        {
-            if(strcmp(allArgs[i].name,argv[index]+1) != 0)
-            {
+        for(; allArgs[i].action; i++) {
+            if(strcmp(allArgs[i].name,argv[index]+1) != 0) {
                 continue;
             }
 
-            switch(allArgs[i].type)
-            {
-                case ARGTYPE_EMPTY:
-                    {
-                        allArgs[i].action();
-                        break;
-                    }
-                case ARGTYPE_INT:
-                    {
-                        index++;
-                        if (index >= argc)
-                            argException("expect <INT> arg");
-                        char* arg = argv[index];
-                        int n = atoi(arg);
-                        allArgs[i].action(n);
-                        break;
-                    }
-                case ARGTYPE_STRING:
-                    {
-                        index++;
-                        if (index>=argc)
-                            argException("expect <STRING> arg");
-                        char* arg = argv[index];
-                        allArgs[i].action(arg);
-                        break;
-                    }
-                default:
-                    ERROR("impossible arg");
+            switch(allArgs[i].type) {
+            case ARGTYPE_EMPTY: {
+                allArgs[i].action();
+                break;
+            }
+            case ARGTYPE_INT: {
+                index++;
+                if (index >= argc)
+                    argException("expect <INT> arg");
+                char* arg = argv[index];
+                int n = atoi(arg);
+                allArgs[i].action(n);
+                break;
+            }
+            case ARGTYPE_STRING: {
+                index++;
+                if (index>=argc)
+                    argException("expect <STRING> arg");
+                char* arg = argv[index];
+                allArgs[i].action(arg);
+                break;
+            }
+            default:
+                ERROR("impossible arg");
             }
             break;
         }
-        if(!allArgs[i].action)
-        {
+        if(!allArgs[i].action) {
             argException("Unrecognized option: %s", argv[index]);
         }
     }
 
     if (t == NULL)
-      argException("expect a file");
+        argException("expect a file");
 
     return NULL;
 }

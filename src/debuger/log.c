@@ -39,7 +39,7 @@ static JFrame_t f;
 void Log_add(char* s)
 {
     if (!logList)
-      logList = List_new();
+        logList = List_new();
 
     List_addFirst(logList, s);
 }
@@ -47,27 +47,25 @@ void Log_add(char* s)
 int Log_contains(char* s)
 {
     if (!logList)
-      logList = List_new();
+        logList = List_new();
 
     int exist = List_contains(logList,
-                s,
-                (Poly_tyEquals)String_equals);
+                              s,
+                              (Poly_tyEquals)String_equals);
 
     return exist;
 }
 
 FILE* Log_open(char* s)
 {
-    if (fd != NULL)
-    {
+    if (fd != NULL) {
         temp = fd;
         fd = NULL;
         Control_setLogFile(fd);
         return 0;
     }
 
-    if (!Log_contains(s))
-    {
+    if (!Log_contains(s)) {
         fd = 0;
         Control_setLogFile(fd);
         return 0;
@@ -88,7 +86,7 @@ FILE* Log_open(char* s)
 FILE* Log_recover()
 {
     if (f != getCurrentFrame())
-      return 0;
+        return 0;
 
     Assert_ASSERT(temp);
     fd = temp;

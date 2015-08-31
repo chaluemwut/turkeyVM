@@ -42,12 +42,11 @@
 
 #define THROW throwException("native")
 
-typedef struct
-{
+typedef struct {
     char* method_name;
     char* desc;
     void (*action)();
-}Binding;
+} Binding;
 
 // just for test============
 void testObject();
@@ -75,86 +74,130 @@ void getName(JF retFrame);
 
 
 /* Binding method name with function*/
-static Binding const nativeMethods[] =
-{
-    {"getName",
+static Binding const nativeMethods[] = {
+    {
+        "getName",
         "()Ljava/lang/String;",
-        getName},
-    {"nativeClose",
+        getName
+    },
+    {
+        "nativeClose",
         "(J)J",
-        nativeClose},
-    {"nativeReadBuf",
+        nativeClose
+    },
+    {
+        "nativeReadBuf",
         "(J[BII)I",
-        nativeReadBuf},
-    {"nativeOpen",
+        nativeReadBuf
+    },
+    {
+        "nativeOpen",
         "(Ljava/lang/String;I)J",
-        nativeOpen},
-    {"getPrimitiveClass",
+        nativeOpen
+    },
+    {
+        "getPrimitiveClass",
         "(Ljava/lang/String;)Ljava/lang/Class;",
-        getPrimitiveClass},
-    {"nativeWriteBuf",
+        getPrimitiveClass
+    },
+    {
+        "nativeWriteBuf",
         "(J[BII)J",
-        nativeWriteBuf},
-    {"identityHashCode",
+        nativeWriteBuf
+    },
+    {
+        "identityHashCode",
         "(Ljava/lang/Object;)I",
-        identityHashCode},
-    {"constructNative",
+        identityHashCode
+    },
+    {
+        "constructNative",
         "([Ljava/lang/Object;Ljava/lang/Class;I)Ljava/lang/Object;",
-        constructNative},
-    {"getDeclaredConstructors",
+        constructNative
+    },
+    {
+        "getDeclaredConstructors",
         "(Z)[Ljava/lang/reflect/Constructor;",
-        getDeclaredConstructors},
-    {"forName",
+        getDeclaredConstructors
+    },
+    {
+        "forName",
         "(Ljava/lang/String;)Ljava/lang/Class;",
-        forName},
-    {"getClass",
+        forName
+    },
+    {
+        "getClass",
         "()Ljava/lang/Class;",
-        getClass},
-    {"testObject",
+        getClass
+    },
+    {
+        "testObject",
         "(Ljava/lang/Object;)V",
-        testObject},
-    {"nativeValid",
+        testObject
+    },
+    {
+        "nativeValid",
         "(J)Z",
-        nativeValid},
-    {"nativeInit",
+        nativeValid
+    },
+    {
+        "nativeInit",
         "()V",
-        nativeInit},
-    {"clone",
+        nativeInit
+    },
+    {
+        "clone",
         "(Ljava/lang/Cloneable;)Ljava/lang/Object;",
-        turkeyCopy},
-    {"isWordsBigEndian",
+        turkeyCopy
+    },
+    {
+        "isWordsBigEndian",
         "()Z",
-        isWordsBidEndian},
-    {"nativeLoad",
+        isWordsBidEndian
+    },
+    {
+        "nativeLoad",
         "(Ljava/lang/String;)I",
-        nativeLoad},
-    {"nativeGetLibname",
+        nativeLoad
+    },
+    {
+        "nativeGetLibname",
         "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
-        nativeGetLibname},
-    {"currentClassLoader",
+        nativeGetLibname
+    },
+    {
+        "currentClassLoader",
         "()Ljava/lang/ClassLoader;",
-        currentClassLoader},
-    {"arraycopy",
+        currentClassLoader
+    },
+    {
+        "arraycopy",
         "(Ljava/lang/Object;ILjava/lang/Object;II)V",
-        arrayCopy},
-    {"insertSystemProperties",
+        arrayCopy
+    },
+    {
+        "insertSystemProperties",
         "(Ljava/util/Properties;)V",
-        insertSystemProperties},
-    {"registerNatives",
+        insertSystemProperties
+    },
+    {
+        "registerNatives",
         "()V",
-        registerNatives},
-    {NULL,
+        registerNatives
+    },
+    {
         NULL,
-        NULL},
+        NULL,
+        NULL
+    },
 };
 
 void* findNativeInvoker(char* name, char* desc)
 {
     int i = 0;
-    for (; nativeMethods[i].action; i++)
-    {
+    for (; nativeMethods[i].action; i++) {
         if ((0 == strcmp(name, nativeMethods[i].method_name)) &&
-                    (0 == strcmp(desc, nativeMethods[i].desc)))
+                (0 == strcmp(desc, nativeMethods[i].desc)))
             return nativeMethods[i].action;
     }
     return NULL;
@@ -197,10 +240,9 @@ void getName(JF retFrame)
     char* ss = String_new(s);
     int i=0;
     int len = strlen(ss);
-    for (i=0; i<len; i++)
-    {
+    for (i=0; i<len; i++) {
         if (ss[i] == '/')
-          ss[i] = '.';
+            ss[i] = '.';
     }
     O js = createJstring(ss);
     push(retFrame, &js, TYPE_REFERENCE);
@@ -253,8 +295,8 @@ void getDeclaredConstructors(JF retFrame)
 {
     NF nframe = getNativeFrame();
 
-    O vmClass; 
-    int isPublic; 
+    O vmClass;
+    int isPublic;
     LOAD(nframe, vmClass, O, 0);
     LOAD(nframe, isPublic, int, 1);
     O cons = getClassConstructors(vmClass, isPublic);
@@ -264,7 +306,7 @@ void getDeclaredConstructors(JF retFrame)
 //lang/lang/VMClass.class
 /**
  * Use the classloader of the current class to load, link,and
- * initialize a class. This equivalent to your code calling 
+ * initialize a class. This equivalent to your code calling
  * Class.forName(name, ture, getClass().getClassLoader()).
  *
  * @parm name the name of the class to find.
@@ -282,8 +324,7 @@ void forName(JF retFrame)
     //printf("%s\n", classname);
     int len = strlen(classname);
     int i=0;
-    for (; i<len; i++)
-    {
+    for (; i<len; i++) {
         if (classname[i] == '.')
             classname[i] = '/';
     }
@@ -305,8 +346,7 @@ O getClass_name(char* classname)
 {
     int len = strlen(classname);
     int i = 0;
-    for (; i<len; i++)
-    {
+    for (; i<len; i++) {
         if (classname[i] == '.')
             classname[i] = '/';
     }
@@ -328,13 +368,10 @@ void testObject()
     NF nframe = getNativeFrame();
 
     O obj = *(O*)&nframe->locals[0];
-    if (obj == NULL)
-    {
+    if (obj == NULL) {
         printf("obj == null, in testObject");
         throwException("hash false");
-    }
-    else
-    {
+    } else {
         throwException("hash success");
     }
 }
@@ -415,8 +452,8 @@ void setProperty(O this, char* key, char* value)
     O v = createJstring(value);
     MethodBlock_t* mb;
 
-    mb = (MethodBlock_t*)findMethod(this->class, "put", 
-                "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+    mb = (MethodBlock_t*)findMethod(this->class, "put",
+                                    "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     if (mb == NULL)
         throwException("no such method");
     assert_stack = FALSE;
@@ -450,8 +487,7 @@ void arrayCopy(JF retFrame)
     Assert_ASSERT(length>=0);
     if ((src == NULL)||(dest == NULL))
         throwException("java/lang/NullPointerException");
-    else
-    {
+    else {
         ClassBlock_t* scb = CLASS_CB(src->class);
         ClassBlock_t* dcb = CLASS_CB(dest->class);
         unsigned int* sdata = src->data;
@@ -460,8 +496,7 @@ void arrayCopy(JF retFrame)
         if ((scb->this_classname[0] != '[') || (dcb->this_classname[0] != '['))
             goto storeExcep;
         size = 0;
-        switch (scb->this_classname[1])
-        {
+        switch (scb->this_classname[1]) {
         case 'B':
             size = 1;
             break;
@@ -602,13 +637,11 @@ void getPrimitiveClass(JF retFrame)
     ty = Jstring2Char(obj);
     primtype = getPrimType(ty);
     class = (C)findPrimitiveClass(primtype);
-    if (class != NULL)
-    {
+    if (class != NULL) {
         if (!class->class)
             WARNING("classheader is null");
         push(retFrame, &(class->class), TYPE_REFERENCE);
-    }
-    else
+    } else
         throwException("getPrimitiveClass");
 }
 

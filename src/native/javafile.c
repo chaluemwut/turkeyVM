@@ -44,8 +44,7 @@ static const int DSYNC = 32;
 
 typedef struct FD *FD;
 
-struct FD
-{
+struct FD {
     FILE* fd;
     int reachEOF;
 };
@@ -79,8 +78,8 @@ static FD initNativeFile(FILE* fd, int e)
  *
  * @exception IOException If an error occurs.
  */
- // private native long nativeOpen(String path, int mode) throws FileNotFoundException;
- // Class: java/io/FileDescriptor 
+// private native long nativeOpen(String path, int mode) throws FileNotFoundException;
+// Class: java/io/FileDescriptor
 void nativeOpen(JF retFrame)
 {
     NF f = getNativeFrame();
@@ -90,29 +89,26 @@ void nativeOpen(JF retFrame)
     char* fpath = Jstring2Char(path);
     FILE* fp = NULL;
     long long r;
-    //FIXME 
-    switch (mode)
-    {
-        case READ:
-            fp = fopen(fpath, "r");
-            break;
-        case WRITE:
-            //printf("mode:%d\n", mode);
-            //TODO("unimplements");
-            fp = fopen(fpath, "wr");
-            break;
-        defualt:
-            printf("mode:%d\n", mode);
-            TODO("unimplements");
-            break;
+    //FIXME
+    switch (mode) {
+    case READ:
+        fp = fopen(fpath, "r");
+        break;
+    case WRITE:
+        //printf("mode:%d\n", mode);
+        //TODO("unimplements");
+        fp = fopen(fpath, "wr");
+        break;
+    default:
+        printf("mode:%d\n", mode);
+        TODO("unimplements");
+        break;
     }
-    if (fp == NULL)
-    {
-      r = -1;
-      ERROR("Native Open:File not exsit");
-    }
-    else
-      r = (long long)fp;
+    if (fp == NULL) {
+        r = -1;
+        ERROR("Native Open:File not exsit");
+    } else
+        r = (long long)fp;
     //printf("%lld\n", r);
     FD fdp = initNativeFile(fp, 0);
     r = (long long)fdp;
@@ -138,7 +134,7 @@ void nativeClose(JF retFrame)
     FD fdp = (FD)fd;
     int err = fclose(fdp->fd);
     if (err)
-      ERROR("close file error");
+        ERROR("close file error");
     long long r = fd;
     push(retFrame, &r, TYPE_LONG);
 }
@@ -155,7 +151,7 @@ void nativeClose(JF retFrame)
  *
  * @exception IOException If an error occurs
  */
-//private native long nativeWriteBuf(long fd, byte[] buf, int offset, int len) 
+//private native long nativeWriteBuf(long fd, byte[] buf, int offset, int len)
 //throws IOException;
 /*FileDescriptor*/
 void nativeWriteBuf(JF retFrame)
@@ -176,9 +172,9 @@ void nativeWriteBuf(JF retFrame)
     LOAD(n, len, int, 5);
     Assert_ASSERT(fd);
     if ((FILE*)fd == stdout)
-       fdp = initNativeFile(stdout, 0);
+        fdp = initNativeFile(stdout, 0);
     else
-       fdp = (FD)fd;
+        fdp = (FD)fd;
     Assert_ASSERT(buf->type == OBJECT_ARRAY);
     int r = fwrite(ARRAY_IDX(buf, _offset, char), sizeof(char), len, fdp->fd);
     //int r = fwrite(ARRAY_IDX(buf, _offset, char), sizeof(char), len, stdout);
@@ -226,11 +222,10 @@ void nativeReadBuf(JF retFrame)
     LOAD(n, len, int, 5);
     //printf("%lld\n", fd);
     FD fdp = (FD)fd;
-    if (fdp->reachEOF == 1)
-    {
-      int rr = -1;
-      push(retFrame, &rr, TYPE_INT);
-      return;
+    if (fdp->reachEOF == 1) {
+        int rr = -1;
+        push(retFrame, &rr, TYPE_INT);
+        return;
     }
     /* for test
     fseek(fp, 0L, SEEK_END);
@@ -252,8 +247,7 @@ void nativeReadBuf(JF retFrame)
     fprintf(stdout, "len:%d\n", len);
     fprintf(stdout, "r:%d\n", r);
     */
-    if (r < len)
-    {
+    if (r < len) {
         //WARNING("r<len");
         //fprintf(stdout, "EOF:%x\n", EOF);
         ARRAY_DATA(buf, r+offset, char) = EOF;
@@ -263,7 +257,7 @@ void nativeReadBuf(JF retFrame)
     }
     push(retFrame, &r, TYPE_INT);
     if (r < len)
-      fdp->reachEOF = 1;
+        fdp->reachEOF = 1;
 }
 
 //java/io/FileDescriptor

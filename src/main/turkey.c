@@ -103,7 +103,7 @@ int main(int argc, char** argv)
     MethodBlock_t* main_mehtod;
     O args;
     int args_size;
-    
+
     start = clock();
     t = commandline_doarg(argc, argv);
     Assert_ASSERT(t);
@@ -126,8 +126,7 @@ int main(int argc, char** argv)
     Assert_ASSERT(stringArray);
     args = allocArray(stringArray, args_size, sizeof(O), TYPE_REFERENCE);
     int i;
-    for (i = 0; i<args_size; i++)
-    {
+    for (i = 0; i<args_size; i++) {
         ARRAY_DATA(args, i, O) = createJstring(_args[i]);
     }
 
@@ -139,7 +138,7 @@ int main(int argc, char** argv)
     classHashStatus();
     opcodeStatus();
 
-    return 0; 
+    return 0;
     /*}}}*/
 }
 

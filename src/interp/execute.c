@@ -43,8 +43,7 @@ extern List_t CList;
 
 static int executeNativeMethod(MethodBlock_t* mb)
 {
-    if (dis_testinfo)
-    {
+    if (dis_testinfo) {
         printf("This is a native method!!!");
         printf("name:%s, type:%s\n", mb->name, mb->type);
     }
@@ -71,17 +70,14 @@ int Log_executeJava(JF retFrame, JF currentF)
 int Verbose_executeMethod(MethodBlock_t* mb, va_list jargs)
 {
     void* ret;/*{{{*/
-    if (mb->native_invoker)
-    {
+    if (mb->native_invoker) {
         return executeNativeMethod(mb);
-    }
-    else
-    {
+    } else {
         JF retFrame = getCurrentFrame();
         createFrame(mb, jargs, ret);
         JF currentF = getCurrentFrame();
         //executeJava
-        
+
         char* s = String_concat(getMethodClassName(mb), ":", mb->name, mb->type, NULL);
         int r;
         Log_SingleMethod(s, Log_executeJava, (retFrame, currentF), r);
@@ -116,7 +112,7 @@ static int Verbose_executeStaticMain(MethodBlock_t* mb, O args)
     JF frame = createFrame0(mb);
     *(O*)(frame->locals+0) = *(O*)&args;
     if (dis_testinfo)
-      printf("\nnew Frame: %d\n", frame->id);
+        printf("\nnew Frame: %d\n", frame->id);
     int r;
     Log_SingleMethod("staticMain", Log_executeJava, (NULL, frame), r);
     return 0;
@@ -164,23 +160,21 @@ void invokeConstructNative(MethodBlock_t* mb, O args, O this)
 
     Assert_ASSERT(args->type == OBJECT_ARRAY);
     if (!(mb->access_flags & ACC_STATIC))//non-static
-      locals_idx = args_count;
+        locals_idx = args_count;
     else
-      throwException("construct method must be non-static");
+        throwException("construct method must be non-static");
 
-    if (args->length != locals_idx)
-    {
+    if (args->length != locals_idx) {
         throwException("args count error");
     }
 
     STORE(frame, this, O, 0);
     int i;
-    for (i = 0; i<args->length; i++)
-    {
+    for (i = 0; i<args->length; i++) {
         STORE(frame, (ARRAY_DATA(args, i, O)), O, i+1);
         /*
          * Since this method is not normal, it's not have a prev frame,
-         * we don't need to copy args for it, just create it's locals 
+         * we don't need to copy args for it, just create it's locals
          * manually.
          */
     }
