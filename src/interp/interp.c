@@ -828,7 +828,6 @@ static void exe_OPC_DSTORE_3(JF f)
     STORE(f, value, double, 3);
 }
 
-
 static void exe_OPC_ASTORE_0(JF f)
 {
     O obj;
@@ -2305,7 +2304,6 @@ static void exe_OPC_PUTFIELD(JF f)
      *      throw in resolveField().
      */
 }
-
 
 static void exe_OPC_INVOKEVIRTUAL(JF f)
 {

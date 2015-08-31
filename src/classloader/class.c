@@ -45,7 +45,6 @@
 
 static int initable = FALSE;
 
-
 static char const PRIM_CLASS_NAME[] =
 {
     'B',
@@ -58,7 +57,6 @@ static char const PRIM_CLASS_NAME[] =
     'Z',
     ' '
 };
-
 
 static Hash_t CMap;
 
@@ -79,7 +77,9 @@ static C PRIM_CLASS[MAX_PRIMITIVE];
  * all the classpath until find.
  * @see parseClassPath()
  */
-static char** CLASSPATH = NULL;
+static char** DEFAULT_PATH = NULL;
+
+static char* CLASSPATH = NULL;
 
 /**
  * The max length of all the classpath.
@@ -161,7 +161,6 @@ void addClassHeader(C class)
     class->class = obj;
 }
 
-
 /**
  * Finding Class_t in HashMap.
  * @return Class_t if found, otherwise return NULL.
@@ -174,23 +173,22 @@ C findClass(char* classname)
 }
 
 /**
- * Initial the CLASSPATH.
- * Calulated the maxlen of CLASSPATH.
+ * Initial the DEFAULT_PATH.
+ * Calulated the maxlen of DEFAULT_PATH.
  */
 void parseClassPath(char* c)
 {
     /*{{{*/
-    CLASSPATH = String_split(c, ":");
+    DEFAULT_PATH = String_split(c, ":");
     int i = 0;
-    while (CLASSPATH[i])
+    while (DEFAULT_PATH[i])
     {
-        if (strlen(CLASSPATH[i])>MAX_PATH_LEN)
-          MAX_PATH_LEN = strlen(CLASSPATH[i]);
+        if (strlen(DEFAULT_PATH[i])>MAX_PATH_LEN)
+          MAX_PATH_LEN = strlen(DEFAULT_PATH[i]);
         i++;
     }
     /*}}}*/
 }
-
 
 /*
  * Calculate the count of the method. The args is the method->type.
@@ -248,9 +246,7 @@ int parseArgs(char* args)
         }
         //TODO need??
         else
-        {
-            ptr++;
-        }
+          ptr++;
     }
     return count;/*}}}*/
 }
@@ -448,7 +444,7 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
             }
             else
             {
-                ptr += attr_length;
+              ptr += attr_length;
             }
             attr_count--;
         }
@@ -580,11 +576,13 @@ static C Verbose_defineClass(char* classname, char* data, int file_len)
                 methods->exception_idx_table = exception_index_table;
             }
             else
+            {
                 /*
                  *@chuan
                  *omit other attributes
                  */
                 ptr += attr_length;
+            }
         }
         methods++;
     }
@@ -620,7 +618,6 @@ static C defineClass(char* classname, char* data, int file_len)
     return r;
 }
 
-
 /*
  * Copy the Class file to the mem.Then invoke the defineClass()
  * to establish the data structure.
@@ -654,15 +651,20 @@ static C loadSystemClass(char* classname)
     filename[0] = '/';
     strcat(strcpy(&filename[1], classname), ".class");
     filename[fname_len-1] = '\0';
-    char** cp_ptr = CLASSPATH;
+    char** cp_ptr = DEFAULT_PATH;
     FILE* cfd = NULL;
     do
     {
         char* fullName = String_concat(*cp_ptr, filename, NULL);
         cfd = fopen(fullName, "r");
         cp_ptr++;
-    }while(*cp_ptr&&!cfd);
+    }while (*cp_ptr&&!cfd);
 
+    if (cfd == NULL && CLASSPATH)
+    {
+        char* fullName = String_concat(CLASSPATH, filename, NULL);
+        cfd = fopen(fullName, "r");
+    }
     if (cfd == NULL)
     {
         char* fullName = String_concat(CLASS_SEARCH_PATH, filename, NULL);
@@ -771,6 +773,7 @@ static int prepareField(C class)
 
     return 0;
 }
+
 /*
  * Obtain the methods_table_size of each ClassBlock
  * During this function,<init>,<clinit>,static,private methods can
@@ -801,7 +804,6 @@ static void prepareClass(C class)
     int r;
     Verbose_TRACE(s, Verbose_prepareClass, (class), r, VERBOSE_SUBPASS);
 }
-
 
 static int linkMethod(C class)
 {
@@ -841,6 +843,7 @@ static int linkMethod(C class)
 
 static int linkField(C class)
 {
+
     return 0;
 }
 /*
@@ -936,7 +939,6 @@ void initClass(C class)
     /*}}}*/
 }
 
-
 static C Verbose_loadClass0(char* classname)
 {
     C class = NULL;
@@ -997,9 +999,7 @@ C loadClass(char* classname)
         return class;
     }
     else
-    {
-        return loadClass0(classname);
-    }
+      return loadClass0(classname);
         /*}}}*/
 }
 
@@ -1093,12 +1093,12 @@ C findArrayClass(char* classname)
         return class;
     else
         class = loadClass(classname);
+
     ClassBlock_t* cb = CLASS_CB(class);
     cb->type_flags = ARRAY;
     return class;
     /*}}}*/
 }
-
 
 /* This function is to load primitive class
  * int ,char, short, long, double, float, boolean.
@@ -1240,7 +1240,6 @@ int initSystemClass()
     return 0;
 }
 
-
 char* getClassPath()
 {
     return getenv("CLASSPATH");
@@ -1249,7 +1248,12 @@ char* getClassPath()
 int setClassSearchPath(char* s)
 {
     CLASS_SEARCH_PATH = s;
+    return 0;
+}
 
+int setClassPath(char* s)
+{
+    CLASSPATH = s;
     return 0;
 }
 
@@ -1269,7 +1273,6 @@ void initClassHash()
                     ,(Poly_tyEquals)String_equals
                     ,keyDup);
 }
-
 
 
 #undef C

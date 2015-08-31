@@ -42,8 +42,6 @@ static const int EXCL = 8;
 static const int SYNC = 16;
 static const int DSYNC = 32;
 
-
-
 typedef struct FD *FD;
 
 struct FD
@@ -51,7 +49,6 @@ struct FD
     FILE* fd;
     int reachEOF;
 };
-
 
 
 static FD initNativeFile(FILE* fd, int e)
@@ -93,7 +90,6 @@ void nativeOpen(JF retFrame)
     char* fpath = Jstring2Char(path);
     FILE* fp = NULL;
     long long r;
-
     //FIXME 
     switch (mode)
     {
@@ -113,18 +109,14 @@ void nativeOpen(JF retFrame)
     if (fp == NULL)
     {
       r = -1;
-      WARNING("file not exsit");
+      ERROR("Native Open:File not exsit");
     }
     else
       r = (long long)fp;
     //printf("%lld\n", r);
-
     FD fdp = initNativeFile(fp, 0);
-
     r = (long long)fdp;
-
     push(retFrame, &r, TYPE_LONG);
-
 }
 
 /**
@@ -143,16 +135,13 @@ void nativeClose(JF retFrame)
 
     LOAD(n, this, O, 0);
     LOAD(n, fd, long long, 1);
-
     FD fdp = (FD)fd;
     int err = fclose(fdp->fd);
     if (err)
       ERROR("close file error");
-
     long long r = fd;
     push(retFrame, &r, TYPE_LONG);
 }
-
 
 /**
  * Writes a byte buffer to the file
@@ -173,7 +162,6 @@ void nativeWriteBuf(JF retFrame)
 {
     //JF current_frame = getCurrentFrame();
     NF n = getNativeFrame();
-
     O this;
     long long fd;
     O buf;
@@ -181,13 +169,11 @@ void nativeWriteBuf(JF retFrame)
     int len;
     FD fdp;
 
-
     LOAD(n, this, O, 0);
     LOAD(n, fd, long long, 1);
     LOAD(n, buf, O, 3);
     LOAD(n, _offset, int, 4);
     LOAD(n, len, int, 5);
-
     Assert_ASSERT(fd);
     if ((FILE*)fd == stdout)
        fdp = initNativeFile(stdout, 0);
@@ -195,7 +181,6 @@ void nativeWriteBuf(JF retFrame)
        fdp = (FD)fd;
     Assert_ASSERT(buf->type == OBJECT_ARRAY);
     int r = fwrite(ARRAY_IDX(buf, _offset, char), sizeof(char), len, fdp->fd);
-
     //int r = fwrite(ARRAY_IDX(buf, _offset, char), sizeof(char), len, stdout);
     //char* p = (char*)buf->data;
     //int i;
@@ -204,13 +189,11 @@ void nativeWriteBuf(JF retFrame)
     //    printf("%c", *p);
     //    p++;
     //}
-
     long long rr = (long long)r;
     push(retFrame, &rr, TYPE_LONG);
     //current_frame->ostack++;
     //*(long long*)current_frame->ostack = 1;
 }
-
 
 /**
  * Reads a buffer of  bytes from the file
@@ -241,7 +224,6 @@ void nativeReadBuf(JF retFrame)
     LOAD(n, buf, O, 3);
     LOAD(n, offset, int, 4);
     LOAD(n, len, int, 5);
-
     //printf("%lld\n", fd);
     FD fdp = (FD)fd;
     if (fdp->reachEOF == 1)
@@ -250,7 +232,6 @@ void nativeReadBuf(JF retFrame)
       push(retFrame, &rr, TYPE_INT);
       return;
     }
-
     /* for test
     fseek(fp, 0L, SEEK_END);
     long flen = ftell(fp);
@@ -279,45 +260,43 @@ void nativeReadBuf(JF retFrame)
         //char c = ARRAY_DATA(buf, r+offset, char);
         //int i = c;
         //printf("%d\n", i);
-
     }
-
-
     push(retFrame, &r, TYPE_INT);
-
     if (r < len)
       fdp->reachEOF = 1;
-
 }
 
 //java/io/FileDescriptor
 void nativeValid(JF retFrame)
 {
     NF n = getNativeFrame();
-
-    int ret = TRUE;
+    int ret;
     long long nativeFd;
+
+    ret = TRUE;
     LOAD(n, nativeFd, long long, 1);
     if (nativeFd >= 0)
         ret = TRUE;
     else
         ret = FALSE;
-
     push(retFrame, &ret, TYPE_INT);
-
 }
-
 
 void nativeInit(JF retFrame)
 {
-    C c = findClass("java/io/FileDescriptor");
-    FieldBlock_t* fb = (FieldBlock_t*)findField(c, "out", "Ljava/io/FileDescriptor;");
-    FieldBlock_t* fb_err = (FieldBlock_t*)findField(c, "err", "Ljava/io/FileDescriptor;");
-    O err = (O)fb_err->static_value;
-    O out = (O)fb->static_value;
+    C c;
+    FieldBlock_t* fb;
+    FieldBlock_t* fb_err;
+    O err;
+    O out;
+
+    c = findClass("java/io/FileDescriptor");
+    fb = (FieldBlock_t*)findField(c, "out", "Ljava/io/FileDescriptor;");
+    fb_err = (FieldBlock_t*)findField(c, "err", "Ljava/io/FileDescriptor;");
+    err = (O)fb_err->static_value;
+    out = (O)fb->static_value;
     Assert_ASSERT(err);
     Assert_ASSERT(out);
-
     MethodBlock_t* mb = (MethodBlock_t*)findMethod(out->class, "<init>", "(J)V");
     if (mb == NULL)
         throwException("no such method!");

@@ -60,6 +60,11 @@ static void arg_setClassSearchPath(char* s)
     setClassSearchPath(csp);
 }
 
+static void arg_setClassPath(char* s)
+{
+    char* classpath = String_concat(s, "/", NULL);
+    setClassPath(classpath);
+}
 
 static void arg_setVerbose(int i)
 {
@@ -87,10 +92,10 @@ static void arg_setOpcode()
     Control_opcode = 1;
 }
 
-
 static Arg_t allArgs[] =
 {
     {"cp", ARGTYPE_STRING, "{path}", "set class search path", arg_setClassSearchPath},
+    {"classpath", ARGTYPE_STRING, "{path}", "set classpath", arg_setClassPath},
     {"opcode", ARGTYPE_EMPTY, "<NULL>", "statistic instrctions", arg_setOpcode},
     {"log", ARGTYPE_STRING, "{name}", "log method", arg_setLog},
     {"verbose", ARGTYPE_INT, "{0|1|2|3}", "verbose turkey",  arg_setVerbose},
@@ -162,7 +167,6 @@ static void argException(char* fmt, ...)
     fflush(stderr);
     exit(1);
 }
-
 
 /**
  * create a char**[] whitch contains all args of input file.
@@ -315,7 +319,6 @@ Triple_t commandline_doarg(int argc,char** argv)
 
     return NULL;
 }
-
 
 
 

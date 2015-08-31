@@ -280,18 +280,15 @@ JF getCurrentFrame()
     return current_frame;
 }
 
-
 void setCurrentFrame(JF f)
 {
     current_frame = f;
 }
 
-
 NF getNativeFrame()
 {
     return nframe;
 }
-
 
 #define ASSERT_STACK(f)                                 \
     do {                                                \
@@ -434,7 +431,6 @@ void pop(JF f, void* result, Operand_e t)
     }
 }
 
-
 /**
  * push value to the given frame's stack
  *
@@ -475,7 +471,6 @@ void push(JF frame, void* value, Operand_e type)
         ERROR("wrong type");
     }
 }
-
 
 #undef C
 #undef O

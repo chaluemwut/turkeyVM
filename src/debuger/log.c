@@ -44,7 +44,6 @@ void Log_add(char* s)
     List_addFirst(logList, s);
 }
 
-
 int Log_contains(char* s)
 {
     if (!logList)
@@ -67,7 +66,6 @@ FILE* Log_open(char* s)
         return 0;
     }
 
-
     if (!Log_contains(s))
     {
         fd = 0;
@@ -87,7 +85,6 @@ FILE* Log_open(char* s)
     return fd;
 }
 
-
 FILE* Log_recover()
 {
     if (f != getCurrentFrame())
@@ -99,8 +96,6 @@ FILE* Log_recover()
     Control_setLogFile(fd);
     return fd;
 }
-
-
 
 
 

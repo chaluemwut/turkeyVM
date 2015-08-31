@@ -23,6 +23,8 @@ extern C findClass(char* classname);
 
 extern int setClassSearchPath(char*);
 
+extern int setClassPath(char* s);
+
 extern char* getClassPath();
 
 extern void parseClassPath(char*);

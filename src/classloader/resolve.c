@@ -189,8 +189,6 @@ MethodBlock_t* quickSearch(C class, char* name, char* type)
     /*}}}*/
 }
 
-
-
 /*
  * According to the Classinfo in constants_pool, find
  * the address of a certain class. It's different with
@@ -309,7 +307,6 @@ MethodBlock_t* resolveInterfaceMethod(C class, u2 index)
     /*}}}*/
 }
 
-
 /*
  * Give a index(Methodinfo_rf), find method in current_cp,
  * if not find, find method from the class given by first arg,
@@ -398,7 +395,6 @@ u4 resolveConstant(C class, int cp_index)
     }
     return CP_INFO(cp, cp_index);
 }
-
 
 #undef C
 #undef JF

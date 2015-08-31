@@ -61,8 +61,6 @@ void doValue(P v)
     printf("%s\n", cb->this_classname);
 }
 
-
-
 void exitVM()
 {
     printf("\nVM exit\n\n");
@@ -92,7 +90,6 @@ static int initVM()
     initSystemClass();
     return 0;
 }
-
 
 int main(int argc, char** argv)
 {

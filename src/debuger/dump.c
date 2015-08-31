@@ -90,7 +90,6 @@ void dumpClass(FILE* fp, char* classname, C class)
 #undef INDENT
 }
 
-
 void dumpObject(O obj)
 {
     Assert_ASSERT(obj);
@@ -109,7 +108,6 @@ void dumpObject(O obj)
             break;
     }
 }
-
 
 #undef C
 #undef O
