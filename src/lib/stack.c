@@ -36,7 +36,6 @@ P Stack_pop(T stk)
     return List_removeFirst(stk);
 }
 
-
 /**
  * NOTE: need traivals the list
  */
@@ -44,7 +43,6 @@ int Stack_size(T stk)
 {
     return List_size(stk);
 }
-
 
 /**
  * get the top element but not pop

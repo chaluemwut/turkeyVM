@@ -13,10 +13,9 @@ struct T {
     T next;
 };
 
-
 T List_new();
 
-void List_addFirst(T,P);
+void List_addFirst(T, P);
 
 void List_addLast(T, P);
 
@@ -33,7 +32,6 @@ int List_contains(T, P, Poly_tyEquals f);
 P List_removeFirst(T);
 
 P List_remove(T, P, Poly_tyEquals);
-
 
 #undef T
 #undef P

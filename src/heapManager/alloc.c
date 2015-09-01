@@ -1,18 +1,3 @@
-/*------------------------------------------------------------------*//*{{{*/
-/* Copyright (C) SSE-USTC, 2014-2015                                */
-/*                                                                  */
-/*  FILE NAME             :  alloc.c                                */
-/*  LANGUAGE              :  C                                      */
-/*  TARGET ENVIRONMENT    :  ANY                                    */
-/*  DATE OF FIRST RELEASE :  2014/12/31                             */
-/*  DESCRIPTION           :  for the javaVM                         */
-/*------------------------------------------------------------------*/
-
-/*
- * Revision log:
- *
- *//*}}}*/
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "../classloader/class.h"
@@ -29,10 +14,10 @@ extern C primClass[];
 
 static const int OBJ_HEADER_SIZE = sizeof(struct O);
 
-void* sysMalloc(int n)
+void *sysMalloc(int n)
 {
-    void* mem = malloc(n);
-    if(mem == NULL)
+    void *mem = malloc(n);
+    if (mem == NULL)
         ERROR("malloc error");
     memset(mem, 0, n);
     vmsize += n;
@@ -49,13 +34,13 @@ void* sysMalloc(int n)
  */
 O allocObject(C class)
 {
-    ClassBlock_t* cb;
+    ClassBlock_t *cb;
     O obj;
     int obj_size;
 
     cb = CLASS_CB(class);
     obj_size = cb->obj_size;
-    obj = (O)sysMalloc(OBJ_HEADER_SIZE + sizeof(int)*obj_size);
+    obj = (O) sysMalloc(OBJ_HEADER_SIZE + sizeof(int) * obj_size);
     //---------------------------------
     obj->type = OBJECT_OBJECT;
     obj->length = obj_size;
@@ -63,8 +48,8 @@ O allocObject(C class)
     //--------------------------
     obj->class = class;
     obj->binding = NULL;
-    obj->data = (unsigned int*)(obj+1);
-    memset(obj+1, 0, sizeof(int) * obj_size);
+    obj->data = (unsigned int *) (obj + 1);
+    memset(obj + 1, 0, sizeof(int) * obj_size);
     obj->cb = cb;
     obj->el_size = sizeof(int);
     //obj->copy_size = OBJ_HEADER_SIZE+ sizeof(int)*obj_size;
@@ -83,20 +68,20 @@ O allocObject(C class)
 O allocArray(C class, int size, int el_size, int atype)
 {
     O obj;
-    ClassBlock_t* cb;
+    ClassBlock_t *cb;
 
     cb = CLASS_CB(class);
-    obj = (O)sysMalloc(OBJ_HEADER_SIZE+ size*el_size);
+    obj = (O) sysMalloc(OBJ_HEADER_SIZE + size * el_size);
     //------------------------
     obj->type = OBJECT_ARRAY;
     obj->length = size;
     obj->atype = atype;
     //------------------------
     obj->class = class;
-    obj->data = (unsigned int*)(obj+1);
-    memset(obj+1, 0, size * el_size);
+    obj->data = (unsigned int *) (obj + 1);
+    memset(obj + 1, 0, size * el_size);
     obj->cb = cb;
-    /*NOTE: this is used when visited the array*/
+    /*NOTE: this is used when visited the array */
     obj->el_size = el_size;
     //obj->copy_size = OBJ_HEADER_SIZE+size*el_size;
     return obj;
@@ -109,18 +94,19 @@ int objectSize(O obj)
     case OBJECT_ARRAY:
     case OBJECT_OBJECT:
     case OBJECT_STRING:
-        return OBJ_HEADER_SIZE+obj->length*obj->el_size;
+        return OBJ_HEADER_SIZE + obj->length * obj->el_size;
     default:
         ERROR("impossible");
     }
     return 0;
 }
+
 /*
  * The opcode newarray has a atype, according to the type,
  * determining the el_size.
  * invoke by:OPC_NEWARRAY, OPC_ANEWARRAY
  */
-O allocTypeArray(int type, int size, char* element_name)
+O allocTypeArray(int type, int size, char *element_name)
 {
     int el_size;
     C class;
@@ -158,11 +144,11 @@ O allocTypeArray(int type, int size, char* element_name)
         class = loadClass("[J");
         el_size = 8;
         break;
-    case T_REFERENCE: {
-        class = loadClass(element_name);
-        el_size = 4;
-        break;
-    }
+    case T_REFERENCE:{
+            class = loadClass(element_name);
+            el_size = 4;
+            break;
+        }
     default:
         throwException("Invalid array type!");
     }

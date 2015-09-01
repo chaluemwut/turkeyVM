@@ -1,18 +1,3 @@
-/*^_^*--------------------------------------------------------------*//*{{{*/
-/* Copyright (C) SSE-USTC, 2014-2015                                */
-/*                                                                  */
-/*  FILE NAME             :  log.c                                  */
-/*  LANGUAGE              :  C                                      */
-/*  TARGET ENVIRONMENT    :  ANY                                    */
-/*  DATE OF FIRST RELEASE :  2015/08/12                             */
-/*  DESCRIPTION           :                                         */
-/*------------------------------------------------------------------*/
-
-/*
- * Revision log:
- *
- *//*}}}*/
-
 #include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,13 +15,11 @@
 
 static L logList = NULL;
 
-
-FILE* fd = NULL;
-static FILE* temp = NULL;
+FILE *fd = NULL;
+static FILE *temp = NULL;
 static JFrame_t f;
 
-
-void Log_add(char* s)
+void Log_add(char *s)
 {
     if (!logList)
         logList = List_new();
@@ -44,19 +27,19 @@ void Log_add(char* s)
     List_addFirst(logList, s);
 }
 
-int Log_contains(char* s)
+int Log_contains(char *s)
 {
     if (!logList)
         logList = List_new();
 
     int exist = List_contains(logList,
                               s,
-                              (Poly_tyEquals)String_equals);
+                              (Poly_tyEquals) String_equals);
 
     return exist;
 }
 
-FILE* Log_open(char* s)
+FILE *Log_open(char *s)
 {
     if (fd != NULL) {
         temp = fd;
@@ -71,19 +54,18 @@ FILE* Log_open(char* s)
         return 0;
     }
 
-    char* ss = String_concat("log_", "log", ".txt", NULL);
+    char *ss = String_concat("log_", "log", ".txt", NULL);
     fd = fopen(ss, "a");
     temp = fd;
     f = getCurrentFrame();
     Assert_ASSERT(fd);
-
 
     Control_setLogFile(fd);
 
     return fd;
 }
 
-FILE* Log_recover()
+FILE *Log_recover()
 {
     if (f != getCurrentFrame())
         return 0;
@@ -94,8 +76,6 @@ FILE* Log_recover()
     Control_setLogFile(fd);
     return fd;
 }
-
-
 
 #undef L
 #undef P

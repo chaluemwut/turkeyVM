@@ -24,7 +24,4 @@ P Stack_seek(T);
 #undef T
 #undef P
 
-
-
-
 #endif

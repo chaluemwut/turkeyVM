@@ -27,11 +27,11 @@ typedef enum rehash_t {
 
 typedef struct S *S;
 struct S {
-    long insertions;//num of intert
+    long insertions;            //num of intert
     long deletes;
-    long lookups;//num of lookup
-    long links;//num of l->next
-    long longest;//longest chain
+    long lookups;               //num of lookup
+    long links;                 //num of l->next
+    long longest;               //longest chain
     long maxSize;
     /*
      * maxLoad must small than INIT_LOAD_FACTOR
@@ -43,9 +43,9 @@ struct S {
 
 struct T {
     L *buckets;
-    long(*hashCode)(P);
-    int(*equals)(P, P);
-    void(*dup)(P, P);
+    long (*hashCode) (P);
+    int (*equals) (P, P);
+    void (*dup) (P, P);
 
     long numItems;
     long size;
@@ -54,7 +54,6 @@ struct T {
     double min_load;
     S status;
 };
-
 
 //static Status_t all = {0,0,0,0,0,0};
 
@@ -81,11 +80,11 @@ S Status_new()
  *
  *
  */
-T Hash_new(long(*hashCode)(P)
-           , int(*equals)(P, P)
-           , void(*dup)(P, P))
+T Hash_new(long (*hashCode) (P)
+           , int (*equals) (P, P)
+           , void (*dup) (P, P))
 {
-    /*{{{*/
+    /*{{{ */
     long i;
     T h;
 
@@ -95,8 +94,8 @@ T Hash_new(long(*hashCode)(P)
     Mem_new(h);
     Mem_newSize(h->buckets, INIT_SIZE);
 
-    for (i=0; i<INIT_SIZE; i++)
-        *(h->buckets+i) = List_new();
+    for (i = 0; i < INIT_SIZE; i++)
+        *(h->buckets + i) = List_new();
     h->hashCode = hashCode;
     h->equals = equals;
     h->dup = dup;
@@ -108,7 +107,7 @@ T Hash_new(long(*hashCode)(P)
     h->status = Status_new();
 
     return h;
-    /*}}}*/
+    /*}}} */
 }
 
 /**
@@ -117,7 +116,7 @@ T Hash_new(long(*hashCode)(P)
  */
 static double currentLoad(T h)
 {
-    return 1.0*h->numItems/h->size;
+    return 1.0 * h->numItems / h->size;
 }
 
 /**
@@ -125,9 +124,9 @@ static double currentLoad(T h)
  *      Otherwise, return NULL.
  *
  */
-static E Hash_containsCand(T h, K k, K *result)
+static E Hash_containsCand(T h, K k, K * result)
 {
-    /*{{{*/
+    /*{{{ */
     long hcode;
     long bktIdx;
     long link = 0;
@@ -136,7 +135,6 @@ static E Hash_containsCand(T h, K k, K *result)
     L list;
 
     Assert_ASSERT(h);
-
 
     //status---------------------
     h->status->lookups++;
@@ -148,19 +146,17 @@ static E Hash_containsCand(T h, K k, K *result)
         h->status->maxLoad = load;
     //-----------------------------
 
-
     hcode = h->hashCode(k);
     bktIdx = hcode & h->mask;
-    list = List_getFirst(*(h->buckets+bktIdx));
+    list = List_getFirst(*(h->buckets + bktIdx));
     while (list) {
-        E e = (E)(list->data);
+        E e = (E) (list->data);
         K key = Triple_first(e);
         V value = Triple_third(e);
 
-
         if (h->equals(k, key)) {
             //status-----------------------
-            h->status->links+=link;
+            h->status->links += link;
             if (link > h->status->longest)
                 h->status->longest = link;
             //-------------------------------
@@ -174,13 +170,13 @@ static E Hash_containsCand(T h, K k, K *result)
     }
 
     //status-----------------------
-    h->status->links+=link;
+    h->status->links += link;
     if (link > h->status->longest)
         h->status->longest = link;
     //-----------------------------
 
     return NULL;
-    /*}}}*/
+    /*}}} */
 }
 
 /**
@@ -193,9 +189,9 @@ static E Hash_containsCand(T h, K k, K *result)
  */
 int Hash_containsKey(T h, K k)
 {
-    E e =  (E)Hash_containsCand(h, k, 0);
+    E e = (E) Hash_containsCand(h, k, 0);
 
-    return ((e)?1:0);
+    return ((e) ? 1 : 0);
 }
 
 /**
@@ -214,8 +210,8 @@ int Hash_containsKey(T h, K k)
 V Hash_get(T h, K k)
 {
     Assert_ASSERT(h);
-    E e = (E)Hash_containsCand(h, k, 0);
-    return ((e)?Triple_third(e):NULL);
+    E e = (E) Hash_containsCand(h, k, 0);
+    return ((e) ? Triple_third(e) : NULL);
 }
 
 /**
@@ -228,9 +224,9 @@ V Hash_get(T h, K k)
  * @parm expansion(T) or sontraction(T)
  *
  */
-static void rehash(T h, void(*d)(T))
+static void rehash(T h, void (*d) (T))
 {
-    /*{{{*/
+    /*{{{ */
     L *oldBuckets;
     L *newBuckets;
     long oldSize;
@@ -244,42 +240,39 @@ static void rehash(T h, void(*d)(T))
     d(h);
 
     Mem_newSize(newBuckets, h->size);
-    for (i=0; i<h->size; i++)
-        *(newBuckets+i) = List_new();
+    for (i = 0; i < h->size; i++)
+        *(newBuckets + i) = List_new();
     h->buckets = newBuckets;
-    h->mask = h->size-1;
+    h->mask = h->size - 1;
 
     //traversal
-    for (i=0; i<oldSize; i++) {
+    for (i = 0; i < oldSize; i++) {
         L list;
-        list = *(oldBuckets+i);
+        list = *(oldBuckets + i);
         list = List_getFirst(list);
         while (list) {
-            E e = (E)(list->data);
-            long hcode = (long)Triple_second(e);
+            E e = (E) (list->data);
+            long hcode = (long) Triple_second(e);
 
             long idx = hcode & h->mask;
-            List_addLast(*(h->buckets+idx), e);
+            List_addLast(*(h->buckets + idx), e);
             list = list->next;
         }
     }
-    /*}}}*/
+    /*}}} */
 }
 
 static void expansion(T h)
 {
-    h->status->expansions+=1;
-    h->size = h->size*2;
+    h->status->expansions += 1;
+    h->size = h->size * 2;
 }
 
 static void contraction(T h)
 {
-    h->status->contractions+=1;
-    h->size = h->size/2;
+    h->status->contractions += 1;
+    h->size = h->size / 2;
 }
-
-
-
 
 /**
  * @parm h the hashMap
@@ -292,19 +285,19 @@ static void contraction(T h)
  */
 V Hash_put(T h, K k, V v)
 {
-    /*{{{*/
+    /*{{{ */
     long hcode;
     long bktIdx;
     L list;
-    P result;//key
+    P result;                   //key
 
     Assert_ASSERT(h);
 
     h->status->insertions++;
-    E e = (E)Hash_containsCand(h, k, &result);
+    E e = (E) Hash_containsCand(h, k, &result);
     if (e) {
         if (h->dup) {
-            h->dup(result, k);//call back deal with reduplicative  key.
+            h->dup(result, k);  //call back deal with reduplicative  key.
             return NULL;
         } else {
             V r = Triple_third(e);
@@ -315,8 +308,8 @@ V Hash_put(T h, K k, V v)
 
     hcode = h->hashCode(k);
     bktIdx = hcode & (h->mask);
-    list = *(h->buckets+bktIdx);
-    List_addFirst(list, Triple_new(k, (P)hcode ,v));
+    list = *(h->buckets + bktIdx);
+    List_addFirst(list, Triple_new(k, (P) hcode, v));
     h->numItems++;
 
     if (currentLoad(h) >= h->load) {
@@ -324,7 +317,7 @@ V Hash_put(T h, K k, V v)
     }
 
     return NULL;
-    /*}}}*/
+    /*}}} */
 }
 
 static int eleEquals(E x, E y)
@@ -334,6 +327,7 @@ static int eleEquals(E x, E y)
     else
         return 0;
 }
+
 /**
  * Removes the key (and its corresponding value) from this
  * hashtable. This method does nothing if the key is not in the hashtable.
@@ -344,47 +338,46 @@ static int eleEquals(E x, E y)
  */
 V Hash_remove(T h, K k)
 {
-    /*{{{*/
+    /*{{{ */
     Assert_ASSERT(h);
     long hcode;
     long bktIdx;
     L list;
 
     h->status->deletes++;
-    E e = (E)Hash_containsCand(h, k, NULL);
+    E e = (E) Hash_containsCand(h, k, NULL);
     if (e) {
 
-        hcode = (long)Triple_second(e);
-        bktIdx = hcode&(h->mask);
-        list = *(h->buckets+bktIdx);
-        E ee = (E)List_remove(list, e, (Poly_tyEquals)eleEquals);
+        hcode = (long) Triple_second(e);
+        bktIdx = hcode & (h->mask);
+        list = *(h->buckets + bktIdx);
+        E ee = (E) List_remove(list, e, (Poly_tyEquals) eleEquals);
         h->numItems--;
         V r = Triple_third(ee);
         //XXX free(ee)
 
-        if ((currentLoad(h) <= h->min_load)&&
-                (h->size > INIT_SIZE))
+        if ((currentLoad(h) <= h->min_load) && (h->size > INIT_SIZE))
             rehash(h, contraction);
         return r;
     } else {
         return NULL;
     }
-    /*}}}*/
+    /*}}} */
 }
 
-static void Hash_foreach(T h, void(*d)(T, E, void(*)(K)), void(*f)(P))
+static void Hash_foreach(T h, void (*d) (T, E, void (*)(K)), void (*f) (P))
 {
-    /*{{{*/
+    /*{{{ */
     Assert_ASSERT(h);
     Assert_ASSERT(f);
 
     long index;
     L list;
 
-    for (index=0; index<h->size; index++) {
-        list = List_getFirst(*(h->buckets+index));
+    for (index = 0; index < h->size; index++) {
+        list = List_getFirst(*(h->buckets + index));
         while (list) {
-            E e = (E)(list->data);
+            E e = (E) (list->data);
             d(h, e, f);
 
             list = list->next;
@@ -392,10 +385,10 @@ static void Hash_foreach(T h, void(*d)(T, E, void(*)(K)), void(*f)(P))
     }
 
     return;
-    /*}}}*/
+    /*}}} */
 }
 
-static void Hash_doKey(T h, E e, void(*f)(K))
+static void Hash_doKey(T h, E e, void (*f) (K))
 {
     K key = Triple_first(e);
     f(key);
@@ -403,7 +396,7 @@ static void Hash_doKey(T h, E e, void(*f)(K))
     return;
 }
 
-static void Hash_doValue(T h, E e, void(*f)(V))
+static void Hash_doValue(T h, E e, void (*f) (V))
 {
     V value = Triple_third(e);
     f(value);
@@ -411,18 +404,18 @@ static void Hash_doValue(T h, E e, void(*f)(V))
     return;
 }
 
-void Hash_foreachKey(T h, void(*f)(K))
+void Hash_foreachKey(T h, void (*f) (K))
 {
-    /*{{{*/
+    /*{{{ */
     Assert_ASSERT(h);
     Assert_ASSERT(f);
 
     Hash_foreach(h, Hash_doKey, f);
 
-    /*}}}*/
+    /*}}} */
 }
 
-void Hash_foreachValue(T h, void(*f)(V))
+void Hash_foreachValue(T h, void (*f) (V))
 {
     Assert_ASSERT(h);
     Assert_ASSERT(f);
@@ -432,7 +425,7 @@ void Hash_foreachValue(T h, void(*f)(V))
 
 void Hash_status(T h)
 {
-    /*{{{*/
+    /*{{{ */
     Assert_ASSERT(h);
     printf("--------------------------------\n");
     printf("|Hash table status             |\n");
@@ -447,13 +440,12 @@ void Hash_status(T h)
     printf("|Expanded times:     %ld\n", h->status->expansions);
     printf("|Contraction times:  %ld\n", h->status->contractions);
     printf("|Averager position:  %lf\n",
-           1.0*h->status->links/h->status->lookups);
+           1.0 * h->status->links / h->status->lookups);
     printf("|Items nums:         %ld\n", h->numItems);
     printf("|currentLoad:        %lf\n", currentLoad(h));
     printf("--------------------------------\n");
-    /*}}}*/
+    /*}}} */
 }
-
 
 #undef INIT_SIZE
 #undef INIT_MASK

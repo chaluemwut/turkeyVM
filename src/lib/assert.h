@@ -1,10 +1,8 @@
 #ifndef ASSERT_H
 #define ASSERT_H
 
-
 #include <stdio.h>
 #include <stdlib.h>
-
 
 #define Assert_ASSERT(e)        \
     do {                        \
@@ -17,7 +15,5 @@
             exit(1);                                                \
         }                       \
     }while(0)
-
-
 
 #endif

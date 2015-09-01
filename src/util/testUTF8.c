@@ -26,26 +26,29 @@
     c = x;                                        \
 }
 
-int utf8Len(unsigned char *utf8) {
+int utf8Len(unsigned char *utf8)
+{
     int count;
 
-    for(count = 0; *utf8; count++) {
+    for (count = 0; *utf8; count++) {
         int x = *utf8;
-        utf8 += (x & 0x80) ? ((x & 0x20) ?  3 : 2) : 1;
+        utf8 += (x & 0x80) ? ((x & 0x20) ? 3 : 2) : 1;
     }
 
     return count;
 }
 
-void convertUtf8(unsigned char *utf8, short *buff) {
-    while(*utf8)
-      GET_UTF8_CHAR(utf8, *buff++);
+void convertUtf8(unsigned char *utf8, short *buff)
+{
+    while (*utf8)
+        GET_UTF8_CHAR(utf8, *buff++);
 }
 
-int utf8Hash(unsigned char *utf8) {
+int utf8Hash(unsigned char *utf8)
+{
     int hash = 0;
 
-    while(*utf8) {
+    while (*utf8) {
         short c;
         GET_UTF8_CHAR(utf8, c);
         hash = hash * 37 + c;
@@ -54,42 +57,44 @@ int utf8Hash(unsigned char *utf8) {
     return hash;
 }
 
-int utf8Comp(unsigned char *ptr, unsigned char *ptr2) {
-    while(*ptr && *ptr2) {
+int utf8Comp(unsigned char *ptr, unsigned char *ptr2)
+{
+    while (*ptr && *ptr2) {
         short c, c2;
 
         GET_UTF8_CHAR(ptr, c);
         GET_UTF8_CHAR(ptr2, c2);
-        if(c != c2)
-          return FALSE;
+        if (c != c2)
+            return FALSE;
     }
-    if(*ptr || *ptr2)
-      return FALSE;
+    if (*ptr || *ptr2)
+        return FALSE;
 
     return TRUE;
 }
 
-
-unsigned char *slash2dots(unsigned char *utf8) {
+unsigned char *slash2dots(unsigned char *utf8)
+{
     int len = utf8Len(utf8);
-    unsigned char *conv = (unsigned char*)malloc(len+1);
+    unsigned char *conv = (unsigned char *) malloc(len + 1);
     int i;
 
-    for(i = 0; i <= len; i++)
-      if(utf8[i] == '/')
-        conv[i] = '.';
-      else
-        conv[i] = utf8[i];
+    for (i = 0; i <= len; i++)
+        if (utf8[i] == '/')
+            conv[i] = '.';
+        else
+            conv[i] = utf8[i];
 
     return conv;
 }
 
 /* Functions used by JNI */
 
-int utf8CharLen(short *unicode, int len) {
+int utf8CharLen(short *unicode, int len)
+{
     int count = 1;
 
-    for(; len > 0; len--) {
+    for (; len > 0; len--) {
         short c = *unicode++;
         count += c > 0xf ? (c > 0x7ff ? 3 : 2) : 1;
     }
@@ -97,26 +102,28 @@ int utf8CharLen(short *unicode, int len) {
     return count;
 }
 
-char *unicode2Utf8(short *unicode, int len) {
-    char *utf8 = (char*)malloc(utf8CharLen(unicode, len));
+char *unicode2Utf8(short *unicode, int len)
+{
+    char *utf8 = (char *) malloc(utf8CharLen(unicode, len));
     char *ptr = utf8;
 
-    for(; len > 0; len--) {
+    for (; len > 0; len--) {
         short c = *unicode++;
-        if((c == 0) || (c > 0x7f)) {
-            if(c > 0x7ff) {
+        if ((c == 0) || (c > 0x7f)) {
+            if (c > 0x7ff) {
                 *ptr++ = (c >> 12) | 0xe0;
                 *ptr++ = ((c >> 6) & 0x3f) | 0x80;
             } else
-              *ptr++ = (c >> 6) | 0xc0;
-            *ptr++ = (c&0x3f) | 0x80;
+                *ptr++ = (c >> 6) | 0xc0;
+            *ptr++ = (c & 0x3f) | 0x80;
         } else
-          *ptr++ = c;
+            *ptr++ = c;
     }
 
     *ptr = '\0';
     return utf8;
 }
+
 /*
 void main(int argc, char** argv)
 {
@@ -134,11 +141,7 @@ void main(int argc, char** argv)
         len--;
     }
 
-
     printf("%d\n", len);
-
-
-
 
 }
 */

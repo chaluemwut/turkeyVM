@@ -6,11 +6,9 @@
 #define C Class_t
 #define O Object_t
 
-
 #define OBJECT_DATA(obj, index, type) (*((type*)(obj->data+(index))))
 #define ARRAY_DATA(obj, index, type) (*((type*)obj->data+(index)))
 #define ARRAY_IDX(obj, index, type) (((type*)obj->data)+(index))
-
 
 #define CHECK_ARRAY(array, index)                   \
     do{                                             \
@@ -28,15 +26,14 @@ typedef enum {
     OBJECT_STRING,
 } Object_e;
 
-
 struct O {
-    struct C* class;//refer to the methodArea.
-    struct classblock* cb;
-    unsigned int* data;
+    struct C *class;            //refer to the methodArea.
+    struct classblock *cb;
+    unsigned int *data;
     //-------------------------
     Object_e type;
-    int length;//If it's array, it the arraylength, otherwise, it's 0.
-    int atype;//array type
+    int length;                 //If it's array, it the arraylength, otherwise, it's 0.
+    int atype;                  //array type
     //----------------------------------------------
     /*
      * The bingding is for the head of every Class. When reflected,
@@ -46,22 +43,21 @@ struct O {
      * NOTE: in class.c
      * @qcliu 2015/03/23
      */
-    struct C* binding;
+    struct C *binding;
 
-    int el_size;//normal object's el_size is 4B
+    int el_size;                //normal object's el_size is 4B
     //int copy_size;//for turkeyCopy(), assign in alloc.c
 };
 
-
 /*Alloc*/
 
-extern void* sysMalloc(int n);
+extern void *sysMalloc(int n);
 
-extern O allocObject(struct C* class);
+extern O allocObject(struct C *class);
 
-extern O allocTypeArray(int array_type, int size, char* element_name);
+extern O allocTypeArray(int array_type, int size, char *element_name);
 
-extern O allocArray(struct C* class, int size, int el_size, int atype);
+extern O allocArray(struct C *class, int size, int el_size, int atype);
 
 extern int objectSize(O);
 

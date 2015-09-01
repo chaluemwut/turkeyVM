@@ -3,11 +3,9 @@
 
 #define T Poly_t
 
+typedef void *T;
 
-typedef void* T;
-
-typedef int(*Poly_tyEquals)(T, T);
-
+typedef int (*Poly_tyEquals) (T, T);
 
 #undef T
 

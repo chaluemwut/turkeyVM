@@ -20,7 +20,6 @@
 #define T_LONG 11
 #define T_REFERENCE 12
 
-
 /*some general operation*/
 #define READ_U8(v,p) v=(p[0]<<56)|(p[1]<<48)|(p[2]<<40)|  \
                       (p[3]<<32)|(p[4]<<24)|(p[5]<<16)|  \
@@ -32,7 +31,7 @@
 #define CP_TYPE(cp,i) cp->type[i]
 #define CP_INFO(cp,i) cp->info[i]
 #define READ_INDEX(v,p) READ_U2(v,p)
-#define CP_UTF8(cp,i) (char*)(cp->info[i]) 
+#define CP_UTF8(cp,i) (char*)(cp->info[i])
 
 #define IS_INTERFACE(cb)  (cb->access_flags&ACC_INTERFACE)
 #define IS_ARRAY(cb)     (cb->type_flags>=ARRAY)
@@ -41,7 +40,7 @@
 #define INST_DATA(objectRef) ((u4*)(objectRef+1))
 
 /*constant pool*/
-#define CONSTANT_Utf8 1/*{{{*/
+#define CONSTANT_Utf8 1         /*{{{ */
 #define CONSTANT_Integer 3
 #define CONSTANT_Float 4
 #define CONSTANT_Long 5
@@ -66,7 +65,7 @@
 /*}}}*/
 
 /*access flags*/
-#define ACC_PUBLIC   0x0001/*{{{*/
+#define ACC_PUBLIC   0x0001     /*{{{ */
 #define ACC_PRIVATE 0x0002
 #define ACC_PROTECTED 0x0004
 #define ACC_STATIC  0x0008
@@ -83,24 +82,21 @@
 #define ACC_STRICT 0x0800
 #define ACC_SYNTHETIC 0x1000
 #define ACC_ANNOTATION 0x2000
-#define ACC_ENUM    0x4000/*}}}*/
+#define ACC_ENUM    0x4000      /*}}} */
 
 /*method*/
-
 
 #define C Class_t
 #define O Object_t
 
 typedef struct C *C;
 
-
 typedef unsigned char u1;
 typedef unsigned short u2;
 typedef unsigned int u4;
-typedef unsigned long long  u8;
+typedef unsigned long long u8;
 
 typedef struct classblock ClassBlock_t;
-
 
 /* Every Class has a head, whitch is an java/lang/Class's 
  * Object.
@@ -109,105 +105,99 @@ typedef struct classblock ClassBlock_t;
  *
  * @qcliu 2015/03/21
  */
-struct C
-{
-    struct Object_t* class;
+struct C {
+    struct Object_t *class;
 };
 
 typedef u4 ConstantPoolEntry_t;
 
-typedef struct constant_pool
-{
-    volatile u1* type;
-    ConstantPoolEntry_t* info;
+typedef struct constant_pool {
+    volatile u1 *type;
+    ConstantPoolEntry_t *info;
 
-}ConstantPool_t;
+} ConstantPool_t;
 
-typedef struct fieldblock
-{
+typedef struct fieldblock {
     u2 access_flags;
-    char* name;
-    char* type;
+    char *name;
+    char *type;
     //int fields_table_idx;
-    u2 constant;//static final
-    int static_value;//static
-    int offset;//if not static, it has a offset to mark the allocation in object
-}FieldBlock_t;
+    u2 constant;                //static final
+    int static_value;           //static
+    int offset;                 //if not static, it has a offset to mark the allocation in object
+} FieldBlock_t;
 
-typedef struct code_exception
-{
+typedef struct code_exception {
     u2 start_pc;
     u2 end_pc;
     u2 handler_pc;
     u2 catch_type;
-}CodeException_t;
+} CodeException_t;
 
-typedef struct methodblock
-{
+typedef struct methodblock {
     u2 access_flags;
-    char* name;
-    char* type;
+    char *name;
+    char *type;
     //attr_code
     u2 max_stack;
     u2 max_locals;
     u4 code_length;
-    u1* code;
+    u1 *code;
     u2 exception_table_length;
-    CodeException_t* code_exception;
+    CodeException_t *code_exception;
     u2 code_attr_count;
     //attr_exception
     u2 number_of_exceptions;
-    u2* exception_idx_table;
+    u2 *exception_idx_table;
 
     u2 methods_table_idx;
     C class;
-    int args_count;// this is the arg length in the stack
-    u2 slot;//the offset in the ClassBlock's MethodBlock**
+    int args_count;             // this is the arg length in the stack
+    u2 slot;                    //the offset in the ClassBlock's MethodBlock**
 
-    void* native_invoker;//it's need bingding to the nativemethod.
+    void *native_invoker;       //it's need bingding to the nativemethod.
 
-}MethodBlock_t;
+} MethodBlock_t;
 
-struct classblock
-{
+struct classblock {
     u4 magic;
     u2 minor_version;
     u2 major_version;
     u2 constant_pool_count;
     ConstantPool_t constant_pool;
     u2 access_flags;
-    char* this_classname;
-    char* super_classname;
+    char *this_classname;
+    char *super_classname;
     u2 interface_count;
-    C* interfaces;//interface_table
+    C *interfaces;              //interface_table
     u2 fields_count;
-    FieldBlock_t* fields;
+    FieldBlock_t *fields;
     //FieldBlock_t** fields_table;
     //int fields_table_size;
     //int private_start;
     u2 methods_count;
-    C super;//the superclass address
-    MethodBlock_t* methods;
-    MethodBlock_t** methods_table;
+    C super;                    //the superclass address
+    MethodBlock_t *methods;
+    MethodBlock_t **methods_table;
     int methods_table_size;
-    u2 flags;//loaded, prepared, linked, inited...
-    u2 type_flags;//array, interface
+    u2 flags;                   //loaded, prepared, linked, inited...
+    u2 type_flags;              //array, interface
 
     //---------for array----------------------
     int obj_size;
     C element;
-    int dim;//if it's a array, mark the division
+    int dim;                    //if it's a array, mark the division
 };
 
 /*--------------------------Function prototypes---------------*/
 
-extern void doKey(void*);
+extern void doKey(void *);
 
-extern void doValue(void* v);
+extern void doValue(void *v);
 
 extern void exitVM();
 
-extern char* getMethodClassName(MethodBlock_t* mb);
+extern char *getMethodClassName(MethodBlock_t * mb);
 
 #undef C
 #undef O

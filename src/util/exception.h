@@ -1,5 +1,5 @@
 #include <stdio.h>
 
-extern void throwException(char* exception);
+extern void throwException(char *exception);
 
-void Exception(char* fmt, ...);
+void Exception(char *fmt, ...);

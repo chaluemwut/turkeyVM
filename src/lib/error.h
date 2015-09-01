@@ -16,7 +16,6 @@
         exit(1);                    \
     }while (0)
 
-
 #define TODO(s)                    \
     do {                            \
         fprintf(stderr,             \
@@ -39,6 +38,5 @@
                );                   \
         fflush(stderr);             \
     }while (0)
-
 
 #endif

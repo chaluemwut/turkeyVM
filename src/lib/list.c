@@ -8,10 +8,8 @@
 #include "error.h"
 #include "assert.h"
 
-
 #define T List_t
 #define P Poly_t
-
 
 T List_new()
 {
@@ -22,7 +20,6 @@ T List_new()
 
     return l;
 }
-
 
 /**
  * @parm
@@ -78,14 +75,13 @@ void List_addLast(T l, P x)
         return;
     }
 
-    tail = (T)l->data;
+    tail = (T) l->data;
     p = List_newNode(x, NULL);
     tail->next = p;
     l->data = p;
 
     return;
 }
-
 
 /**
  * need traivals the list
@@ -107,7 +103,7 @@ int List_size(T l)
 int List_isEmpty(T l)
 {
     Assert_ASSERT(l);
-    return (0==l->next);
+    return (0 == l->next);
 }
 
 /**
@@ -127,9 +123,9 @@ P List_getIndexOf(T l, int index)
     }
     while (p) {
         if (0 == index)
-            return p->data;//found!
+            return p->data;     //found!
         index--;
-        p=p->next;
+        p = p->next;
     }
     return 0;
 }
@@ -198,6 +194,7 @@ P List_removeFirst(T l)
     return p->data;
 
 }
+
 /**
  * Removes the first occurrence of the specified element from this list,
  * if it is present (optional operation).  If this list does not contain
@@ -236,8 +233,6 @@ P List_remove(T l, P x, Poly_tyEquals equals)
 
     return NULL;
 }
-
-
 
 #undef T
 #undef P

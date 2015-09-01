@@ -3,7 +3,6 @@
 
 #include "error.h"
 
-
 #define Mem_new(p)                  \
     do {                            \
         (p) = malloc(sizeof(*(p))); \
