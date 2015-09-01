@@ -13,7 +13,7 @@
 #define P Poly_t
 
 
-T List_new() 
+T List_new()
 {
     T l;
     Mem_new(l);
@@ -25,14 +25,14 @@ T List_new()
 
 
 /**
- * @parm 
+ * @parm
  *      x data
  * @parm
  *      l next pointer
  *
- * @return a new List_t struct 
+ * @return a new List_t struct
  */
-static T List_newNode(P x, T l) 
+static T List_newNode(P x, T l)
 {
     T p;
     Mem_new(p);
@@ -42,13 +42,13 @@ static T List_newNode(P x, T l)
     return p;
 }
 
- /**
-  * Inserts the specified element at the beginning of this list.
-  *
-  * @param e the element to add
-  * NOTE: we use head->data to record tail
-  */
-void List_addFirst(T l, P x) 
+/**
+ * Inserts the specified element at the beginning of this list.
+ *
+ * @param e the element to add
+ * NOTE: we use head->data to record tail
+ */
+void List_addFirst(T l, P x)
 {
     T t;
     Assert_ASSERT(l);
@@ -68,7 +68,7 @@ void List_addFirst(T l, P x)
  *
  * @param e the element to add
  */
-void List_addLast(T l, P x) 
+void List_addLast(T l, P x)
 {
     T tail, p;
     Assert_ASSERT(l);
@@ -76,7 +76,7 @@ void List_addLast(T l, P x)
     if (l->next == NULL) {
         List_addFirst(l, x);
         return;
-    } 
+    }
 
     tail = (T)l->data;
     p = List_newNode(x, NULL);
@@ -90,7 +90,7 @@ void List_addLast(T l, P x)
 /**
  * need traivals the list
  */
-int List_size(T l) 
+int List_size(T l)
 {
     Assert_ASSERT(l);
     T p;
@@ -116,7 +116,7 @@ int List_isEmpty(T l)
  * @param index index of the element to return
  * @return the element at the specified position in this list
  */
-P List_getIndexOf(T l, int index) 
+P List_getIndexOf(T l, int index)
 {
     Assert_ASSERT(l);
 
@@ -156,7 +156,7 @@ static P List_containsInternal(T l, P x, Poly_tyEquals f)
     p = l->next;
     while (p) {
         if (f(x, p->data))
-          return p->data;
+            return p->data;
 
         p = p->next;
     }
@@ -174,9 +174,9 @@ int List_contains(T l, P x, Poly_tyEquals f)
 {
     P p = List_containsInternal(l, x, f);
     if (p)
-      return 1;
+        return 1;
     else
-      return 0;
+        return 0;
 }
 
 /**
@@ -189,11 +189,11 @@ P List_removeFirst(T l)
     Assert_ASSERT(l);
 
     if (0 == l->next)
-      ERROR("List size is 0\n"); 
+        ERROR("List size is 0\n");
 
     p = l->next;
     l->next = l->next->next;
-    //XXX omit the l->data. 
+    //XXX omit the l->data.
 
     return p->data;
 
@@ -219,10 +219,8 @@ P List_remove(T l, P x, Poly_tyEquals equals)
 
     prev = l;
     current = l->next;
-    while (current)
-    {
-        if (equals(x, current->data))
-        {
+    while (current) {
+        if (equals(x, current->data)) {
             r = current->data;
             current = current->next;
             prev->next = current;

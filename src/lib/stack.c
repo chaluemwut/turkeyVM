@@ -31,7 +31,7 @@ void Stack_push(T stk, P x)
 P Stack_pop(T stk)
 {
     if (List_isEmpty(stk))
-      ERROR("try to pop on empty stack");
+        ERROR("try to pop on empty stack");
 
     return List_removeFirst(stk);
 }

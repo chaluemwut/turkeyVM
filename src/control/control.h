@@ -11,7 +11,7 @@ typedef enum {
     VERBOSE_PASS,
     VERBOSE_SUBPASS,
     VERBOSE_DETAIL
-}Verbose_t;
+} Verbose_t;
 
 extern int Control_Verb_order(Verbose_t v1, Verbose_t v2);
 

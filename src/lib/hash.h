@@ -15,8 +15,8 @@ typedef struct T *T;
 
 
 T Hash_new(long (*hashCode)(P)
-            ,int(*equals)(P, P)
-            , void(*dup)(P, P));
+           ,int(*equals)(P, P)
+           , void(*dup)(P, P));
 
 
 V Hash_put(T, K, V);

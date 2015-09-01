@@ -5,8 +5,7 @@
 #define T Triple_t
 #define P Poly_t
 
-struct T
-{
+struct T {
     P x;
     P y;
     P z;

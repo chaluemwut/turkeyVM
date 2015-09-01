@@ -55,7 +55,7 @@
 #define GET_OFFSET(f)   (f->pc_offset)
 
 
-typedef enum{
+typedef enum {
     TYPE_INT,
     TYPE_LONG,
     TYPE_ULONG,
@@ -64,13 +64,12 @@ typedef enum{
     TYPE_UINT,
     TYPE_REFERENCE,
     TYPE_FLOAT
-}Operand_e;
+} Operand_e;
 
 typedef struct NF *NF;
 typedef struct JF *JF;
 
-struct NF
-{
+struct NF {
     MethodBlock_t* mb;
     C class;
     unsigned int* locals;
@@ -78,7 +77,7 @@ struct NF
 };
 
 
-struct JF{
+struct JF {
     MethodBlock_t* mb;//current_method
     unsigned char* pc;
     ConstantPool_t* cp;//current_cp

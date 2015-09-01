@@ -7,8 +7,7 @@
 
 typedef struct D *D;
 
-struct D
-{
+struct D {
     char* name;
     char* handle;
 };

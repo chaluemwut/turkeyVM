@@ -8,8 +8,7 @@
 #define P Poly_t
 #define K Poly_t
 
-struct T
-{
+struct T {
     Hash_t hash;
 };
 
@@ -56,7 +55,7 @@ int HashSet_add(T h, K k)
 {
     Assert_ASSERT(h);
     if (HashSet_contains(h, k))
-      return 0;
+        return 0;
 
     return (Hash_put(h->hash, k, (P)PRESENT) == NULL);
 }

@@ -22,16 +22,14 @@
 
 typedef struct O *O;
 
-typedef enum
-{
+typedef enum {
     OBJECT_OBJECT,
     OBJECT_ARRAY,
     OBJECT_STRING,
-}Object_e;
+} Object_e;
 
 
-struct O
-{
+struct O {
     struct C* class;//refer to the methodArea.
     struct classblock* cb;
     unsigned int* data;
@@ -41,9 +39,9 @@ struct O
     int atype;//array type
     //----------------------------------------------
     /*
-     * The bingding is for the head of every Class. When reflected, 
+     * The bingding is for the head of every Class. When reflected,
      * find the responding Class throgh the bingding.Normal Object's
-     * bingding is NULL, but for java/lang/Class Object, it's bingding 
+     * bingding is NULL, but for java/lang/Class Object, it's bingding
      * point to the MethodArea.
      * NOTE: in class.c
      * @qcliu 2015/03/23

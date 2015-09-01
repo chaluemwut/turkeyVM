@@ -11,8 +11,7 @@ long String_hashCode(T s)
 {
     long h=0;
 
-    while(*s)
-    {
+    while(*s) {
         h = h*MULTIPLIER+(unsigned)*s++;
     }
     return h;
@@ -21,7 +20,7 @@ long String_hashCode(T s)
 int String_equals(T x, T y)
 {
     if (0 == strcmp((char*)x, (char*)y))
-      return 1;
+        return 1;
 
     return 0;
 }
@@ -43,10 +42,9 @@ char** String_split(T x, T delim)
     char c = delim[0];
     int size = 0;
     char* p = x;
-    while(*p)
-    {
+    while(*p) {
         if (*p == c)
-          size++;
+            size++;
         p++;
     }
     size+=2;
@@ -59,8 +57,7 @@ char** String_split(T x, T delim)
     int i = 0;
     result = strsep(&value, delim);
 
-    for (i = 0; result != NULL; i++)
-    {
+    for (i = 0; result != NULL; i++) {
         char* s;
         Mem_newSize(s, strlen(result)+1);
         strcpy(s, result);
@@ -83,8 +80,7 @@ T String_concat(T s, ...)
 
     va_list ap;
     va_start(ap, s);
-    while (current)
-    {
+    while (current) {
         totalSize += strlen(current);
         current = va_arg(ap, char*);
     }
@@ -95,8 +91,7 @@ T String_concat(T s, ...)
     head = temp;
     current = s;
     va_start(ap, s);
-    while (current)
-    {
+    while (current) {
         strcpy(temp, current);
         temp += strlen(current);
         current = va_arg(ap, char*);
@@ -115,7 +110,7 @@ T String_new(T x)
     strcpy(s, x);
 
     if (String_equals(s, x))
-      return s;
+        return s;
 
     ERROR("string_new err!");
 }

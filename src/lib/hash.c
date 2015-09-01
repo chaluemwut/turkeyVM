@@ -20,15 +20,13 @@
 #define V Poly_t
 #define S Status_t
 
-typedef enum rehash_t
-{
+typedef enum rehash_t {
     TYPE_EXPANSION,
     TYPE_CONTRACTION
-}Rehash_t;
+} Rehash_t;
 
 typedef struct S *S;
-struct S
-{
+struct S {
     long insertions;//num of intert
     long deletes;
     long lookups;//num of lookup
@@ -43,8 +41,7 @@ struct S
     long contractions;
 };
 
-struct T
-{
+struct T {
     L *buckets;
     long(*hashCode)(P);
     int(*equals)(P, P);
@@ -64,7 +61,7 @@ struct T
 S Status_new()
 {
     S s;
-    
+
     Mem_new(s);
 
     s->insertions = 0;
@@ -85,8 +82,8 @@ S Status_new()
  *
  */
 T Hash_new(long(*hashCode)(P)
-            , int(*equals)(P, P)
-            , void(*dup)(P, P))
+           , int(*equals)(P, P)
+           , void(*dup)(P, P))
 {
     /*{{{*/
     long i;
@@ -99,7 +96,7 @@ T Hash_new(long(*hashCode)(P)
     Mem_newSize(h->buckets, INIT_SIZE);
 
     for (i=0; i<INIT_SIZE; i++)
-      *(h->buckets+i) = List_new();
+        *(h->buckets+i) = List_new();
     h->hashCode = hashCode;
     h->equals = equals;
     h->dup = dup;
@@ -145,33 +142,31 @@ static E Hash_containsCand(T h, K k, K *result)
     h->status->lookups++;
     size = h->size;
     if (size > h->status->maxSize)
-      h->status->maxSize = size;
+        h->status->maxSize = size;
     load = currentLoad(h);
     if (load > h->status->maxLoad)
-      h->status->maxLoad = load;
+        h->status->maxLoad = load;
     //-----------------------------
 
 
     hcode = h->hashCode(k);
     bktIdx = hcode & h->mask;
     list = List_getFirst(*(h->buckets+bktIdx));
-    while (list)
-    {
+    while (list) {
         E e = (E)(list->data);
         K key = Triple_first(e);
         V value = Triple_third(e);
-        
 
-        if (h->equals(k, key))
-        {
+
+        if (h->equals(k, key)) {
             //status-----------------------
             h->status->links+=link;
             if (link > h->status->longest)
-              h->status->longest = link;
+                h->status->longest = link;
             //-------------------------------
 
             if (result)
-              *result = key;
+                *result = key;
             return e;
         }
         link++;
@@ -181,7 +176,7 @@ static E Hash_containsCand(T h, K k, K *result)
     //status-----------------------
     h->status->links+=link;
     if (link > h->status->longest)
-      h->status->longest = link;
+        h->status->longest = link;
     //-----------------------------
 
     return NULL;
@@ -250,18 +245,16 @@ static void rehash(T h, void(*d)(T))
 
     Mem_newSize(newBuckets, h->size);
     for (i=0; i<h->size; i++)
-      *(newBuckets+i) = List_new();
+        *(newBuckets+i) = List_new();
     h->buckets = newBuckets;
     h->mask = h->size-1;
 
     //traversal
-    for (i=0; i<oldSize; i++)
-    {
+    for (i=0; i<oldSize; i++) {
         L list;
         list = *(oldBuckets+i);
         list = List_getFirst(list);
-        while (list)
-        {
+        while (list) {
             E e = (E)(list->data);
             long hcode = (long)Triple_second(e);
 
@@ -291,7 +284,7 @@ static void contraction(T h)
 /**
  * @parm h the hashMap
  * @parm k key with which the specified value is to be associated
- * @parm v value to be associated with the specified key 
+ * @parm v value to be associated with the specified key
  *
  * @return the previous value associated with <tt>key</tt>, or
  *          <tt>null</tt> if there was no mapping for <tt>key</tt>.
@@ -309,15 +302,11 @@ V Hash_put(T h, K k, V v)
 
     h->status->insertions++;
     E e = (E)Hash_containsCand(h, k, &result);
-    if (e)
-    {
-        if (h->dup)
-        {
-          h->dup(result, k);//call back deal with reduplicative  key.
-          return NULL;
-        }
-        else
-        {
+    if (e) {
+        if (h->dup) {
+            h->dup(result, k);//call back deal with reduplicative  key.
+            return NULL;
+        } else {
             V r = Triple_third(e);
             Triple_setThird(e, v);
             return r;
@@ -330,8 +319,7 @@ V Hash_put(T h, K k, V v)
     List_addFirst(list, Triple_new(k, (P)hcode ,v));
     h->numItems++;
 
-    if (currentLoad(h) >= h->load)
-    {
+    if (currentLoad(h) >= h->load) {
         rehash(h, expansion);
     }
 
@@ -342,9 +330,9 @@ V Hash_put(T h, K k, V v)
 static int eleEquals(E x, E y)
 {
     if (x == y)
-      return 1;
-    else 
-      return 0;
+        return 1;
+    else
+        return 0;
 }
 /**
  * Removes the key (and its corresponding value) from this
@@ -361,11 +349,10 @@ V Hash_remove(T h, K k)
     long hcode;
     long bktIdx;
     L list;
-    
+
     h->status->deletes++;
     E e = (E)Hash_containsCand(h, k, NULL);
-    if (e)
-    {
+    if (e) {
 
         hcode = (long)Triple_second(e);
         bktIdx = hcode&(h->mask);
@@ -374,14 +361,12 @@ V Hash_remove(T h, K k)
         h->numItems--;
         V r = Triple_third(ee);
         //XXX free(ee)
-        
+
         if ((currentLoad(h) <= h->min_load)&&
-                    (h->size > INIT_SIZE))
+                (h->size > INIT_SIZE))
             rehash(h, contraction);
         return r;
-    }
-    else
-    {
+    } else {
         return NULL;
     }
     /*}}}*/
@@ -396,11 +381,9 @@ static void Hash_foreach(T h, void(*d)(T, E, void(*)(K)), void(*f)(P))
     long index;
     L list;
 
-    for (index=0; index<h->size; index++)
-    {
+    for (index=0; index<h->size; index++) {
         list = List_getFirst(*(h->buckets+index));
-        while (list)
-        {
+        while (list) {
             E e = (E)(list->data);
             d(h, e, f);
 
@@ -463,8 +446,8 @@ void Hash_status(T h)
     printf("|Max load factor:    %lf\n", h->status->maxLoad);
     printf("|Expanded times:     %ld\n", h->status->expansions);
     printf("|Contraction times:  %ld\n", h->status->contractions);
-    printf("|Averager position:  %lf\n", 
-                1.0*h->status->links/h->status->lookups);
+    printf("|Averager position:  %lf\n",
+           1.0*h->status->links/h->status->lookups);
     printf("|Items nums:         %ld\n", h->numItems);
     printf("|currentLoad:        %lf\n", currentLoad(h));
     printf("--------------------------------\n");

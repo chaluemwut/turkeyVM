@@ -114,8 +114,6 @@ struct C
     struct Object_t* class;
 };
 
-
-
 typedef u4 ConstantPoolEntry_t;
 
 typedef struct constant_pool
