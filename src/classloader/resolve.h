@@ -18,10 +18,9 @@ FieldBlock_t *resolveField(C class, u2 index);
 
 FieldBlock_t *findField(C class, char *name, char *type);
 
-MethodBlock_t *resolveMethod(C class, u2 index,
-                             MethodBlock_t * (*)(C, char *, char *));
-
 MethodBlock_t *resolveInterfaceMethod(C class, u2 index);
+
+MethodBlock_t *resolveMethod(C class, u2 index);
 
 u4 resolveConstant(C class, int cp_index);
 

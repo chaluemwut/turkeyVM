@@ -15,12 +15,9 @@
 #include "../lib/poly.h"
 #include "../lib/trace.h"
 
-#define TRUE 1
-#define FALSE 0
-
 #define P Poly_t
 
-static char *const VERSION = "turkey v0.0.7 linux/386";
+static char *const VERSION = "turkey v0.1.0 linux/386";
 static char *const WEBSITE = "https://github.com/qc1iu/turkeyVM";
 
 static void actionArg_help();
@@ -88,6 +85,11 @@ static void arg_setOpcode()
     Control_opcode = 1;
 }
 
+static void arg_setResolve()
+{
+    Control_resolve = 0;
+}
+
 static Arg_t allArgs[] = {
     {"cp",
      ARGTYPE_STRING,
@@ -119,6 +121,11 @@ static Arg_t allArgs[] = {
      "{name}",
      "trace specific method",
      arg_setTrace},
+    {"dr",
+        ARGTYPE_EMPTY,
+        "<NULL>",
+        "disable resolve",
+        arg_setResolve},
     {"help",
      ARGTYPE_EMPTY,
      "<NULL>",
@@ -144,7 +151,7 @@ static int printSpace(int i, int indent)
 
 static void actionArg_test()
 {
-    dis_testinfo = TRUE;
+    dis_testinfo = 1;
 }
 
 static void printAllarg()

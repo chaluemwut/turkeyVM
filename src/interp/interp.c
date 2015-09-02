@@ -2138,6 +2138,9 @@ static void exe_OPC_GETFIELD(JF f)
     }
 }
 
+/*note: The offset need sub 1, and the Exception is
+ *      throw in resolveField().
+ */
 static void exe_OPC_PUTFIELD(JF f)
 {
     O objref;
@@ -2170,76 +2173,43 @@ static void exe_OPC_PUTFIELD(JF f)
         pop(f, &value, TYPE_INT);
         pop(f, &objref, TYPE_REFERENCE);
         OBJECT_DATA(objref, offset - 1, int) = value;
-
     }
-    /*note: The offset need sub 1, and the Exception is
-     *      throw in resolveField().
-     */
 }
 
 static void exe_OPC_INVOKEVIRTUAL(JF f)
 {
-    u2 methodref_idx;
-    u2 name_type_idx;
-    u2 type_idx;
-    MethodBlock_t *method;
+    u2 mtdref_idx;
     O objref;
-    C class;
-    u4 cp_info;
-    char *type;
-    int args_count;
+    C obj_class;
+    C current_class;
+    MethodBlock_t *resolved_mtd;
+    MethodBlock_t *method;
+    MethodBlock_t **vtable;
 
-    INTERP_INDEX(methodref_idx, GET_PC(f), f);
-    /* According to the Methodref_info, get the description of
-     * the method. Then, get the args' count
-     */
-    cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
-    /*
-     * The methodref_idx maybe resovled.
-     */
-    //===============================================
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx)) {
-    case RESOLVED:{
-            method = (MethodBlock_t *) cp_info;
-            break;
-        }
-    case CONSTANT_Methodref:{
-            name_type_idx = cp_info >> 16;
-            cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
-            type_idx = cp_info >> 16;
-            type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
-            /*
-             * According to the args_count, find the objectref's location in
-             * the stack.
-             * @qcliu 2015/01/30
-             */
-            args_count = parseArgs(type);
-            objref = *(O *) (f->ostack - args_count);
-            Assert_ASSERT(objref);
-            class = objref->class;
-            method =
-                (MethodBlock_t *) resolveMethod(class, methodref_idx,
-                                                quickSearch);
-            break;
-        }
-    default:
-        throwException("invokevirtual error!\n");
-    }
-    //===============================================
+    current_class = GET_CLASS(f);
+    INTERP_INDEX(mtdref_idx, GET_PC(f), f);
+    resolved_mtd =
+        (MethodBlock_t *) resolveMethod(current_class, mtdref_idx);
+    objref = *(O *) (f->ostack - resolved_mtd->args_count);
+    Assert_ASSERT(objref);
+    obj_class = objref->class;
+    vtable = (CLASS_CB(obj_class))->methods_table;
+    method = vtable[resolved_mtd->methods_table_idx];
     if (!method)
         throwException("NoSuchMethodError");
-
     executeMethod(method, NULL);
+    return;
 }
 
 static void exe_OPC_INVOKESPECIAL(JF f)
 {
-    u2 methodref_idx;
+    u2 mtdref_idx;
     u2 class_idx;
     u2 name_type_idx;
     u2 name_idx;
     u2 type_idx;
-    u4 cp_info;
+    u4 mtdref_info;
+    u4 name_type_info;
     C class;
     C sym_class;
     ClassBlock_t *current_cb;
@@ -2249,39 +2219,32 @@ static void exe_OPC_INVOKESPECIAL(JF f)
     char *type;
 
     current_cb = CLASS_CB(GET_CLASS(f));
-    INTERP_INDEX(methodref_idx, GET_PC(f), f);
-    cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
-    /* The methodref_idx maybe resolved */
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx)) {
-    case RESOLVED:{
-            ERROR("impossible");
-            method = (MethodBlock_t *) cp_info;
-            break;
-        }
-    case CONSTANT_Methodref:{
-            /* omit high16bit */
-            class_idx = cp_info;
-            /*get the symbolic Class */
-            sym_class = (C) resolveClass(GET_CLASS(f), class_idx);
-            name_type_idx = cp_info >> 16;
-            cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
-            name_idx = cp_info;
-            type_idx = cp_info >> 16;
-            name = CP_UTF8(GET_CONSTANTPOOL(f), name_idx);
-            type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
-            // Determine weather the symbolic class or current class's superclass.
-            if ((strcmp(name, "<init>") != 0)
-                && (current_cb->super == sym_class)
-                && (current_cb->access_flags & ACC_SUPER))
-                class = current_cb->super;
-            else
-                class = sym_class;
-            method = resolveMethod(class, methodref_idx, findMethod);
-            break;
-        }
-    default:
-        throwException("invokespecial error!!!");
-    }
+    INTERP_INDEX(mtdref_idx, GET_PC(f), f);
+    mtdref_info = CP_INFO(GET_CONSTANTPOOL(f), mtdref_idx);
+    /* The mtdref_idx maybe resolved */
+    // omit high16bit to get class_idx
+    /*high                    low
+     *+----------+-------------+
+     *|name&type |class        |
+     *+----------+-------------+
+     */
+    class_idx = mtdref_info;
+    //get the symbolic Class
+    sym_class = (C) resolveClass(GET_CLASS(f), class_idx);
+    name_type_idx = mtdref_info >> 16;
+    name_type_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
+    name_idx = name_type_info;
+    type_idx = name_type_info >> 16;
+    name = CP_UTF8(GET_CONSTANTPOOL(f), name_idx);
+    type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
+    // Determine weather the symbolic class or current class's superclass.
+    if ((strcmp(name, "<init>") != 0)
+        && (current_cb->super == sym_class)
+        && (current_cb->access_flags & ACC_SUPER))
+        class = current_cb->super;
+    else
+        class = sym_class;
+    method = findMethod(class, name, type);
     if (!method)
         throwException("NoSuchMethodError");
 
@@ -2290,100 +2253,60 @@ static void exe_OPC_INVOKESPECIAL(JF f)
 
 static void exe_OPC_INVOKESTATIC(JF f)
 {
-    u2 methodref_idx;
-    u4 cp_info;
+    u2 mtdref_idx;
+    u4 mtdref_info;
     u2 class_idx;
     char *classname;
     MethodBlock_t *method;
 
-    INTERP_INDEX(methodref_idx, GET_PC(f), f);
-    cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
-    /*
-     * The methodref_idx maybe resolved.
-     */
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx)) {
-    case RESOLVED:{
-            method = (MethodBlock_t *) cp_info;
-            break;
-        }
-    case CONSTANT_Methodref:{
-            /*high                    low
-             *--------------------------
-             *|name&type |class        |
-             *--------------------------
-             */
-            class_idx = cp_info;
-            /*
-             * The class is the resovle_method class.It must be inited
-             * before the method resovle.
-             * note: in this case, can not use resolveClass. Because we
-             *       don't know the obj Class's CONSTANT_Class belong to which Class
-             */
-            C class = (C) resolveClass(GET_CLASS(f), class_idx);
-            method =
-                (MethodBlock_t *) resolveMethod(class, methodref_idx,
-                                                findMethod);
-            break;
-        }
+    INTERP_INDEX(mtdref_idx, GET_PC(f), f);
+    mtdref_info = CP_INFO(GET_CONSTANTPOOL(f), mtdref_idx);
+    //The mtdref_idx maybe resolved.
+    switch (CP_TYPE(GET_CONSTANTPOOL(f), mtdref_idx)) {
+    case RESOLVED:
+        break;
     default:
-        throwException("invokestatic error!!!!");
+        class_idx = mtdref_info;
+        resolveClass(GET_CLASS(f), class_idx);
+        break;
     }
+    method = (MethodBlock_t *) resolveMethod(GET_CLASS(f), mtdref_idx);
     if (method == NULL)
         throwException("invokestatic error!!!no such method");
 
     executeMethod(method, NULL);
+    return;
 }
 
 static void exe_OPC_INVOKEINTERFACE(JF f)
 {
-    u2 methodref_idx;
-    u2 name_type_idx;
-    u2 type_idx;
+    u2 interface_mtdref_idx;
     MethodBlock_t *method;
     O objref;
     C class;
-    u4 cp_info;
-    char *type;
-    int args_count;
 
-    INTERP_INDEX(methodref_idx, GET_PC(f), f);
+    INTERP_INDEX(interface_mtdref_idx, GET_PC(f), f);
     int count = 0;
     INTERP_U1(count, GET_PC(f), f);
     int isZero = 0;
     INTERP_U1(isZero, GET_PC(f), f);
-    /* According to the Methodref_info, get the description of
-     * the method. Then, get the args' count
+    /*
+     * Since turkey don't have InterfaceTable, so I just use 
+     * resolved_mtd as templete of args, so that no need to 
+     * calculate args_count again.
      */
-    cp_info = CP_INFO(GET_CONSTANTPOOL(f), methodref_idx);
-    //The methodref_idx maybe resovled.
-    switch (CP_TYPE(GET_CONSTANTPOOL(f), methodref_idx)) {
-    case RESOLVED:{
-            throwException("invokeinterface resolved");
-        }
-        /*NOTE: this is InterfaceMethodref */
-    case CONSTANT_InterfaceMethodref:{
-            name_type_idx = cp_info >> 16;
-            cp_info = CP_INFO(GET_CONSTANTPOOL(f), name_type_idx);
-            type_idx = cp_info >> 16;
-            type = CP_UTF8(GET_CONSTANTPOOL(f), type_idx);
-
-            args_count = parseArgs(type);
-            objref = *(O *) (f->ostack - args_count);
-            class = objref->class;
-            ClassBlock_t *cb = CLASS_CB(class);
-            /*NOTE: resolveInterfaceMethod() */
-            method =
-                (MethodBlock_t *) resolveInterfaceMethod(class, methodref_idx);
-            break;
-        }
-    default:
-        throwException("invokeInterface error!\n");
-    }
-    //===============================================
+    MethodBlock_t *resolve_mtd =
+        resolveInterfaceMethod(GET_CLASS(f), interface_mtdref_idx);
+    objref = *(O *) (f->ostack - resolve_mtd->args_count);
+    Assert_ASSERT(objref);
+    method =
+        (MethodBlock_t *) findMethod(objref->class, resolve_mtd->name,
+                                     resolve_mtd->type);
     if (!method)
         throwException("NoSuchMethodError");
 
     executeMethod(method, NULL);
+    return;
 }
 
 static void exe_OPC_NEW(JF f)
@@ -2409,7 +2332,6 @@ static void exe_OPC_NEWARRAY(JF f)
     obj = (O) allocTypeArray(array_type, count, NULL);
     if (obj == NULL)
         throwException("newarray obj == NULL!");
-
     push(f, &obj, TYPE_REFERENCE);
 }
 
@@ -2422,7 +2344,6 @@ static void exe_OPC_ANEWARRAY(JF f)
 
     index = 0;
     INTERP_INDEX(index, GET_PC(f), f);
-
     /*need to resolveClass */
     char *classname;
     GET_CONSTANTPOOL(f)->type[index]; //test
@@ -2561,7 +2482,6 @@ static void exe_OPC_IFNONNULL(JF f)
     short offset;
 
     pop(f, &obj, TYPE_REFERENCE);
-
     if (obj != NULL) {
         INTERP_INDEX(offset, GET_PC(f), f);
         PC_MOVE(offset - 3, f);
@@ -2608,9 +2528,9 @@ int executeJava(JF retFrame, JF f)
 
     /*
      * note: pc_offset must move along with the current_pc. So use
-     *       the PCMOVE() as much as possible.
+     *       the INTERP_Ux.
      */
-    /* main loop of interpreter */
+    // main loop of interpreter
     while (GET_OFFSET(f) < code_length) {
         //Opcode_e opcode = *GET_PC(f);
         Opcode_e opcode;
@@ -2694,7 +2614,6 @@ int executeJava(JF retFrame, JF f)
         case OPC_LDC2_W:       //20
             exe_OPC_LDC2_W(f);
             break;
-
         case OPC_ILOAD:        //21
             exe_OPC_ILOAD(f);
             break;
@@ -2963,13 +2882,11 @@ int executeJava(JF retFrame, JF f)
             exe_OPC_LREM(f);
             break;
         case OPC_FREM:         //114
-            DEBUG("TODO");
-            exit(0);
+            TODO("OPC_FREM");
             exe_OPC_FREM(f);
             break;
         case OPC_DREM:         //115
-            DEBUG("TODO");
-            exit(0);
+            TODO("OPC_DREM");
             exe_OPC_DREM(f);
             break;
         case OPC_INEG:         //116

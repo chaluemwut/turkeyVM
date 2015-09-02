@@ -52,6 +52,9 @@ FieldBlock_t *findField(C class, char *name, char *type)
  * class resursivly. Finally, return the offset of the field
  * for a certain object. The objectref has been in the stack.
  *
+ * @parm class current class
+ * @parm CONSTANT_Fieldref_info index in current constant pool
+ *
  * note: the offset start with 1. Take 0 as failure case. So
  *       before use the offset, remember offset-=1.
  * @qcliu 2015/01/30
@@ -59,51 +62,41 @@ FieldBlock_t *findField(C class, char *name, char *type)
 FieldBlock_t *resolveField(C class, u2 index)
 {
     /*{{{ */
-    FieldBlock_t *fb = NULL;
-    ConstantPool_t *current_cp;
+    FieldBlock_t *fb;
+    ConstantPool_t *const_pool;
+    u2 name_type_idx;
+    u2 symclass_idx;
+    u2 name_idx;
+    u2 type_idx;
+    u4 fieldref_info;
+    u4 name_type_info;
+    char *name;
+    char *type;
+    C sym_class;
 
-    JF current_frame = getCurrentFrame();
-    current_cp = GET_CONSTANTPOOL(current_frame);
-    switch (CP_TYPE(current_cp, index)) {
-    case CONSTANT_Fieldref:{
-            u4 cp_info;
-            u2 name_type_idx;
-            u2 symclass_idx;
-            u2 name_idx;
-            u2 type_idx;
-            char *name;
-            char *type;
-            C sym_class;
-
-            symclass_idx = 0;
-            cp_info = CP_INFO(current_cp, index);
-            symclass_idx = cp_info;
-            sym_class =
-                (C) resolveClass(GET_CLASS(current_frame), symclass_idx);
-            name_type_idx = cp_info >> 16;
-            cp_info = CP_INFO(current_cp, name_type_idx);
-            name_idx = cp_info;
-            type_idx = cp_info >> 16;
-            name = CP_UTF8(current_cp, name_idx);
-            type = CP_UTF8(current_cp, type_idx);
-            ClassBlock_t *cb = CLASS_CB(class);
-
-            fb = findField(sym_class, name, type);
-            /*
-             *(FieldBlock_t**)&CP_INFO(current_cp, index) = fb;
-             CP_TYPE(current_cp, index) = RESOLVED;
-             */
-            break;
+    const_pool = &(CLASS_CB(class))->constant_pool;
+    switch (CP_TYPE(const_pool, index)) {
+    case CONSTANT_Fieldref:
+        fieldref_info = CP_INFO(const_pool, index);
+        symclass_idx = fieldref_info;
+        sym_class = (C) resolveClass(class, symclass_idx);
+        name_type_idx = fieldref_info >> 16;
+        name_type_info = CP_INFO(const_pool, name_type_idx);
+        name_idx = name_type_info;
+        type_idx = name_type_info >> 16;
+        name = CP_UTF8(const_pool, name_idx);
+        type = CP_UTF8(const_pool, type_idx);
+        fb = findField(sym_class, name, type);
+        if (Control_resolve) {
+            *(FieldBlock_t **) & CP_INFO(const_pool, index) = fb;
+            CP_TYPE(const_pool, index) = RESOLVED;
         }
-    case RESOLVED:{
-            ERROR("impossible");
-            fb = (FieldBlock_t *) CP_INFO(current_cp, index);
-            break;
-        }
-    default:{
-            printf("resolveFiled error\n!");
-            exit(0);
-        }
+        break;
+    case RESOLVED:
+        fb = (FieldBlock_t *) CP_INFO(const_pool, index);
+        break;
+    default:
+        ERROR("impossible");
     }
     return fb;                  /*}}} */
 }
@@ -169,11 +162,8 @@ MethodBlock_t *quickSearch(C class, char *name, char *type)
 }
 
 /*
- * According to the Classinfo in constants_pool, find
- * the address of a certain class. It's different with
- * resolveMethod, because it dosen't refer to the runtime
- * constans_pool. Yet, may be the same with runtime cp by
- * chance.
+ * @parm class current class
+ * @parm class_idx CONSTANT_Classinfo index in currnet constant pool
  *
  * note: the args means that the index must belong to the
  *       class's cp. So if you want to get an address of
@@ -182,35 +172,30 @@ MethodBlock_t *quickSearch(C class, char *name, char *type)
  *
  *  @qcliu 2015/01/25
  **/
-C resolveClass(C class, u2 index)
+C resolveClass(C class, u2 class_idx)
 {
-    /*{{{ */
-    C resolve_class = NULL;
-    ClassBlock_t *cb = CLASS_CB(class);
-    ConstantPool_t *cp = &cb->constant_pool;
+    C resolve_class;
+    ConstantPool_t *const_pool;
+    char *classname;
 
-    switch (CP_TYPE(cp, index)) {
-        char *classname;
+    const_pool = &CLASS_CB(class)->constant_pool;
+    switch (CP_TYPE(const_pool, class_idx)) {
+    case CONSTANT_Class:
+        classname = CP_UTF8(const_pool, CP_INFO(const_pool, class_idx));
+        resolve_class = loadClass(classname);
 
-    case CONSTANT_Class:{
-            classname = CP_UTF8(cp, CP_INFO(cp, index));
-            resolve_class = loadClass(classname);
-            /*
-             *(C*)&CP_INFO(cp, index) = resolve_class;
-             CP_TYPE(cp, index) = RESOLVED;
-             */
-            break;
+        if (Control_resolve) {
+            *(C *) & CP_INFO(const_pool, class_idx) = resolve_class;
+            CP_TYPE(const_pool, class_idx) = RESOLVED;
         }
-    case RESOLVED:{
-            resolve_class = (C) CP_INFO(cp, index);
-            break;
-        }
+        break;
+    case RESOLVED:
+        resolve_class = (C) CP_INFO(const_pool, class_idx);
+        break;
     default:
-        printf("resolveClass error!!\n");
-        printf("%d\n", CP_TYPE(cp, index));
-        exit(0);
+        ERROR("impossible");
     }
-    return resolve_class;       /*}}} */
+    return resolve_class;
 }
 
 /*
@@ -225,125 +210,99 @@ C resolveClass(C class, u2 index)
 MethodBlock_t *resolveInterfaceMethod(C class, u2 index)
 {
     /*{{{ */
-    MethodBlock_t *resolve_method = NULL;
-    JF current_frame = getCurrentFrame();
-    ConstantPool_t *current_cp = GET_CONSTANTPOOL(current_frame);
+    MethodBlock_t *resolved_mtd;
+    ConstantPool_t *const_pool;
+    C sym_class;
+    u4 interface_mtdref_info;
+    u4 name_type_info;
+    u2 name_type_idx;
+    u2 symclass_idx;
+    u2 name_idx;
+    u2 type_idx;
+    char *mtd_name;
+    char *mtd_type;
 
-    switch (CP_TYPE(current_cp, index)) {
-    case CONSTANT_InterfaceMethodref:{
-            u4 cp_info;
-            u2 name_type_idx;
-            u2 name_idx;
-            u2 type_idx;
-            char *name;
-            char *type;
+    const_pool = &CLASS_CB(class)->constant_pool;
+    switch (CP_TYPE(const_pool, index)) {
+    case CONSTANT_InterfaceMethodref:
+        interface_mtdref_info = CP_INFO(const_pool, index);
+        symclass_idx = interface_mtdref_info;
+        sym_class = resolveClass(class, symclass_idx);
+        Assert_ASSERT(sym_class);
+        name_type_idx = interface_mtdref_info >> 16;
+        name_type_info = CP_INFO(const_pool, name_type_idx);
+        name_idx = name_type_info;
+        type_idx = name_type_info >> 16;
+        mtd_name = CP_UTF8(const_pool, name_idx);
+        mtd_type = CP_UTF8(const_pool, type_idx);
+        resolved_mtd = findMethod(sym_class, mtd_name, mtd_type);
+        Assert_ASSERT(resolved_mtd);
 
-            cp_info = CP_INFO(current_cp, index);
-            /*high                    low
-             *--------------------------
-             *|name&type |class        |
-             *--------------------------
-             */
-            name_type_idx = cp_info >> 16;
-            cp_info = CP_INFO(current_cp, name_type_idx);
-            name_idx = cp_info;
-            type_idx = cp_info >> 16;
-            name = CP_UTF8(current_cp, name_idx);
-            type = CP_UTF8(current_cp, type_idx);
-            resolve_method = (MethodBlock_t *) findMethod(class, name, type);
-            if (resolve_method == NULL) {
-                ClassBlock_t *cb = CLASS_CB(class);
-                printf("%s %s in %s\n", name, type, cb->this_classname);
-                ERROR("resolveInterfaceMethod");
-                throwException("no such method");
-            }
-            /*NOTE: interfaceMethod no need to change the tag */
-            /*
-             *(MethodBlock_t**)&CP_INFO(current_cp, index) = resolve_method;
-             CP_TYPE(current_cp, index) = RESOLVED;
-             */
-            break;
+        if (Control_resolve) {
+            *(MethodBlock_t **) & CP_INFO(const_pool, index) = resolved_mtd;
+            CP_TYPE(const_pool, index) = RESOLVED;
         }
-    case RESOLVED:{
-            throwException("resolveInterfaceMethod resolved");
-            break;
-        }
-    default:{
-            printf("resolve method error!!!\n");
-            printf("%d\n", CP_TYPE(current_cp, index));
-            exit(0);
-        }
+        break;
+    case RESOLVED:
+        resolved_mtd = (MethodBlock_t *) CP_INFO(const_pool, index);
+        break;
+    default:
+        ERROR("impossible");
     }
-    return resolve_method;
-    /*}}} */
+
+    return resolved_mtd;
+    /*}}}*/
 }
 
 /*
- * Give a index(Methodinfo_rf), find method in current_cp,
- * if not find, find method from the class given by first arg,
- * else return the address of MethodBlock_t.
+ * @parm class current class
+ * @index CONSTANT_Methodref_index
  *
- * note: the first arg class must be already inited.
- *
- * @qcliu 2015/01/26
+ * @qcliu 2015/09/02
  */
-MethodBlock_t *resolveMethod(C class, u2 index,
-                             MethodBlock_t * (*f) (C, char *, char *))
+MethodBlock_t *resolveMethod(C class, u2 index)
 {
-    /*{{{ */
-    MethodBlock_t *resolve_method = NULL;
-    JF current_frame = getCurrentFrame();
-    ConstantPool_t *current_cp = GET_CONSTANTPOOL(current_frame);
+    MethodBlock_t *resolved_mtd;
+    ConstantPool_t *const_pool;
+    C sym_class;
+    u4 mtdref_info;
+    u4 name_type_info;
+    u2 name_type_idx;
+    u2 symclass_idx;
+    u2 name_idx;
+    u2 type_idx;
+    char *mtd_name;
+    char *mtd_type;
 
-    switch (CP_TYPE(current_cp, index)) {
-    case CONSTANT_Methodref:{
-            u4 cp_info;
-            u2 name_type_idx;
-            u2 name_idx;
-            u2 type_idx;
-            char *name;
-            char *type;
+    const_pool = &CLASS_CB(class)->constant_pool;
+    switch (CP_TYPE(const_pool, index)) {
+        case CONSTANT_Methodref:
+            mtdref_info = CP_INFO(const_pool, index);
+            symclass_idx = mtdref_info;
+            sym_class = resolveClass(class, symclass_idx);
+            Assert_ASSERT(sym_class);
+            name_type_idx = mtdref_info >> 16;
+            name_type_info = CP_INFO(const_pool, name_type_idx);
+            name_idx = name_type_info;
+            type_idx = name_type_info >> 16;
+            mtd_name = CP_UTF8(const_pool, name_idx);
+            mtd_type = CP_UTF8(const_pool, type_idx);
+            resolved_mtd = findMethod(sym_class, mtd_name, mtd_type);
+            Assert_ASSERT(resolved_mtd);
 
-            cp_info = CP_INFO(current_cp, index);
-            /*high                    low
-             *--------------------------
-             *|name&type |class        |
-             *--------------------------
-             */
-            name_type_idx = cp_info >> 16;
-            cp_info = CP_INFO(current_cp, name_type_idx);
-            name_idx = cp_info;
-            type_idx = cp_info >> 16;
-            name = CP_UTF8(current_cp, name_idx);
-            type = CP_UTF8(current_cp, type_idx);
-            resolve_method = (MethodBlock_t *) f(class, name, type);
-            if (resolve_method == NULL) {
-                ClassBlock_t *cb = CLASS_CB(class);
-                printf("%s %s in %s\n", name, type, cb->this_classname);
-                ERROR("resolveMethod");
-                throwException("no such method");
+            if (Control_resolve) {
+                *(MethodBlock_t **) & CP_INFO(const_pool, index) = resolved_mtd;
+                CP_TYPE(const_pool, index) = RESOLVED;
             }
-            //fprintf(stdout, "resovle method: %x\n", resolve_method);
-            /*change the tag to record that the method is already resovled */
-            //*(MethodBlock_t**)&CP_INFO(current_cp, index) = resolve_method;
-            //CP_TYPE(current_cp, index) = RESOLVED;
-            // fprintf(stdout, "cp->info[index]: %x\n", CP_INFO(current_cp, index));
-            // fprintf(stdout, "cp->type[index]: %x\n", CP_TYPE(current_cp, index));
             break;
-        }
-    case RESOLVED:{
-            ERROR("impossible");
-            resolve_method = (MethodBlock_t *) CP_INFO(current_cp, index);
+    case RESOLVED:
+            resolved_mtd = (MethodBlock_t *) CP_INFO(const_pool, index);
             break;
-        }
-    default:{
-            printf("resolve method error!!!\n");
-            printf("%d\n", CP_TYPE(current_cp, index));
-            exit(0);
-        }
+    default:
+        ERROR("impossible");
     }
-    return resolve_method;
-    /*}}} */
+
+    return resolved_mtd;
 }
 
 u4 resolveConstant(C class, int cp_index)
@@ -359,6 +318,7 @@ u4 resolveConstant(C class, int cp_index)
     default:
         break;
     }
+
     return CP_INFO(cp, cp_index);
 }
 

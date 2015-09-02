@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include "turkey.h"
 #include "../interp/execute.h"
 #include "../heapManager/alloc.h"
@@ -22,7 +23,6 @@
 #include "../lib/assert.h"
 #include "../lib/triple.h"
 #include "../control/verbose.h"
-#include <time.h>
 
 #define C Class_t
 #define O Object_t
@@ -73,7 +73,6 @@ static int initVM()
 
 int main(int argc, char **argv)
 {
-    /*{{{ */
     clock_t start, end;
     Triple_t t;
     char *filename;
@@ -113,13 +112,13 @@ int main(int argc, char **argv)
     executeStaticMain(main_mehtod, args);
 
     end = clock();
-    printf("\nVM run %f seconds\n", (double) (end - start) / CLOCKS_PER_SEC);
+    printf("%f\n", (double)(end-start));
+    printf("\nturkey run %f seconds\n", (double) (end - start) / CLOCKS_PER_SEC);
     //Hash_foreachKey(CMap, doKey);
     classHashStatus();
     opcodeStatus();
 
     return 0;
-    /*}}} */
 }
 
 char *getMethodClassName(MethodBlock_t * mb)

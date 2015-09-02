@@ -27,7 +27,7 @@
 #define READ_U4(v,p) v=(p[0]<<24)|(p[1]<<16)|(p[2]<<8)|p[3];p+=4
 #define READ_U2(v,p) v=(p[0]<<8)|p[1];p+=2
 #define READ_U1(v,p) v=p[0];p++
-#define CLASS_CB(classref) (ClassBlock_t*)(classref+1)
+#define CLASS_CB(classref) ((ClassBlock_t*)(classref+1))
 #define CP_TYPE(cp,i) cp->type[i]
 #define CP_INFO(cp,i) cp->info[i]
 #define READ_INDEX(v,p) READ_U2(v,p)

@@ -20,4 +20,6 @@ extern void Control_setLogFile(FILE * fd);
 
 extern int Control_opcode;
 
+extern int Control_resolve;
+
 #endif

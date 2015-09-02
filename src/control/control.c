@@ -35,3 +35,5 @@ void Control_setLogFile(FILE * fd)
 /*{{{opcode*/
 int Control_opcode = FALSE;
 /*}}}*/
+
+int Control_resolve = TRUE;
