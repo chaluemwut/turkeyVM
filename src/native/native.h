@@ -4,13 +4,11 @@
 
 #define O Object_t
 
-
-
 extern void getClass();
 
-extern O getClass_name(char* classname);
+extern O getClass_name(char *classname);
 
-extern void*  findNativeInvoker(char* name, char* desc);
+extern void *findNativeInvoker(char *name, char *desc);
 
 #undef O
 

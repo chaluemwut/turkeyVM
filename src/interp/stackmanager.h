@@ -47,15 +47,12 @@
         *(t*)(f->locals+(i))=v;         \
     }while(0)
 
-
-
 #define GET_CONSTANTPOOL(f) (f->cp)
 #define GET_PC(f)   (f->pc)
 #define GET_CLASS(f)    (f->class)
 #define GET_OFFSET(f)   (f->pc_offset)
 
-
-typedef enum{
+typedef enum {
     TYPE_INT,
     TYPE_LONG,
     TYPE_ULONG,
@@ -64,30 +61,28 @@ typedef enum{
     TYPE_UINT,
     TYPE_REFERENCE,
     TYPE_FLOAT
-}Operand_e;
+} Operand_e;
 
 typedef struct NF *NF;
 typedef struct JF *JF;
 
-struct NF
-{
-    MethodBlock_t* mb;
+struct NF {
+    MethodBlock_t *mb;
     C class;
-    unsigned int* locals;
+    unsigned int *locals;
     //NF prev;
 };
 
-
-struct JF{
-    MethodBlock_t* mb;//current_method
-    unsigned char* pc;
-    ConstantPool_t* cp;//current_cp
-    C class;//current_class
+struct JF {
+    MethodBlock_t *mb;          //current_method
+    unsigned char *pc;
+    ConstantPool_t *cp;         //current_cp
+    C class;                    //current_class
     //ostack, local
-    unsigned int* ostack;
-    unsigned int* locals;
-    unsigned int* bottom;
-    unsigned int* top;
+    unsigned int *ostack;
+    unsigned int *locals;
+    unsigned int *bottom;
+    unsigned int *top;
     //JF prev;//point to the previous Frame
     int pc_offset;
 
@@ -95,7 +90,6 @@ struct JF{
     //for test
     int id;
 };
-
 
 extern int getNewId();
 
@@ -109,24 +103,23 @@ extern void setCurrentFrame(JF f);
 
 extern JF popFrame();
 
-extern JF createFrame0(MethodBlock_t* mb);
+extern JF createFrame0(MethodBlock_t * mb);
 
-extern JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret);
+extern JF createFrame(MethodBlock_t * mb, va_list jargs, void *ret);
 
 extern void popNativeFrame();
 
-extern void createNativeFrame(MethodBlock_t* mb);
+extern void createNativeFrame(MethodBlock_t * mb);
 
 extern NF getNativeFrame();
 
-extern void pop(JF f, void* result, Operand_e t);
+extern void pop(JF f, void *result, Operand_e t);
 
-extern void push(JF f, void* value, Operand_e t);
+extern void push(JF f, void *value, Operand_e t);
 
 //extern void load(void* result, Operand_e t, int index);
 
 //extern void store(void* value, Operand_e t, int index);
-
 
 #undef C
 #undef JF

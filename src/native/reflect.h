@@ -6,7 +6,6 @@
 #define C Class_t
 #define O Object_t
 
-
 int instanceOf(O obj, C class);
 
 O getClassConstructors(O vmClass, int isPublic);

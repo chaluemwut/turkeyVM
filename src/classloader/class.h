@@ -6,36 +6,31 @@
 
 #define CLASSNAME(c) (((ClassBlock_t*)(c+1))->this_classname)
 
-
-
 extern void initClass(C class);
 
+extern C loadClass(char *classname);
 
-extern C loadClass(char* classname);
-
-extern C findArrayClass(char* classname);
+extern C findArrayClass(char *classname);
 
 extern C findPrimitiveClass(char primtype);
 
-extern int parseArgs(char* type);
+extern int parseArgs(char *type);
 
-extern C findClass(char* classname);
+extern C findClass(char *classname);
 
-extern int setClassSearchPath(char*);
+extern int setClassSearchPath(char *);
 
-extern int setClassPath(char* s);
+extern int setClassPath(char *s);
 
-extern char* getClassPath();
+extern char *getClassPath();
 
-extern void parseClassPath(char*);
+extern void parseClassPath(char *);
 
 extern void initClassHash();
 
 extern void classHashStatus();
 
 extern int initSystemClass();
-
-
 
 #undef C
 

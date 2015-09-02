@@ -25,27 +25,26 @@ void Trace_unindent()
 void Trace_spaces()
 {
     int i = indent;
-    while (i--)
-    {
+    while (i--) {
         printf(" ");
     }
 }
 
-int Trace_contains(char* s)
+int Trace_contains(char *s)
 {
     if (!traceList)
         traceList = List_new();
 
-    int exist =  List_contains(traceList,
-                s,
-                (Poly_tyEquals)String_equals);
+    int exist = List_contains(traceList,
+                              s,
+                              (Poly_tyEquals) String_equals);
     return exist;
 }
 
-void Trace_addFunc(char* s)
+void Trace_addFunc(char *s)
 {
     if (!traceList)
-      traceList = List_new();
+        traceList = List_new();
 
     List_addFirst(traceList, s);
 }

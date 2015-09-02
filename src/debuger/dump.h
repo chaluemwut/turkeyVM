@@ -6,9 +6,8 @@
 #define C Class_t
 #define O Object_t
 
-extern void dumpClass(FILE*, char*, C);
+extern void dumpClass(FILE *, char *, C);
 extern void dumpObject(O obj);
-
 
 #undef C
 #undef O

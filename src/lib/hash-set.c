@@ -8,17 +8,14 @@
 #define P Poly_t
 #define K Poly_t
 
-struct T
-{
+struct T {
     Hash_t hash;
 };
-
 
 // Dummy value to associate with const int `1` in the backing Map
 static const int PRESENT = 1;
 
-
-T HashSet_new(long(*hashCode)(P), Poly_tyEquals eq)
+T HashSet_new(long (*hashCode) (P), Poly_tyEquals eq)
 {
     T set;
 
@@ -56,9 +53,9 @@ int HashSet_add(T h, K k)
 {
     Assert_ASSERT(h);
     if (HashSet_contains(h, k))
-      return 0;
+        return 0;
 
-    return (Hash_put(h->hash, k, (P)PRESENT) == NULL);
+    return (Hash_put(h->hash, k, (P) PRESENT) == NULL);
 }
 
 /**
@@ -76,14 +73,8 @@ int HashSet_add(T h, K k)
 int HashSet_remove(T h, K k)
 {
     Assert_ASSERT(h);
-    return ((const int)Hash_remove(h->hash, k) == PRESENT);
+    return ((const int) Hash_remove(h->hash, k) == PRESENT);
 }
-
-
-
-
-
-
 
 #undef T
 #undef P

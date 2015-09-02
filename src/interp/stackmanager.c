@@ -1,18 +1,3 @@
-/*^_^*--------------------------------------------------------------*//*{{{*/
-/* Copyright (C) SSE-USTC, 2014-2015                                */
-/*                                                                  */
-/*  FILE NAME             :  stackmanager.c                         */
-/*  LANGUAGE              :  C                                      */
-/*  TARGET ENVIRONMENT    :  ANY                                    */
-/*  DATE OF FIRST RELEASE :  2015/07/15                             */
-/*  DESCRIPTION           :  stack relevent op                      */
-/*------------------------------------------------------------------*/
-
-/*
- * Revision log:
- *
- *//*}}}*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +11,6 @@
 #include "../lib/mem.h"
 #include "../lib/trace.h"
 
-
 #define C Class_t
 #define O Object_t
 #define JF JFrame_t
@@ -34,8 +18,8 @@
 
 static JF current_frame;
 static NF nframe;
-static unsigned int* bottom;
-static unsigned int* top;
+static unsigned int *bottom;
+static unsigned int *top;
 static int frame_num = 1;
 static int method_num;
 
@@ -69,15 +53,15 @@ JF initFrame()
     JF f;
     Mem_new(f);
     f->mb = NULL;
-    f->ostack=NULL;
-    f->locals=NULL;
+    f->ostack = NULL;
+    f->locals = NULL;
     Stack_push(methodF, f);
     return NULL;
 }
 
 void initNativeFrame()
 {
-    NF frame = (NF)sysMalloc(sizeof(struct NF));
+    NF frame = (NF) sysMalloc(sizeof(struct NF));
     frame->mb = NULL;
     frame->class = NULL;
     frame->locals = NULL;
@@ -91,7 +75,7 @@ void initNativeFrame()
  *      no need prev field.
  * @qcliu 2015/03/06
  */
-void createNativeFrame(MethodBlock_t* mb)
+void createNativeFrame(MethodBlock_t * mb)
 {
     //TODO args_count??? constrcutNative 3 or 4??
     //printf("Native method:%s\n", mb->name);
@@ -107,20 +91,21 @@ void createNativeFrame(MethodBlock_t* mb)
     int n_locals_idx;
     nframe->mb = mb;
 
-    nframe->locals = (unsigned int*)sysMalloc(sizeof(int) * n_locals);
+    nframe->locals = (unsigned int *) sysMalloc(sizeof(int) * n_locals);
     nframe->class = mb->class;
     //set 0
     memset(nframe->locals, 0, sizeof(int) * n_locals);
     //copyArgs(Frame* frame, MethodBlock_t* mb)
-    if (!(mb->access_flags & ACC_STATIC))//non-static
-        n_locals_idx = n_locals-1;
+    if (!(mb->access_flags & ACC_STATIC)) //non-static
+        n_locals_idx = n_locals - 1;
     else
         n_locals_idx = n_locals - 1;
 
     for (; n_locals_idx >= 0; n_locals_idx--) {
         //NOTE: equals 0 also need copy
-        memcpy(nframe->locals + n_locals_idx, current_frame->ostack, sizeof(int));
-        /*NOTE: pop the stack*/
+        memcpy(nframe->locals + n_locals_idx, current_frame->ostack,
+               sizeof(int));
+        /*NOTE: pop the stack */
         *current_frame->ostack = 0;
         current_frame->ostack--;
     }
@@ -145,7 +130,7 @@ void popNativeFrame()
  *      no need to copy args. just change methodF and
  *      current_frame.
  */
-JF createFrame0(MethodBlock_t* mb)
+JF createFrame0(MethodBlock_t * mb)
 {
     unsigned short max_stack = mb->max_stack;
     unsigned short max_locals = mb->max_locals;
@@ -153,24 +138,24 @@ JF createFrame0(MethodBlock_t* mb)
     int args_count = mb->args_count;
     int locals_idx = 0;
     C class = mb->class;
-    ClassBlock_t* cb = CLASS_CB(class);
+    ClassBlock_t *cb = CLASS_CB(class);
 
-    JF frame = (JF)sysMalloc(sizeof(struct JF));
+    JF frame = (JF) sysMalloc(sizeof(struct JF));
     frame->mb = mb;
     frame->cp = &cb->constant_pool;
     frame->pc = mb->code;
     frame->class = class;
-    frame->locals = (unsigned int*)sysMalloc(
-                        sizeof(int) * (max_stack + max_locals));
+    frame->locals =
+        (unsigned int *) sysMalloc(sizeof(int) * (max_stack + max_locals));
     frame->ret = 0;
     frame->pc_offset = 0;
     //ret = &(frame->ret);
     //set 0
-    memset(frame->locals, 0, sizeof(int)*(max_stack+max_locals));
+    memset(frame->locals, 0, sizeof(int) * (max_stack + max_locals));
     //point to the previous slot of aviliable
     frame->ostack = frame->locals + max_locals - 1;
     frame->bottom = frame->ostack;
-    frame->top = frame->ostack+max_stack;
+    frame->top = frame->ostack + max_stack;
     frame->id = getNewId();
     //point to the prev
     Stack_push(methodF, frame);
@@ -202,7 +187,7 @@ JF createFrame0(MethodBlock_t* mb)
    @qcliu 2015/01/29
 
  */
-JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
+JF createFrame(MethodBlock_t * mb, va_list jargs, void *ret)
 {
     JF prev = getCurrentFrame();
     JF frame = createFrame0(mb);
@@ -212,7 +197,7 @@ JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
     //XXX copy args
     if (jargs == NULL) {
         //copyArgs(Frame* frame, MethodBlock_t* mb)
-        if (!(mb->access_flags & ACC_STATIC))//non-static
+        if (!(mb->access_flags & ACC_STATIC)) //non-static
             locals_idx = args_count;
         else
             locals_idx = args_count - 1;
@@ -220,21 +205,22 @@ JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
         for (; locals_idx >= 0; locals_idx--) {
             //NOTE: equals 0 also need copy
             memcpy(frame->locals + locals_idx, prev->ostack, sizeof(int));
-            /*NOTE: pop the stack*/
+            /*NOTE: pop the stack */
             *prev->ostack = 0;
             prev->ostack--;
         }
     } else {
-        unsigned int* sp = frame->locals;
+        unsigned int *sp = frame->locals;
         if (!(mb->access_flags & ACC_STATIC)) { //non-static
             *sp = va_arg(jargs, u4);
             sp++;
         }
-        char* sig = mb->type;
+        char *sig = mb->type;
         SCAN_SIG(sig, VA_DOUBLE(jargs, sp), VA_SINGLE(jargs, sp));
     }
     if (dis_testinfo) {
-        printf("\n%dnew Frame:---- %d, name:%s\n",method_num, frame->id, frame->mb->name);
+        printf("\n%dnew Frame:---- %d, name:%s\n", method_num, frame->id,
+               frame->mb->name);
     }
     return frame;
 }
@@ -248,7 +234,7 @@ JF createFrame(MethodBlock_t* mb, va_list jargs, void* ret)
  */
 JF popFrame()
 {
-    JF temp = (JF)Stack_pop(methodF);
+    JF temp = (JF) Stack_pop(methodF);
     //printf("pop frame:%s, size:%d\n", temp->mb->name, Stack_size(methodF));
     if (dis_testinfo) {
         printf("pop Frame: %d  ", temp->id);
@@ -257,7 +243,7 @@ JF popFrame()
     free(temp);
     frame_num--;
     //XXX If not have a dummy node, will error.
-    JF f = (JF)Stack_seek(methodF);
+    JF f = (JF) Stack_seek(methodF);
     if (f == NULL)
         ERROR("stack is NULL");
     setCurrentFrame(f);
@@ -294,7 +280,6 @@ NF getNativeFrame()
             }                                           \
         }                                               \
     }while(0)
-
 
 /*
 void load(void* result, Operand_e t, int index)
@@ -357,63 +342,63 @@ void store(void* value, Operand_e t, int index)
     }
 }
 */
-void seek(void* result, Operand_e t)
+void seek(void *result, Operand_e t)
 {
     TODO("seek");
 }
 
-void pop(JF f, void* result, Operand_e t)
+void pop(JF f, void *result, Operand_e t)
 {
     switch (t) {
     case TYPE_INT:
-        *(int*)result = *(int*)f->ostack;
-        *(int*)f->ostack = 0;
+        *(int *) result = *(int *) f->ostack;
+        *(int *) f->ostack = 0;
         f->ostack--;
         ASSERT_STACK(f);
         break;
     case TYPE_FLOAT:
-        *(float*)result = *(float*)f->ostack;
-        *(int*)f->ostack = 0;
+        *(float *) result = *(float *) f->ostack;
+        *(int *) f->ostack = 0;
         f->ostack--;
         ASSERT_STACK(f);
         break;
     case TYPE_LONG:
         f->ostack--;
-        *(long long*)result = *(long long*)f->ostack;
-        *(long long*)f->ostack = 0;
+        *(long long *) result = *(long long *) f->ostack;
+        *(long long *) f->ostack = 0;
         //*(int*)current_frame->ostack = 0;
         f->ostack--;
         break;
     case TYPE_ULONG:
         f->ostack--;
-        *(unsigned long long*)result = *(unsigned long long*)f->ostack;
-        *(long long*)f->ostack = 0;
+        *(unsigned long long *) result = *(unsigned long long *) f->ostack;
+        *(long long *) f->ostack = 0;
         //*(int*)current_frame->ostack = 0;
         f->ostack--;
         break;
     case TYPE_DOUBLE:
         f->ostack--;
-        *(double*)result = *(double*)f->ostack;
-        *(long long*)f->ostack = 0;
+        *(double *) result = *(double *) f->ostack;
+        *(long long *) f->ostack = 0;
         //*(int*)current_frame->ostack = 0;
         f->ostack--;
         ASSERT_STACK(f);
         break;
     case TYPE_REFERENCE:
-        *(O*)result = *(O*)f->ostack;
-        *(int*)f->ostack = 0;
+        *(O *) result = *(O *) f->ostack;
+        *(int *) f->ostack = 0;
         f->ostack--;
         ASSERT_STACK(f);
         break;
     case TYPE_CHAR:
-        *(char*)result = *(char*)f->ostack;
-        *(int*)f->ostack = 0;
+        *(char *) result = *(char *) f->ostack;
+        *(int *) f->ostack = 0;
         f->ostack--;
         ASSERT_STACK(f);
         break;
     case TYPE_UINT:
-        *(unsigned int*)result = *(unsigned int*)f->ostack;
-        *(int*)f->ostack = 0;
+        *(unsigned int *) result = *(unsigned int *) f->ostack;
+        *(int *) f->ostack = 0;
         f->ostack--;
         ASSERT_STACK(f);
         break;
@@ -429,33 +414,33 @@ void pop(JF f, void* result, Operand_e t)
  *      the frame push value to.
  *
  */
-void push(JF frame, void* value, Operand_e type)
+void push(JF frame, void *value, Operand_e type)
 {
     frame->ostack++;
     ASSERT_STACK(frame);
     switch (type) {
     case TYPE_INT:
-        *(int*)(frame->ostack) = *(int*)value;
+        *(int *) (frame->ostack) = *(int *) value;
         break;
     case TYPE_FLOAT:
-        *(float*)(frame->ostack) = *(float*)value;
+        *(float *) (frame->ostack) = *(float *) value;
         break;
     case TYPE_DOUBLE:
-        *(double*)(frame->ostack) = *(double*)value;
+        *(double *) (frame->ostack) = *(double *) value;
         frame->ostack++;
         break;
     case TYPE_LONG:
-        *(long long*)(frame->ostack) = *(long long*)value;
+        *(long long *) (frame->ostack) = *(long long *) value;
         frame->ostack++;
         break;
     case TYPE_CHAR:
-        *(char*)(frame->ostack) = *(char*)value;
+        *(char *) (frame->ostack) = *(char *) value;
         break;
     case TYPE_REFERENCE:
-        *(O*)(frame->ostack) = *(O*)value;
+        *(O *) (frame->ostack) = *(O *) value;
         break;
     case TYPE_UINT:
-        *(unsigned int*)(frame->ostack) = *(unsigned int*)value;
+        *(unsigned int *) (frame->ostack) = *(unsigned int *) value;
         break;
     default:
         ERROR("wrong type");

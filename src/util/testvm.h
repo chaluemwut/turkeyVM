@@ -11,7 +11,7 @@
 
 void printStack(JF);
 
-void printStackLog(FILE* fd, JF);
+void printStackLog(FILE * fd, JF);
 
 void printNativeStack();
 

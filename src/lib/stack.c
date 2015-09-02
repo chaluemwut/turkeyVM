@@ -31,11 +31,10 @@ void Stack_push(T stk, P x)
 P Stack_pop(T stk)
 {
     if (List_isEmpty(stk))
-      ERROR("try to pop on empty stack");
+        ERROR("try to pop on empty stack");
 
     return List_removeFirst(stk);
 }
-
 
 /**
  * NOTE: need traivals the list
@@ -44,7 +43,6 @@ int Stack_size(T stk)
 {
     return List_size(stk);
 }
-
 
 /**
  * get the top element but not pop

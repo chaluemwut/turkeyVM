@@ -20,9 +20,7 @@ void Triple_setFirst(T, P);
 void Triple_setSnd(T, P);
 void Triple_setThird(T, P);
 
-
 #undef T
 #undef P
-
 
 #endif

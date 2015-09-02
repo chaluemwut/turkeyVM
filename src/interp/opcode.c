@@ -1,18 +1,3 @@
-/*^_^*--------------------------------------------------------------*//*{{{*/
-/* Copyright (C) SSE-USTC, 2014-2015                                */
-/*                                                                  */
-/*  FILE NAME             :  opcode.c                               */
-/*  LANGUAGE              :  C                                      */
-/*  TARGET ENVIRONMENT    :  ANY                                    */
-/*  DATE OF FIRST RELEASE :  2015/08/17                             */
-/*  DESCRIPTION           :                                         */
-/*------------------------------------------------------------------*/
-
-/*
- * Revision log:
- *
- *//*}}}*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "opcode.h"
@@ -24,8 +9,8 @@
  * @see interp.c
  * @qcliu 2015/01/27
  */
-static char* const OPCODE[] = {
-    /*{{{*/
+static char *const OPCODE[] = {
+    /*{{{ */
     "nop",
     "aconst_null",
     "iconst_m1",
@@ -229,12 +214,12 @@ static char* const OPCODE[] = {
     "goto_w",
     "jsr_w",
     "breakpoint",
-    /*}}}*/
+    /*}}} */
 };
 
-char* dumpOpcode(Opcode_e cpcode)
+char *dumpOpcode(Opcode_e cpcode)
 {
-    Assert_ASSERT(cpcode>=0 && cpcode<OPC_NUMBER);
+    Assert_ASSERT(cpcode >= 0 && cpcode < OPC_NUMBER);
 
     return OPCODE[cpcode];
 }
@@ -247,14 +232,14 @@ void opcodeStatistics(Opcode_e c)
     if (0 == Control_opcode)
         return;
 
-    times+=1;
-    statistics[c]+=1;
+    times += 1;
+    statistics[c] += 1;
 }
 
-static int printSpace(FILE* fd, int i)
+static int printSpace(FILE * fd, int i)
 {
     int setp = i;
-    while (i >0) {
+    while (i > 0) {
         fprintf(fd, " ");
         i--;
     }
@@ -269,7 +254,7 @@ void opcodeStatus()
     printf("Generate instruction statistics...\n");
     printf("Find detail in \'instruction.txt\'\n");
 
-    FILE* fd;
+    FILE *fd;
     int i;
     int j;
 
@@ -277,41 +262,40 @@ void opcodeStatus()
     i = 0;
     j = 0;
 
-    j+=fprintf(fd, "INSTRUCTION");
-    j+=printSpace(fd, 30-j);
-    j+=fprintf(fd, "TIMES");
-    printSpace(fd, 45-j);
+    j += fprintf(fd, "INSTRUCTION");
+    j += printSpace(fd, 30 - j);
+    j += fprintf(fd, "TIMES");
+    printSpace(fd, 45 - j);
     fprintf(fd, "PERCENT\n");
 
-    while(i<52) {
+    while (i < 52) {
         fprintf(fd, "-");
         i++;
     }
     fprintf(fd, "\n");
 
-    i=0;
-    while (i<OPC_NUMBER) {
+    i = 0;
+    while (i < OPC_NUMBER) {
         j = 0;
         j += fprintf(fd, "%s", OPCODE[i]);
-        j += printSpace(fd, 30-j);
+        j += printSpace(fd, 30 - j);
         j += fprintf(fd, "%d", statistics[i]);
-        printSpace(fd, 45-j);
-        fprintf(fd, "%.2f%%\n", (float)statistics[i]/(float)times*100);
+        printSpace(fd, 45 - j);
+        fprintf(fd, "%.2f%%\n", (float) statistics[i] / (float) times * 100);
         i++;
     }
 
-    i=0;
-    while(i<52) {
+    i = 0;
+    while (i < 52) {
         fprintf(fd, "-");
         i++;
     }
     fprintf(fd, "\n");
 
-
-    j=0;
-    j+=fprintf(fd, "SUM");
-    j+=printSpace(fd, 30-j);
-    j+=fprintf(fd, "%d", times);
-    printSpace(fd, 45-j);
+    j = 0;
+    j += fprintf(fd, "SUM");
+    j += printSpace(fd, 30 - j);
+    j += fprintf(fd, "%d", times);
+    printSpace(fd, 45 - j);
     fprintf(fd, "100%%\n");
 }

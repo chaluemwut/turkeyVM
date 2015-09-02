@@ -1,17 +1,3 @@
-/*^_^*--------------------------------------------------------------*//*{{{*/
-/* Copyright (C) SSE-USTC, 2014-2015                                */
-/*                                                                  */
-/*  FILE NAME             :  native.c                               */
-/*  LANGUAGE              :  C                                      */
-/*  TARGET ENVIRONMENT    :  ANY                                    */
-/*  DATE OF FIRST RELEASE :  2015/03/06                             */
-/*  DESCRIPTION           :  for the javaVM                         */
-/*------------------------------------------------------------------*/
-
-/*
- * Revision log:
- *
- *//*}}}*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,9 +29,9 @@
 #define THROW throwException("native")
 
 typedef struct {
-    char* method_name;
-    char* desc;
-    void (*action)();
+    char *method_name;
+    char *desc;
+    void (*action) ();
 } Binding;
 
 // just for test============
@@ -72,132 +58,108 @@ void nativeInit();
 void nativeValid();
 void getName(JF retFrame);
 
-
 /* Binding method name with function*/
 static Binding const nativeMethods[] = {
     {
-        "getName",
-        "()Ljava/lang/String;",
-        getName
-    },
+     "getName",
+     "()Ljava/lang/String;",
+     getName},
     {
-        "nativeClose",
-        "(J)J",
-        nativeClose
-    },
+     "nativeClose",
+     "(J)J",
+     nativeClose},
     {
-        "nativeReadBuf",
-        "(J[BII)I",
-        nativeReadBuf
-    },
+     "nativeReadBuf",
+     "(J[BII)I",
+     nativeReadBuf},
     {
-        "nativeOpen",
-        "(Ljava/lang/String;I)J",
-        nativeOpen
-    },
+     "nativeOpen",
+     "(Ljava/lang/String;I)J",
+     nativeOpen},
     {
-        "getPrimitiveClass",
-        "(Ljava/lang/String;)Ljava/lang/Class;",
-        getPrimitiveClass
-    },
+     "getPrimitiveClass",
+     "(Ljava/lang/String;)Ljava/lang/Class;",
+     getPrimitiveClass},
     {
-        "nativeWriteBuf",
-        "(J[BII)J",
-        nativeWriteBuf
-    },
+     "nativeWriteBuf",
+     "(J[BII)J",
+     nativeWriteBuf},
     {
-        "identityHashCode",
-        "(Ljava/lang/Object;)I",
-        identityHashCode
-    },
+     "identityHashCode",
+     "(Ljava/lang/Object;)I",
+     identityHashCode},
     {
-        "constructNative",
-        "([Ljava/lang/Object;Ljava/lang/Class;I)Ljava/lang/Object;",
-        constructNative
-    },
+     "constructNative",
+     "([Ljava/lang/Object;Ljava/lang/Class;I)Ljava/lang/Object;",
+     constructNative},
     {
-        "getDeclaredConstructors",
-        "(Z)[Ljava/lang/reflect/Constructor;",
-        getDeclaredConstructors
-    },
+     "getDeclaredConstructors",
+     "(Z)[Ljava/lang/reflect/Constructor;",
+     getDeclaredConstructors},
     {
-        "forName",
-        "(Ljava/lang/String;)Ljava/lang/Class;",
-        forName
-    },
+     "forName",
+     "(Ljava/lang/String;)Ljava/lang/Class;",
+     forName},
     {
-        "getClass",
-        "()Ljava/lang/Class;",
-        getClass
-    },
+     "getClass",
+     "()Ljava/lang/Class;",
+     getClass},
     {
-        "testObject",
-        "(Ljava/lang/Object;)V",
-        testObject
-    },
+     "testObject",
+     "(Ljava/lang/Object;)V",
+     testObject},
     {
-        "nativeValid",
-        "(J)Z",
-        nativeValid
-    },
+     "nativeValid",
+     "(J)Z",
+     nativeValid},
     {
-        "nativeInit",
-        "()V",
-        nativeInit
-    },
+     "nativeInit",
+     "()V",
+     nativeInit},
     {
-        "clone",
-        "(Ljava/lang/Cloneable;)Ljava/lang/Object;",
-        turkeyCopy
-    },
+     "clone",
+     "(Ljava/lang/Cloneable;)Ljava/lang/Object;",
+     turkeyCopy},
     {
-        "isWordsBigEndian",
-        "()Z",
-        isWordsBidEndian
-    },
+     "isWordsBigEndian",
+     "()Z",
+     isWordsBidEndian},
     {
-        "nativeLoad",
-        "(Ljava/lang/String;)I",
-        nativeLoad
-    },
+     "nativeLoad",
+     "(Ljava/lang/String;)I",
+     nativeLoad},
     {
-        "nativeGetLibname",
-        "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
-        nativeGetLibname
-    },
+     "nativeGetLibname",
+     "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+     nativeGetLibname},
     {
-        "currentClassLoader",
-        "()Ljava/lang/ClassLoader;",
-        currentClassLoader
-    },
+     "currentClassLoader",
+     "()Ljava/lang/ClassLoader;",
+     currentClassLoader},
     {
-        "arraycopy",
-        "(Ljava/lang/Object;ILjava/lang/Object;II)V",
-        arrayCopy
-    },
+     "arraycopy",
+     "(Ljava/lang/Object;ILjava/lang/Object;II)V",
+     arrayCopy},
     {
-        "insertSystemProperties",
-        "(Ljava/util/Properties;)V",
-        insertSystemProperties
-    },
+     "insertSystemProperties",
+     "(Ljava/util/Properties;)V",
+     insertSystemProperties},
     {
-        "registerNatives",
-        "()V",
-        registerNatives
-    },
+     "registerNatives",
+     "()V",
+     registerNatives},
     {
-        NULL,
-        NULL,
-        NULL
-    },
+     NULL,
+     NULL,
+     NULL},
 };
 
-void* findNativeInvoker(char* name, char* desc)
+void *findNativeInvoker(char *name, char *desc)
 {
     int i = 0;
     for (; nativeMethods[i].action; i++) {
         if ((0 == strcmp(name, nativeMethods[i].method_name)) &&
-                (0 == strcmp(desc, nativeMethods[i].desc)))
+            (0 == strcmp(desc, nativeMethods[i].desc)))
             return nativeMethods[i].action;
     }
     return NULL;
@@ -227,20 +189,20 @@ void* findNativeInvoker(char* name, char* desc)
 void getName(JF retFrame)
 {
     NF n = getNativeFrame();
-    O this;//vmClass object
+    O this;                     //vmClass object
     LOAD(n, this, O, 0);
     Assert_ASSERT(this);
-    O classObj = (O)this->binding;
+    O classObj = (O) this->binding;
     Assert_ASSERT(classObj);
     C c = classObj->binding;
     Assert_ASSERT(c);
 
-    char* s = CLASSNAME(c);
+    char *s = CLASSNAME(c);
     Assert_ASSERT(s);
-    char* ss = String_new(s);
-    int i=0;
+    char *ss = String_new(s);
+    int i = 0;
     int len = strlen(ss);
-    for (i=0; i<len; i++) {
+    for (i = 0; i < len; i++) {
         if (ss[i] == '/')
             ss[i] = '.';
     }
@@ -255,7 +217,7 @@ void identityHashCode(JF retFrame)
     O this;
     LOAD(nframe, this, O, 0);
     Assert_ASSERT(this);
-    push(retFrame, &this, TYPE_INT );
+    push(retFrame, &this, TYPE_INT);
 }
 
 /**
@@ -269,22 +231,22 @@ void constructNative(JF retFrame)
     NF nframe = getNativeFrame();
 
     O constructor;
-    O args;//array
+    O args;                     //array
     O declaringClass;
     int slot;
 
     LOAD(nframe, constructor, O, 0);
     LOAD(nframe, args, O, 1);
     LOAD(nframe, declaringClass, O, 2);
-    LOAD(nframe, slot, int , 3);
+    LOAD(nframe, slot, int, 3);
 
     Assert_ASSERT(args->type == OBJECT_ARRAY);
 
     C declclass = declaringClass->binding;
-    ClassBlock_t* cb = CLASS_CB(declclass);
-    MethodBlock_t* mb = &cb->methods[slot];
+    ClassBlock_t *cb = CLASS_CB(declclass);
+    MethodBlock_t *mb = &cb->methods[slot];
     Assert_ASSERT(mb);
-    O newobj = (O)allocObject(declclass);
+    O newobj = (O) allocObject(declclass);
     //TODO automatically unwrapped and widened, if needed
     //XXX foucus
     invokeConstructNative(mb, args, newobj);
@@ -320,16 +282,16 @@ void forName(JF retFrame)
     LOAD(nframe, name, O, 0);
     //FIXME: there must be a string Obj, but assert may false
     //Assert_ASSERT(name->type == TYPE_STRING);
-    char* classname = Jstring2Char(name);
+    char *classname = Jstring2Char(name);
     //printf("%s\n", classname);
     int len = strlen(classname);
-    int i=0;
-    for (; i<len; i++) {
+    int i = 0;
+    for (; i < len; i++) {
         if (classname[i] == '.')
             classname[i] = '/';
     }
-    C class = (C)loadClass(classname);
-    ClassBlock_t* cb = CLASS_CB(class);
+    C class = (C) loadClass(classname);
+    ClassBlock_t *cb = CLASS_CB(class);
     if (class == NULL)
         throwException("NoSuchClass");
     O cobj = class->class;
@@ -342,16 +304,16 @@ void forName(JF retFrame)
  *
  * @return a class object for this classname
  */
-O getClass_name(char* classname)
+O getClass_name(char *classname)
 {
     int len = strlen(classname);
     int i = 0;
-    for (; i<len; i++) {
+    for (; i < len; i++) {
         if (classname[i] == '.')
             classname[i] = '/';
     }
-    C class = (C)loadClass(classname);
-    ClassBlock_t* cb = CLASS_CB(class);
+    C class = (C) loadClass(classname);
+    ClassBlock_t *cb = CLASS_CB(class);
     if (class == NULL)
         throwException("NoSuchClass");
 
@@ -367,7 +329,7 @@ void testObject()
 {
     NF nframe = getNativeFrame();
 
-    O obj = *(O*)&nframe->locals[0];
+    O obj = *(O *) & nframe->locals[0];
     if (obj == NULL) {
         printf("obj == null, in testObject");
         throwException("hash false");
@@ -387,11 +349,11 @@ void turkeyCopy(JF retFrame)
     LOAD(nframe, cloneable, O, 0);
     copy_size = objectSize(cloneable);
     Assert_ASSERT(copy_size);
-    obj = (O)sysMalloc(copy_size);
+    obj = (O) sysMalloc(copy_size);
     memset(obj, 0, copy_size);
     memcpy(obj, cloneable, copy_size);
-    /*NOTE: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-    obj->data = (unsigned int*)(obj+1);
+    /*NOTE: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+    obj->data = (unsigned int *) (obj + 1);
     push(retFrame, &obj, TYPE_REFERENCE);
 }
 
@@ -405,7 +367,7 @@ void nativeLoad(JF retFrame)
 {
     NF nframe = getNativeFrame();
     O string;
-    char* s;
+    char *s;
     int i;
 
     LOAD(nframe, string, O, 1);
@@ -419,9 +381,9 @@ void nativeGetLibname(JF retFrame)
     NF nframe = getNativeFrame();
     O pathname;
     O libname;
-    char* path;
-    char* name;
-    char* lib;
+    char *path;
+    char *name;
+    char *lib;
 
     LOAD(nframe, pathname, O, 0);
     LOAD(nframe, libname, O, 1);
@@ -445,20 +407,20 @@ void currentClassLoader(JF retFrame)
  *
  *
  */
-void setProperty(O this, char* key, char* value)
+void setProperty(O this, char *key, char *value)
 {
     JF current_frame = getCurrentFrame();
     O k = createJstring(key);
     O v = createJstring(value);
-    MethodBlock_t* mb;
+    MethodBlock_t *mb;
 
-    mb = (MethodBlock_t*)findMethod(this->class, "put",
-                                    "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+    mb = (MethodBlock_t *) findMethod(this->class, "put",
+                                      "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     if (mb == NULL)
         throwException("no such method");
     assert_stack = FALSE;
-    executeMethodArgs(this->class, mb,this, k, v);
-    /*hack*/
+    executeMethodArgs(this->class, mb, this, k, v);
+    /*hack */
     //NOTE: after executeMethod, stack is not correct, so we need revise it.
     current_frame->ostack--;
     assert_stack = TRUE;
@@ -482,16 +444,16 @@ void arrayCopy(JF retFrame)
     LOAD(nf, length, int, 4);
     Assert_ASSERT(src);
     Assert_ASSERT(dest);
-    Assert_ASSERT(srcStart>=0);
-    Assert_ASSERT(destStart>=0);
-    Assert_ASSERT(length>=0);
-    if ((src == NULL)||(dest == NULL))
+    Assert_ASSERT(srcStart >= 0);
+    Assert_ASSERT(destStart >= 0);
+    Assert_ASSERT(length >= 0);
+    if ((src == NULL) || (dest == NULL))
         throwException("java/lang/NullPointerException");
     else {
-        ClassBlock_t* scb = CLASS_CB(src->class);
-        ClassBlock_t* dcb = CLASS_CB(dest->class);
-        unsigned int* sdata = src->data;
-        unsigned int* ddata = dest->data;
+        ClassBlock_t *scb = CLASS_CB(src->class);
+        ClassBlock_t *dcb = CLASS_CB(dest->class);
+        unsigned int *sdata = src->data;
+        unsigned int *ddata = dest->data;
 
         if ((scb->this_classname[0] != '[') || (dcb->this_classname[0] != '['))
             goto storeExcep;
@@ -518,10 +480,8 @@ void arrayCopy(JF retFrame)
         default:
             throwException("type error");
         }
-        memmove(((char*)&ddata[0] + destStart * size),
-                ((char*)&sdata[0] + srcStart * size),
-                length*size
-               );
+        memmove(((char *) &ddata[0] + destStart * size),
+                ((char *) &sdata[0] + srcStart * size), length * size);
         //printChar0(dest);
         return;
     }
@@ -529,7 +489,7 @@ void arrayCopy(JF retFrame)
 
     return;
 
-storeExcep:
+  storeExcep:
     throwException("java/lang/ArrayStoreException");
 }
 
@@ -537,7 +497,7 @@ void insertSystemProperties()
 {
     NF nframe;
     struct utsname info;
-    O  this;
+    O this;
 
     nframe = getNativeFrame();
     LOAD(nframe, this, O, 0);
@@ -552,10 +512,12 @@ void insertSystemProperties()
     setProperty(this, "java.home", "qcliu");
     setProperty(this, "java.specification.version", "1.4");
     setProperty(this, "java.specification.vendor", "Sun Microsystems, Inc.");
-    setProperty(this, "java.specification.name", "Java Platform API Specification");
+    setProperty(this, "java.specification.name",
+                "Java Platform API Specification");
     setProperty(this, "java.vm.specification.version", "1.0");
     setProperty(this, "java.vm.specification.vendor", "Sun Microsystems, Inc.");
-    setProperty(this, "java.vm.specification.name", "Java Virtual Machine Specification");
+    setProperty(this, "java.vm.specification.name",
+                "Java Virtual Machine Specification");
     setProperty(this, "java.class.version", "48.0");
     setProperty(this, "java.class.path", "");
 
@@ -593,13 +555,13 @@ void getClass(JF retFrame)
 void registerNatives(JF retFrame)
 {
     JF current_frame = getCurrentFrame();
-    ClassBlock_t* cb = CLASS_CB(current_frame->class);
+    ClassBlock_t *cb = CLASS_CB(current_frame->class);
 }
 
-static char getPrimType(char* s)
+static char getPrimType(char *s)
 {
     char primtype;
-    if (strcmp(s, "byte")==0)
+    if (strcmp(s, "byte") == 0)
         primtype = 'B';
     else if (strcmp(s, "short") == 0)
         primtype = 'S';
@@ -607,7 +569,7 @@ static char getPrimType(char* s)
         primtype = 'I';
     else if (strcmp(s, "long") == 0)
         primtype = 'J';
-    else if (strcmp(s, "char") == 0 )
+    else if (strcmp(s, "char") == 0)
         primtype = 'C';
     else if (strcmp(s, "float") == 0)
         primtype = 'F';
@@ -626,17 +588,17 @@ void getPrimitiveClass(JF retFrame)
     NF nframe;
     O obj;
     O array;
-    char* ty;
+    char *ty;
     char primtype;
     C class;
 
     nframe = getNativeFrame();
-    /*In the frame is a String*/
+    /*In the frame is a String */
     LOAD(nframe, obj, O, 0);
     array = String_getValue(obj);
     ty = Jstring2Char(obj);
     primtype = getPrimType(ty);
-    class = (C)findPrimitiveClass(primtype);
+    class = (C) findPrimitiveClass(primtype);
     if (class != NULL) {
         if (!class->class)
             WARNING("classheader is null");

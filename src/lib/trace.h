@@ -10,9 +10,9 @@ void Trace_unindent();
 
 void Trace_spaces();
 
-int Trace_contains(char* s);
+int Trace_contains(char *s);
 
-void Trace_addFunc(char* s);
+void Trace_addFunc(char *s);
 
 #define Trace_TRACE(s, f, x, dox, r, dor)               \
     do {                                                \
@@ -24,8 +24,7 @@ void Trace_addFunc(char* s);
         if (exists) {                                   \
             dor r;                                      \
         }                                               \
-    }while(0)                                           
-
+    }while(0)
 
 #define Trace_Stack(s, f, x, y, dox, r, dor)            \
     do {                                                \
@@ -37,7 +36,7 @@ void Trace_addFunc(char* s);
         if (exists) {                                   \
             dox y;                                      \
         }                                               \
-    }while(0)            
+    }while(0)
 
 #define Trace_Opc(s, f, x, dox, dor)                    \
     do {                                                \
@@ -50,7 +49,6 @@ void Trace_addFunc(char* s);
             dox x;                                      \
             exit(0);                                    \
         }                                               \
-    }while(0)            
-
+    }while(0)
 
 #endif

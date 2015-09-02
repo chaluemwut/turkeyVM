@@ -7,18 +7,16 @@
 
 typedef struct D *D;
 
-struct D
-{
-    char* name;
-    char* handle;
+struct D {
+    char *name;
+    char *handle;
 };
 
-
 /*dll*/
-extern D findDllInTable(char* dllname);
-extern char* getDllName(char* path, char* name);
-extern int resolveDll(char* dllname);
-extern char* getDllPath();
+extern D findDllInTable(char *dllname);
+extern char *getDllName(char *path, char *name);
+extern int resolveDll(char *dllname);
+extern char *getDllPath();
 extern void initDllHash();
 
 #undef D

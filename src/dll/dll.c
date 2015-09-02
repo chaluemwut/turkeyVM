@@ -18,38 +18,38 @@ static Hash_t DMap;
 
 static int equals(P x, P y)
 {
-    char* s = (char*)x;
-    D d = (D)y;
+    char *s = (char *) x;
+    D d = (D) y;
     if (0 == strcmp(s, d->name))
         return 1;
     else
         return 0;
 }
 
-D findDllInTable(char* dllname)
+D findDllInTable(char *dllname)
 {
-    D dll = (D)Hash_get(DMap, dllname);
+    D dll = (D) Hash_get(DMap, dllname);
 
     return dll;
 }
 
-char* getDllPath()
+char *getDllPath()
 {
     return getenv("LD_LIBRARY_PATH");
 }
 
-int resolveDll(char* dllname)
+int resolveDll(char *dllname)
 {
     D dll;
     dll = findDllInTable(dllname);
     if (dll != NULL)
         return 1;
 
-    void* handle = dlopen(dllname, RTLD_LAZY);
+    void *handle = dlopen(dllname, RTLD_LAZY);
     if (!handle)
         return 0;
 
-    dll = (D)sysMalloc(sizeof(struct D));
+    dll = (D) sysMalloc(sizeof(struct D));
     dll->name = dllname;
     dll->handle = handle;
 
@@ -59,9 +59,9 @@ int resolveDll(char* dllname)
 
 }
 
-char* getDllName(char* path, char* name)
+char *getDllName(char *path, char *name)
 {
-    char* buf = (char*)sysMalloc(strlen(path) + strlen(name) + 8);
+    char *buf = (char *) sysMalloc(strlen(path) + strlen(name) + 8);
     sprintf(buf, "%s/lib%s.so", path, name);
 
     return buf;
@@ -74,9 +74,9 @@ static void keyDup(P x, P y)
 
 void initDllHash()
 {
-    DMap = Hash_new((long(*)(P))String_hashCode
-                    ,(Poly_tyEquals)String_equals
-                    ,keyDup);
+    DMap =
+        Hash_new((long (*)(P)) String_hashCode, (Poly_tyEquals) String_equals,
+                 keyDup);
 }
 
 #undef P

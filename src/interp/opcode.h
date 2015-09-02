@@ -1,9 +1,7 @@
 #ifndef OPCODE_H
 #define OPCODE_H
 
-
-typedef enum
-{
+typedef enum {
     OPC_NOP,
     OPC_ACONST_NULL,
     OPC_ICONST_M1,
@@ -91,12 +89,12 @@ typedef enum
     OPC_BASTORE,
     OPC_CASTORE,
     OPC_SASTORE,
-    OPC_POP	,
+    OPC_POP,
     OPC_POP2,
     OPC_DUP,
     OPC_DUP_X1,
     OPC_DUP_X2,
-    OPC_DUP2,	
+    OPC_DUP2,
     OPC_DUP2_X1,
     OPC_DUP2_X2,
     OPC_SWAP,
@@ -206,15 +204,13 @@ typedef enum
     OPC_IFNONNULL,
     OPC_GOTO_W,
     OPC_JSR_W,
-    OPC_NUMBER   /*the number of opcode*/
-}Opcode_e;
+    OPC_NUMBER                  /*the number of opcode */
+} Opcode_e;
 
-
-extern char* dumpOpcode(Opcode_e);
+extern char *dumpOpcode(Opcode_e);
 
 extern void opcodeStatistics(Opcode_e);
 
 extern void opcodeStatus();
-
 
 #endif

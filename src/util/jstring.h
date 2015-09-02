@@ -6,12 +6,11 @@
 
 #define O Object_t
 
+char *Jstring2Char(O string);
 
-char* Jstring2Char(O string);
+O char2Char(char *s);
 
-O char2Char(char* s);
-
-O createJstring(char* s);
+O createJstring(char *s);
 
 O String_getValue(O);
 
@@ -22,9 +21,6 @@ void printStringObject(O obj);
 void dumpJstring(O);
 
 void dumpChar(O);
-
-
-
 
 #undef O
 #endif

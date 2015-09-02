@@ -13,11 +13,9 @@
 
 typedef struct T *T;
 
-
-T Hash_new(long (*hashCode)(P)
-            ,int(*equals)(P, P)
-            , void(*dup)(P, P));
-
+T Hash_new(long (*hashCode) (P)
+           , int (*equals) (P, P)
+           , void (*dup) (P, P));
 
 V Hash_put(T, K, V);
 
@@ -27,14 +25,11 @@ int Hash_containsKey(T, K);
 
 V Hash_get(T, K);
 
-void Hash_foreachKey(T, void(*)(K));
+void Hash_foreachKey(T, void (*)(K));
 
-void Hash_foreachValue(T, void(*)(V));
+void Hash_foreachValue(T, void (*)(V));
 
 void Hash_status(T);
-
-
-
 
 #undef T
 #undef P
