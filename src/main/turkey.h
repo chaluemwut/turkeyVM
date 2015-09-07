@@ -191,10 +191,6 @@ struct classblock {
 
 /*--------------------------Function prototypes---------------*/
 
-extern void doKey(void *);
-
-extern void doValue(void *v);
-
 extern void exitVM();
 
 extern char *getMethodClassName(MethodBlock_t * mb);

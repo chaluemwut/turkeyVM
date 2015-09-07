@@ -87,6 +87,19 @@ C findArrayClass(char *classname);
 //extern
 extern int initable;
 
+static void doKey(P key)
+{
+    printf("%s\n", (char *) key);
+}
+
+static void doValue(P v)
+{
+    Assert_ASSERT(v);
+    C c = (C) v;
+    ClassBlock_t *cb = CLASS_CB(c);
+    printf("%s\n", cb->this_classname);
+}
+
 /**
  *  Add classObj header to the specific class given by arg.
  *
@@ -390,7 +403,7 @@ static C Verbose_defineClass(char *classname, char *data, int file_len)
         while (attr_count != 0) {
             READ_U2(attr_name_idx, ptr);
             READ_U4(attr_length, ptr);
-            Assert_ASSERT(attr_length == 2);
+            //Assert_ASSERT(attr_length == 2);
             //printf("attr_length:%d\n", attr_length);
             char *attr_name = CP_UTF8(constantPool, attr_name_idx);
             //printf("%s\n", attr_name);
@@ -1174,9 +1187,15 @@ int setClassPath(char *s)
     return 0;
 }
 
-void classHashStatus()
+void Dump_classHashStatus()
 {
+    printf("\n");
     Hash_status(CMap);
+}
+
+void Dump_classHash()
+{
+    Hash_foreachKey(CMap, doKey);
 }
 
 static void keyDup(P x, P y)

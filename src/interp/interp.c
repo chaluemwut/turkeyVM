@@ -2522,6 +2522,7 @@ int executeJava(JF retFrame, JF f)
         ClassBlock_t *cb = CLASS_CB(GET_CLASS(f));
         printf("method name:%s,type:%s, class:%s\n", f->mb->name, f->mb->type,
                cb->this_classname);
+        TODO("not implement");
 
         exit(0);
     }

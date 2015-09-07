@@ -12,7 +12,7 @@ extern JFrame_t current_frame;
 void throwException(char *exception)
 {
     printf("\n\e[31m\e[1mException:\e[0m %s\n", exception);
-    classHashStatus();
+    Dump_classHashStatus();
     exit(0);
 }
 

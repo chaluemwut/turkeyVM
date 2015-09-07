@@ -30,18 +30,6 @@
 
 int vmsize = 0;
 
-void doKey(P key)
-{
-    printf("%s\n", (char *) key);
-}
-
-void doValue(P v)
-{
-    Assert_ASSERT(v);
-    C c = (C) v;
-    ClassBlock_t *cb = CLASS_CB(c);
-    printf("%s\n", cb->this_classname);
-}
 
 void exitVM()
 {
@@ -108,16 +96,15 @@ int main(int argc, char **argv)
     for (i = 0; i < args_size; i++) {
         ARRAY_DATA(args, i, O) = createJstring(_args[i]);
     }
-
     executeStaticMain(main_mehtod, args);
-
     end = clock();
-    printf("%f\n", (double)(end-start));
+    if (Control_dump_hash)
+      Dump_classHashStatus();
+    if (Control_dump_class)
+      Dump_classHash();
+    if (Control_opcode)
+      opcodeStatus();
     printf("\nturkey run %f seconds\n", (double) (end - start) / CLOCKS_PER_SEC);
-    //Hash_foreachKey(CMap, doKey);
-    classHashStatus();
-    opcodeStatus();
-
     return 0;
 }
 

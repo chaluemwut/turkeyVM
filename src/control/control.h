@@ -22,4 +22,8 @@ extern int Control_opcode;
 
 extern int Control_resolve;
 
+extern int Control_dump_class;
+
+extern int Control_dump_hash;
+
 #endif

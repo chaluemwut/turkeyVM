@@ -3,7 +3,7 @@ TURKEY-VM
 [![Build Status](https://drone.io/github.com/qc1iu/turkeyVM/status.png)](https://drone.io/github.com/qc1iu/turkeyVM/latest)
 [![Coverage Status](https://coveralls.io/repos/qc1iu/turkeyVM/badge.svg?branch=master&service=github)](https://coveralls.io/github/qc1iu/turkeyVM?branch=master)
 [![Licence](http://img.shields.io/badge/Licence-MIT-brightgreen.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-0.0.7-blue.svg)
+![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)
 
 Turkey is a Java Virtual Mechine for [GNU classpath 0.0.6](http://savannah.gnu.org/forum/forum.php?forum_id=2466).
 
@@ -59,13 +59,19 @@ Besides run this simple test case, turkey now can run  [tiger0.0.6](https://gith
 ##Command-line
 
 	-cp          {path}         set class search path
+	-classpath   {path}         set classpath
+	-dump        {hash|class}   dump turkey status
 	-opcode      <NULL>         statistic instrctions
 	-log         {name}         log method
 	-verbose     {0|1|2|3}      verbose turkey
 	-trace       {name}         trace specific method
+	-dr          <NULL>         disable resolve
 	-help        <NULL>         commandline list
- 	-test        <NULL>         super test!!
+	-test        <NULL>         super test!!
 
+
+
+###-opcode
 Now, turkey can use **`-opcode`** to statistic the frequency for every instrctions and store the result in `instruction.txt`
 
 	INSTRUCTION                   TIMES          PERCENT
@@ -95,3 +101,45 @@ Now, turkey can use **`-opcode`** to statistic the frequency for every instrctio
 	jsr_w                         0              0.00%
 	----------------------------------------------------
 	SUM                           5449389        100%
+
+###-dr
+-dr can close the resolve, so we can compare the effect of resolve module.
+	
+The result bellow is open resolve(default), run `tiger0.0.6` to compile LinkedList.java.
+
+	turkey run 0.597374 seconds
+	--------------------------------
+	|Hash table status             |
+	--------------------------------
+	|Num of insertions:  180
+	|Num of deletes:     0
+	|Num of lookups:     31514
+	|Num of links:       48
+	|Longest chain:      1
+	|Max hash size:      4096
+	|Max load factor:    0.043945
+	|Expanded times:     0
+	|Contraction times:  0
+	|Averager position:  0.001523
+	|Items nums:         180
+	|currentLoad:        0.043945
+
+when use -dr to closed
+
+	turkey run 0.881234 seconds
+	--------------------------------
+	|Hash table status             |
+	--------------------------------
+	|Num of insertions:  180
+	|Num of deletes:     0
+	|Num of lookups:     1147440
+	|Num of links:       32851
+	|Longest chain:      1
+	|Max hash size:      4096
+	|Max load factor:    0.043945
+	|Expanded times:     0
+	|Contraction times:  0
+	|Averager position:  0.028630
+	|Items nums:         180
+	|currentLoad:        0.043945
+	--------------------------------
