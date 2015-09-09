@@ -17,7 +17,7 @@
 
 #define P Poly_t
 
-static char *const VERSION = "turkey v0.1.0 linux/386";
+static char *const VERSION = "turkey v0.1.1 linux/386";
 static char *const WEBSITE = "https://github.com/qc1iu/turkeyVM";
 
 static void actionArg_help();
