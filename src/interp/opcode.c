@@ -250,8 +250,7 @@ void opcodeStatus()
 {
     if (0 == Control_opcode)
         return;
-
-    printf("Generate instruction statistics...\n");
+    printf("\nGenerate instruction statistics...\n");
     printf("Find detail in \'instruction.txt\'\n");
 
     FILE *fd;
@@ -261,19 +260,16 @@ void opcodeStatus()
     fd = fopen("instruction.txt", "wr");
     i = 0;
     j = 0;
-
     j += fprintf(fd, "INSTRUCTION");
     j += printSpace(fd, 30 - j);
     j += fprintf(fd, "TIMES");
     printSpace(fd, 45 - j);
     fprintf(fd, "PERCENT\n");
-
     while (i < 52) {
         fprintf(fd, "-");
         i++;
     }
     fprintf(fd, "\n");
-
     i = 0;
     while (i < OPC_NUMBER) {
         j = 0;
@@ -284,14 +280,12 @@ void opcodeStatus()
         fprintf(fd, "%.2f%%\n", (float) statistics[i] / (float) times * 100);
         i++;
     }
-
     i = 0;
     while (i < 52) {
         fprintf(fd, "-");
         i++;
     }
     fprintf(fd, "\n");
-
     j = 0;
     j += fprintf(fd, "SUM");
     j += printSpace(fd, 30 - j);

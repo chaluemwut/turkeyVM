@@ -36,4 +36,7 @@ void Control_setLogFile(FILE * fd)
 int Control_opcode = FALSE;
 /*}}}*/
 
+int Control_dump_hash = FALSE;
+int Control_dump_class = FALSE;
+
 int Control_resolve = TRUE;

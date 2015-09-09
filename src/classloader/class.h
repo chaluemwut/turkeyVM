@@ -28,7 +28,9 @@ extern void parseClassPath(char *);
 
 extern void initClassHash();
 
-extern void classHashStatus();
+extern void Dump_classHashStatus();
+
+extern void Dump_classHash();
 
 extern int initSystemClass();
 

@@ -17,7 +17,7 @@
 
 #define P Poly_t
 
-static char *const VERSION = "turkey v0.1.0 linux/386";
+static char *const VERSION = "turkey v0.1.1 linux/386";
 static char *const WEBSITE = "https://github.com/qc1iu/turkeyVM";
 
 static void actionArg_help();
@@ -37,6 +37,18 @@ typedef struct {
     char *desc;
     void (*action) ();          //a call-back
 } Arg_t;
+
+static void argException(char *fmt, ...)
+{
+    fprintf(stderr, "\e[31m\e[1mArgs error: \e[0m");
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+    fputc('\n', stderr);
+    fflush(stderr);
+    exit(1);
+}
 
 static void arg_setTrace(char *func)
 {
@@ -90,6 +102,17 @@ static void arg_setResolve()
     Control_resolve = 0;
 }
 
+static void arg_setDump(char *s)
+{
+    Assert_ASSERT(s);
+    if (0 == strcmp(s, "hash"))
+      Control_dump_hash = 1;
+    else if (0 == strcmp(s, "class"))
+      Control_dump_class = 1;
+    else
+      argException("-dump {hash|class}");
+}
+
 static Arg_t allArgs[] = {
     {"cp",
      ARGTYPE_STRING,
@@ -101,6 +124,11 @@ static Arg_t allArgs[] = {
      "{path}",
      "set classpath",
      arg_setClassPath},
+    {"dump",
+     ARGTYPE_STRING,
+     "{hash|class}",
+     "dump turkey status",
+     arg_setDump},
     {"opcode",
      ARGTYPE_EMPTY,
      "<NULL>",
@@ -187,18 +215,6 @@ static void actionArg_help()
 {
     printUsage();
     exit(0);
-}
-
-static void argException(char *fmt, ...)
-{
-    fprintf(stderr, "\e[31m\e[1mArgs error: \e[0m");
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
-    va_end(args);
-    fputc('\n', stderr);
-    fflush(stderr);
-    exit(1);
 }
 
 /**
