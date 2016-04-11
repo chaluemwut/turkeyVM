@@ -1,9 +1,12 @@
 TURKEY-VM
 =================
-[![Build Status](https://drone.io/github.com/qc1iu/turkeyVM/status.png)](https://drone.io/github.com/qc1iu/turkeyVM/latest)
+
+
 [![Coverage Status](https://coveralls.io/repos/qc1iu/turkeyVM/badge.svg?branch=master&service=github)](https://coveralls.io/github/qc1iu/turkeyVM?branch=master)
 [![Licence](http://img.shields.io/badge/Licence-MIT-brightgreen.svg)](LICENSE)
 ![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)
+
+**Now, turkey-vm has a new implementation [SimpleJVM](https://github.com/simpleJVM/simpleJVM) which is based on OpenJDK7**
 
 Turkey is a Java Virtual Mechine for [GNU classpath 0.0.6](http://savannah.gnu.org/forum/forum.php?forum_id=2466).
 
